@@ -2,7 +2,7 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(to right, #56CCF2, #2200ff);
+    background: linear-gradient(to right, #20a8d6, #005495);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -74,7 +74,7 @@ input {
 }
 
 button {
-    background: #2F80ED;
+    background: #f78c19;
     color: white;
     padding: 12px;
     border: none;
@@ -86,7 +86,7 @@ button {
 }
 
 button:hover {
-    background: #1F6FCE;
+    background: #e67605;
 }
 
 /* Mensagem de Erro do Login */

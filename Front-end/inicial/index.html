@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebMarket</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="inicial" id="telaInicial">
+        <h2>Simulador Didático de Varejo</h2>
+        <div class="links">
+            <div class="link-item" onclick="adicionarSupermercado()">
+                <span>Adicionar supermercado</span>
+                <ion-icon name="add-outline" id="icone"></ion-icon>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-container" id="formularioContainer">
+        <div class="info-card">
+            <h2>Bem-vindo ao WebMarket!</h2>
+            <p>Coloque nome do Supermercado para continuar</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="text">Nome</label>
+                    <input type="text" id="nomeSupermercado" placeholder="Digite o nome do supermercado" required>
+                </div>
+                <button type="submit">Cadastrar Supermercado</button>
+                <button type="button" onclick="voltar()">Cancelar</button>
+                <p id="error-message" class="error"></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
