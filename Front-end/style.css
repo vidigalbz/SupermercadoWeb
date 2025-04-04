@@ -100,7 +100,7 @@ button:hover {
 /* Register Form */
 
 .register-container {
-    display: block !important;
+    display: none;
     justify-content: start;
     padding-left: 100px;
     align-items: center;

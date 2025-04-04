@@ -35,13 +35,22 @@
             <p>Cadastre-se para continuar</p>
             <form id="registerForm">
                 <div class="input-group">
-                    <label for="email">E-mail</label>
+                    <label for="password">Nome</label>
+                    <input type="text" id="passwordRegister" placeholder="Digite seu nome" required>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email</label>
                     <input type="email" id="emailRegister" placeholder="Digite seu e-mail" required>
                 </div>
                 <div class="input-group">
                     <label for="password">Senha</label>
                     <input type="password" id="passwordRegister" placeholder="Digite sua senha" required>
                 </div>
+                <div class="input-group">
+                    <label for="password">Confirmar a Senha</label>
+                    <input type="password" id="passwordRegister" placeholder="Digite sua senha novamente" required>
+                </div>
+                
                 <button type="submit">Entrar</button>
                 <p class="register">Já possui conta? <a href="#" id="irParaLogin"><span>Login</span></a></p>
                 <p id="error-message" class="error"></p>
