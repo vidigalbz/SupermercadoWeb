@@ -1,0 +1,122 @@
+/* Estilização da pagina toda */
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #56CCF2, #2200ff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Login Form */
+
+.login-container {
+    display: flex;
+    justify-content: start;
+    padding-left: 100px;
+    align-items: center;
+    width: 100%;
+}
+
+.login-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    text-align: center;
+}
+
+.forgot-password, .register {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.forgot-password a, .register a {
+    color: #2F80ED;
+    text-decoration: none;
+}
+
+.forgot-password a:hover, .register a:hover {
+    text-decoration: underline;
+}
+
+/* Estilização dos Elementos */
+
+h2 {
+    font-weight: 600;
+    color: #333;
+}
+
+p {
+    color: #666;
+}
+
+.input-group {
+    margin-top: 15px;
+    text-align: left;
+}
+
+label {
+    font-weight: 400;
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+button {
+    background: #2F80ED;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+button:hover {
+    background: #1F6FCE;
+}
+
+/* Mensagem de Erro do Login */
+
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* Register Form */
+
+.register-container {
+    display: block !important;
+    justify-content: start;
+    padding-left: 100px;
+    align-items: center;
+    width: 100%;
+}
+
+.register-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    text-align: center;
+}
+
+.input-group {
+    margin-top: 15px;
+    text-align: left;
+}
