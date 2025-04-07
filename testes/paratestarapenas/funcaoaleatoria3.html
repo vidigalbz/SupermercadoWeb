@@ -1,0 +1,32 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste né, bacana</title>
+</head>
+<body>
+    <h1>coloca ai um numero rapidao</h1>
+    <input type="text" placeholder="coloca o numero aqui:" id="numeross">
+    <button onclick="parouimpar()" >Confirmar</button>
+    <p id="resultado"></p>
+
+    <script>
+
+        function parouimpar(){
+            let nn = document.getElementById("numeross").value.trim();
+            let numerin = Number(nn)
+
+            if (numerin % 2 === 0) {
+                document.getElementById("resultado").innerHTML = `o número  é par`
+            }
+            else {
+                document.getElementById("resultado").innerHTML = `o número é impar`
+            }
+        }
+
+
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,32 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palindromo</title>
+</head>
+<body>
+    <h2>coloca ai uma palavra pra ver se é um palindromo</h2>
+    <input type="text" id="palavra">
+    <button onclick="deixaeuveraqui()">confirmar</button>
+    <p id="resultado"></p>
+    
+
+    <script>
+
+        function deixaeuveraqui() {
+            let palavra = document.getElementById("palavra").value
+            let verificar = palavra.split("").reverse().join("")
+
+            if (palavra === verificar) {
+                document.getElementById("resultado").innerHTML = `"${palavra}" é um palindromo`;
+            } else {
+                document.getElementById("resultado").innerHTML = `"${palavra}" não é um palindromo`;
+            }
+            
+}
+
+    </script>
+
+</body>
+</html>
