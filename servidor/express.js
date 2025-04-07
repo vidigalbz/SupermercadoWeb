@@ -1,5 +1,6 @@
 const { error } = require("console");
 const express = require("express");
+const db = require("./database.js")
 const app = express();
 const port = 4000;
 const router = express.Router();
