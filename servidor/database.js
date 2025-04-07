@@ -47,7 +47,14 @@ function Insert(table, columns, values){
         if (err) {
             return console.log(`Erro: ${err}`)
         }
-        console.log("Insert funcionou")
+    })
+}
+
+function Query(query){
+    db.run(query, (err) => {
+        if (err) {
+            console.log(`Erro: ${err}`)
+        }
     })
 }
 
