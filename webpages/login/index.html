@@ -1,152 +1,59 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebMarket</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-        }
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        .card-title {
-            font-weight: 600;
-            color: #333;
-        }
-        .form-control {
-            height: 45px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-        .form-control:focus {
-            box-shadow: none;
-            border-color: #0d6efd;
-        }
-        .btn {
-            height: 45px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-        .auth-container {
-            display: none;
-        }
-        .auth-container.active {
-            display: block;
-        }
-        .error {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Cadastro</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Login Container -->
-        <div class="row justify-content-center auth-container active" id="loginContainer">
-            <div class="col-md-5">
-                <div class="card p-4">
-                    <div class="card-body">
-                        <h2 class="card-title text-center mb-3">Bem-vindo ao WebMarket!</h2>
-                        <p class="text-center text-muted mb-4">Faça login para continuar</p>
-                        
-                        <form id="loginForm">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">E-mail</label>
-                                <input type="email" class="form-control" id="email" placeholder="Digite seu e-mail" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Senha</label>
-                                <input type="password" class="form-control" id="password" placeholder="Digite sua senha" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 mb-3">Entrar</button>
-                            <p class="text-center mb-2">
-                                <a href="#" class="text-decoration-none">Esqueceu sua senha?</a>
-                            </p>
-                            <p class="text-center">
-                                Ainda não tem uma conta? <a href="#" class="text-decoration-none" id="cadastrar">Cadastre-se</a>
-                            </p>
-                            <p id="login-error-message" class="error text-center"></p>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Register Container -->
-        <div class="row justify-content-center auth-container" id="registerContainer">
-            <div class="col-md-5">
-                <div class="card p-4">
-                    <div class="card-body">
-                        <h2 class="card-title text-center mb-3">Bem-vindo ao WebMarket!</h2>
-                        <p class="text-center text-muted mb-4">Cadastre-se para continuar</p>
-                        
-                        <form id="registerForm">
-                            <div class="mb-3">
-                                <label for="nameRegister" class="form-label">Nome</label>
-                                <input type="text" class="form-control" id="nameRegister" placeholder="Digite seu nome" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="emailRegister" class="form-label">E-mail</label>
-                                <input type="email" class="form-control" id="emailRegister" placeholder="Digite seu e-mail" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="passwordRegister" class="form-label">Senha</label>
-                                <input type="password" class="form-control" id="passwordRegister" placeholder="Digite sua senha" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="ConfirmedpasswordRegister" class="form-label">Confirmar a Senha</label>
-                                <input type="password" class="form-control" id="ConfirmedpasswordRegister" placeholder="Digite sua senha novamente" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 mb-3">Cadastrar</button>
-                            <p class="text-center">
-                                Já possui conta? <a href="#" class="text-decoration-none" id="irParaLogin">Login</a>
-                            </p>
-                            <p id="register-error-message" class="error text-center"></p>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="container-auth" id="container">
+    <!-- Tela de Cadastro -->
+    <div class="form-container sign-up-container">
+      <form class="w-100 px-4">
+        <h1 class="mb-4">Criar Conta</h1>
+        <input type="text" class="form-control mb-3" placeholder="Nome" />
+        <input type="email" class="form-control mb-3" placeholder="Email" />
+        <input type="password" class="form-control mb-3" placeholder="Senha" />
+        <input type="password" class="form-control mb-3" placeholder="Confirmar Senha" />
+        <button class="btn btn-custom text-white mt-3">Cadastrar</button>
+      </form>
     </div>
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Toggle between login and register forms
-        document.getElementById('cadastrar').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('loginContainer').classList.remove('active');
-            document.getElementById('registerContainer').classList.add('active');
-        });
+    <!-- Tela de Login -->
+    <div class="form-container sign-in-container">
+        <form class="w-100 px-4">
+          <h1 class="mb-4">Login</h1>
+          <input type="email" class="form-control mb-3" placeholder="Email" />
+          <input type="password" class="form-control mb-3" placeholder="Senha" />
+          <div class="d-flex justify-content-end w-100 mb-3">
+            <a href="#" class="text-decoration-none" style="color: #654eff; font-size: 0.9rem;">Esqueci minha senha</a>
+          </div>
+          <button class="btn btn-login text-white mt-3 w-100">Entrar</button>
+        </form>
+      </div>
 
-        document.getElementById('irParaLogin').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('registerContainer').classList.remove('active');
-            document.getElementById('loginContainer').classList.add('active');
-        });
+    <!-- Painel com o botão de troca -->
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <h1>Bem-vindo de volta!</h1>
+          <p class="mb-4">Já tem conta? Faça login aqui.</p>
+          <button class="btn btn-ghost text-white" id="signIn">Login</button>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <h1>Olá!</h1>
+          <p class="mb-4">Cadastre-se e comece sua jornada conosco.</p>
+          <button class="btn btn-ghost text-white" id="signUp">Cadastre-se</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // Form validation would go here
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Add your login validation logic here
-        });
-
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Add your registration validation logic here
-        });
-    </script>
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
