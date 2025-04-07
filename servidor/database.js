@@ -40,3 +40,18 @@ CREATE TABLE IF NOT EXISTS products (
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );`)});
 
+
+
+function Insert(table, columns, values){
+    db.run(`INSERT INTO ${table} (${columns.join(',')}) VALUES (?, ?, ?)`, values ,(err) => {
+        if (err) {
+            return console.log(`Erro: ${err}`)
+        }
+        console.log("Insert funcionou")
+    })
+}
+
+module.exports = {
+    Insert, 
+    db
+}
