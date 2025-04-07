@@ -1,0 +1,46 @@
+body {
+    background-color: #f8f9fa;
+  }
+  
+  .grid-produtos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #e9ecef;
+    border-radius: 10px;
+  }
+  
+  .card-produto {
+    display: flex;
+    flex-direction: row;
+    border-radius: 15px;
+    overflow: hidden;
+    height: 150px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .imagem-produto {
+    width: 40%;
+    background-color: #55b4ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .info-produto {
+    width: 60%;
+    background-color: #009cb0;
+    color: white;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .info-produto button {
+    margin-top: 5px;
+  }
+  
