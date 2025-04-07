@@ -1,6 +1,6 @@
 const { error } = require("console");
 const express = require("express");
-const db = require("./database.js")
+const {select, Insert} = require("./database.js")
 const app = express();
 const port = 4000;
 const router = express.Router();
@@ -44,6 +44,13 @@ async function laodPages () {
 }
 
 laodPages()
+
+retorno = select("users");
+console.log(retorno)
+
+columns = ['userId', 'email', 'password']
+values = ["1", "1212212@gmail.com", "331313"]
+
 
 app.listen(port, () => {
     console.log(`Servidor iniciado na porta localhost/${port}`)
