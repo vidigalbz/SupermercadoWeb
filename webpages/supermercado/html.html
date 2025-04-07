@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copiar Palavra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .texto {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        .copiar-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: #555;
+        }
+        .copiar-btn:hover {
+            color: #007bff;
+        }
+        .mensagem {
+            margin-left: 10px;
+            color: green;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .mostrar {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="texto" id="textoParaCopiar">PalavraEscrita</span>
+        <button class="copiar-btn" id="copiarBtn" title="Copiar">⎘</button>
+        <span class="mensagem" id="mensagem">Copiado!</span>
+    </div>
+
+    <script>
+        const copiarBtn = document.getElementById('copiarBtn');
+        const textoParaCopiar = document.getElementById('textoParaCopiar');
+        const mensagem = document.getElementById('mensagem');
+
+        copiarBtn.addEventListener('click', () => {
+            // Cria um elemento de texto temporário
+            const texto = textoParaCopiar.textContent;
+            
+            // Usa a API de Clipboard para copiar
+            navigator.clipboard.writeText(texto)
+                .then(() => {
+                    mensagem.classList.add('mostrar');
+                    setTimeout(() => {
+                        mensagem.classList.remove('mostrar');
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Erro ao copiar: ', err);
+                    // Fallback para navegadores mais antigos
+                    const textarea = document.createElement('textarea');
+                    textarea.value = texto;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    
+                    mensagem.textContent = 'Copiado (método antigo)!';
+                    mensagem.classList.add('mostrar');
+                    setTimeout(() => {
+                        mensagem.classList.remove('mostrar');
+                        mensagem.textContent = 'Copiado!';
+                    }, 2000);
+                });
+        });
+    </script> 
+</body>
+</html>
