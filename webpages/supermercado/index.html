@@ -2,9 +2,10 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Produtos Responsivos</title>
+    <title>SuperMercado - Estoque</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./popups/style.css">
 </head>
 <body>
     <!-- Navbar -->
@@ -15,11 +16,95 @@
           <span class="navbar-brand mb-0 h1">Super Mercado Didático</span>
         </div>
         <button class="btn btn-outline-dark" type="button">
-          Login
+          Botão
         </button>
       </div>
     </nav>
-  
+    
+    <!-- Overlay de fundo borrado -->
+<div id="overlay" class="popup-overlay" onclick="fecharPopup()"></div>
+
+<div id="popup-adicionar-produto" class="popup-box">
+  <div class="popup-conteudo">
+    <h5 class="mb-3">Adicionar Produto</h5>
+
+    <form>
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <label for="input-marketId" class="form-label">ID do Mercado</label>
+          <input type="text" class="form-control" id="input-marketId">
+        </div>
+        <div class="col-md-6">
+          <label for="input-name" class="form-label">Nome</label>
+          <input type="text" class="form-control" id="input-name">
+        </div>
+      </div>
+
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <label for="input-price" class="form-label">Preço</label>
+          <input type="number" class="form-control" id="input-price">
+        </div>
+        <div class="col-md-6">
+          <label for="input-stock" class="form-label">Estoque</label>
+          <input type="number" class="form-control" id="input-stock">
+        </div>
+      </div>
+
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <label for="input-category" class="form-label">Categoria</label>
+          <input type="text" class="form-control" id="input-category">
+        </div>
+        <div class="col-md-6">
+          <label for="input-lot" class="form-label">Lote</label>
+          <input type="text" class="form-control" id="input-lot">
+        </div>
+      </div>
+
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <label for="input-expirationDate" class="form-label">Validade</label>
+          <input type="date" class="form-control" id="input-expirationDate">
+        </div>
+        <div class="col-md-6">
+          <label for="input-manufactureDate" class="form-label">Fabricação</label>
+          <input type="date" class="form-control" id="input-manufactureDate">
+        </div>
+      </div>
+
+      <div class="mb-2">
+        <label for="input-barcode" class="form-label">Código de Barras</label>
+        <input type="text" class="form-control" id="input-barcode">
+      </div>
+
+      <div class="mb-3">
+        <label for="input-imagem" class="form-label">Imagem do Produto</label>
+        <input type="file" class="form-control" id="input-imagem" accept="image/*">
+      </div>
+
+      <div class="text-end">
+        <button type="button" class="btn btn-secondary me-2" onclick="fecharPopup()">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="salvarNovoProduto()">Adicionar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Popup: Adicionar Setor -->
+<div id="popup-adicionar-setor" class="popup-box">
+  <div class="popup-conteudo">
+    <h5>Adicionar Setor</h5>
+    <input type="text" class="form-control mb-3" placeholder="Nome do setor">
+    <div class="text-end">
+      <button class="btn btn-secondary me-2" onclick="fecharPopup()">Cancelar</button>
+      <button class="btn btn-primary">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+    <!-- Campo de Funções -->
     <div class="container my-4 p-3 bg-white rounded shadow-sm">
         <div class="row g-3 align-items-end">
           <!-- Pesquisa com botão de lupa -->
@@ -35,7 +120,7 @@
   
           <!-- Adicionar produto -->
           <div class="col-md-2">
-            <button class="btn btn-success w-100 mt-4" id="btn-adicionar">
+            <button class="btn btn-success w-100 mt-4" id="btn-adicionar" onclick="abrirPopupAdicionarProduto()">
               ➕ Adicionar
             </button>
           </div>
@@ -59,7 +144,7 @@
           <!-- Adicionar setor -->
           <div class="col-md-2">
             <input type="text" class="form-control" id="novo-setor" placeholder="Novo setor">
-            <button class="btn btn-primary w-100 mt-2" id="btn-adicionar-setor">
+            <button class="btn btn-primary w-100 mt-2" id="btn-adicionar-setor" onclick="abrirPopupAdicionarSetor()">
               ➕ Setor
             </button>
           </div>
@@ -78,6 +163,7 @@
               <option value="Utilidades">Utilidades</option>
             </select>
           </div>
+
           <div class="col-md-3">
             <label for="filtro-estante" class="form-label">Filtrar por estante</label>
             <select class="form-select" id="filtro-estante">
@@ -88,26 +174,40 @@
               <option value="E4">E4</option>
             </select>
           </div>
+
           <div class="col-md-3">
             <label for="filtro-prateleira" class="form-label">Filtrar por prateleira</label>
-            <select class="form-select" id="filtro-prateleira">
-              <option value="">Todas</option>
-              <option value="P1">P1</option>
-              <option value="P2">P2</option>
-              <option value="P3">P3</option>
-            </select>
+            <div class="d-flex align-items-stretch">
+              <select class="form-select me-2" id="filtro-prateleira" style="flex: 1;">
+                <option value="">Todas</option>
+                <option value="P1">P1</option>
+                <option value="P2">P2</option>
+                <option value="P3">P3</option>
+              </select>
+              <button class="btn btn-secondary" id="btn-limpar-filtros" title="Limpar filtros">
+                Limpar Filtros
+              </button>
           </div>
-        </div>
+        </div>          
       </div>
-      
+    </div>
+
     <!-- Div de produto -->
     <div class="container my-4">
-        <h4 class="mb-3">Estoque</h4>
-        <div class="grid-produtos" id="produtos-container">
-            <!-- Cards serão inseridos aqui -->
-        </div>
+      <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-primary text-white">
+        <h4 class="mb-0">Estoque</h4>
+        <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque">
+          🔄️
+        </button>
+      </div>
+
+      <div class="grid-produtos" id="produtos-container">
+        <!-- Cards serão inseridos aqui -->
+      </div>
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
+    <script src="./popups/script.js"></script>
 </body>
 </html>
