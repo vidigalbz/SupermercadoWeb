@@ -41,13 +41,18 @@ CREATE TABLE IF NOT EXISTS products (
 );`)});
 
 function select(table, columns = "*", condition = "*") {
-    var query = `SELECT * FROM ${table}`
-    if (condition != "*")
-        query += ` WHERE ${condition}`
-
-    db.all(
-        query
-    )
+    return new Promise((resolve, reject) => {
+        var query = `SELECT * FROM ${table}`;
+        if (condition != "*")
+            query += ` WHERE ${condition}`;
+        db.all(query, (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        })
+    })
 }
 
 function insert(table, columns, values){

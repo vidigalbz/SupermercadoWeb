@@ -45,11 +45,11 @@ async function laodPages () {
 
 laodPages()
 
-retorno = select("users");
-console.log(retorno)
-
-columns = ['userId', 'email', 'password']
-values = ["1", "1212212@gmail.com", "331313"]
+//forma de usar select:
+//select("users")
+  //  .then(results => {
+  //      console.log(results);
+   // })
 
 
 app.listen(port, () => {
