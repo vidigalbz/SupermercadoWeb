@@ -62,6 +62,7 @@
                         class="form-control me-sm-2"
                         type="text"
                         placeholder="Search"
+                        id="searchTextBox"
                     />
                     <button
                         class="btn btn-outline-success my-2 my-sm-0"
@@ -80,7 +81,7 @@
               <label for="pesquisa" class="form-label">Pesquisar (nome ou código)</label>
               <div class="input-group">
               <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Produto 12 ou 0012">
-              <button class="btn btn-outline-secondary" type="button" id="btn-pesquisar">
+              <button class="btn btn-outline-secondary" type="button" id="btn-pesquisar" onclick="search()">
                   🔍
               </button>
               </div>

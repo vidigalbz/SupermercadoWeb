@@ -3,13 +3,14 @@ const express = require("express");
 const {select, Insert} = require("./database.js")
 const app = express();
 const port = 4000;
-const router = express.Router();
 
 const fs = require("fs")
 const path = require('path')
 
 var webpages_dir = path.join(__dirname, "../webpages")
 var pages = []
+
+app.use(express.json())
 
 async function laodPages () {
     app.use(express.static(webpages_dir))
@@ -42,6 +43,19 @@ async function laodPages () {
         }
     })
 }
+
+app.post('/estoqueData', async (req, res) => {
+    const param = req.query
+    var sqliteData = {};    
+
+    select("products", condition=param.conditional)
+    .then(results => {
+        if (param !=  null) {
+            return res.status(201).json({
+                mensagem:  results
+            })
+    }})
+})
 
 laodPages()
 
