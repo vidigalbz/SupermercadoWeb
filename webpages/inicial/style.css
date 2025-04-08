@@ -58,3 +58,12 @@ body {
     padding: 10px 45px;
     font-weight: bold;
   }
+
+  #telaInicial, 
+  #formularioContainer,
+  #telaLinks {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }

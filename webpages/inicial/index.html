@@ -14,9 +14,15 @@
 <body>
 
   <!-- Navbar -->
-  <nav id="navbar" class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid">
-      <h2 class="m-0">Supermercado Didático</h2>
+  <nav class="navbar navbar-light bg-warning fixed-top" id="navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <h1>🛒</h1>
+        <span class="navbar-brand mb-0 h1">Super Mercado Didático</span>
+      </div>
+      <button class="btn btn-outline-dark" type="button">
+        Botão
+      </button>
     </div>
   </nav>
 
@@ -44,7 +50,7 @@
           <label for="nomeSupermercado" class="form-label">Nome do Supermercado</label>
           <input type="text" id="nomeSupermercado" class="form-control" placeholder="Ex: Supermercado TOP" required>
         </div>
-        <button type="submit" class="btn btn-warning text-white w-100">
+        <button type="submit" class="btn btn-warning w-100">
           <ion-icon name="checkmark-circle-outline" class="me-1"></ion-icon> Cadastrar
         </button>
         <button type="button" onclick="voltar()" class="btn btn-secondary mt-2 w-100">
@@ -54,6 +60,44 @@
       </form>
     </div>
   </div>
+
+    <!-- Tela com links após cadastro -->
+    <div class="container-fluid d-flex justify-content-center align-items-center vh-100 d-none" id="telaLinks">
+      <div class="card shadow p-4 bg-light text-center" style="max-width: 420px; width: 100%; border-radius: 1rem;">
+        <h4 class="mb-4">Painel do Supermercado</h4>
+    
+        <!-- PDV -->
+        <div class="mb-4">
+          <a href="pdv.html" class="btn btn-warning text-white fw-bold w-100 mb-2">
+            <ion-icon name="cash-outline" class="me-2"></ion-icon>
+            Ponto de Venda (PDV)
+          </a>
+          <div class="input-group">
+            <input type="text" class="form-control" id="linkPdv" value="https://seusite.com/pdv" readonly>
+            <button class="btn btn-outline-secondary" onclick="copiarLink('linkPdv')"><ion-icon name="copy-outline"></ion-icon></button>
+          </div>
+        </div>
+    
+        <!-- Estoque -->
+        <div class="mb-4">
+          <a href="estoque.html" class="btn btn-info text-white fw-bold w-100 mb-2">
+            <ion-icon name="cube-outline" class="me-2"></ion-icon>
+            Estoque
+          </a>
+          <div class="input-group">
+            <input type="text" class="form-control" id="linkEstoque" value="https://seusite.com/estoque" readonly>
+            <button class="btn btn-outline-secondary" onclick="copiarLink('linkEstoque')"><ion-icon name="copy-outline"></ion-icon></button>
+          </div>
+        </div>
+    
+        <!-- Botão Resetar -->
+        <button class="btn btn-danger w-100 mt-2" id="resetar">
+          <ion-icon name="refresh-outline" class="me-2"></ion-icon>
+          Resetar Simulação
+        </button>
+      </div>
+    </div>
+    
 
   <!-- Ionicons -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
