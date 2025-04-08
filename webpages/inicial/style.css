@@ -1,155 +1,69 @@
 body {
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(to right, #20a8d6, #005495);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
     margin: 0;
-}
+  }
 
-#navbar{
-    display: flex;
-    position: fixed;
-    top: 1%;
-    padding-left: 50px;
-    align-items: center;
-    justify-content: start;
-    flex-direction: row;
-    padding-top: 0%;
-    width: 100%;
-    height: 12%;
+  #navbar {
     background: linear-gradient(to left, #ff6f00, #ffa040);
-}
+    padding: 15px 30px;
+    color: white;
+  }
 
-.inicial {
+  #telaInicial, #formularioContainer {
+    flex-grow: 1;
     display: flex;
-    flex-direction: column;
-    background: #f5f5f7;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 350px;
-}
-
-h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-}
-
-h3 {
-    font-size: 18px;
-    color: #333;
-}
-
-.links {
-    margin: 20px 0;
-}
-
-#icone{
-    width: 25px;
-    height: 25px;
-    border-radius: 100%;
-    background-color: #f78c19;
-    cursor: pointer;
-}
-
-.link-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    background: #e9ecef;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-.link {
-    color: #007bff;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.resumo {
-    margin-top: 20px;
-    text-align: left;
-}
-
-.resumo h4 {
-    margin-bottom: 5px;
-}
-
-button {
-    background: #f78c19;
-    color: #f5f5f7;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    margin-top: 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-button:hover {
-    background: #e67605;;
-}
-
-/* Adicionar Supermercado Form */
-
-.info-container {
-    display: none;
     justify-content: center;
     align-items: center;
+  }
+
+  .card-custom {
     width: 100%;
-}
+    max-width: 420px;
+    border-radius: 1rem;
+  }
 
-.info-card {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    width: 350px;
-    text-align: center;
-}
+  .link-item {
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
 
-/* Estilização dos Elementos */
+  .link-item:hover {
+    background-color: #f1f1f1;
+  }
 
-h2 {
-    font-weight: 600;
-    color: #333;
-}
-
-p {
-    color: #666;
-}
-
-.input-group {
-    margin-top: 15px;
-    text-align: left;
-}
-
-label {
-    font-weight: 400;
-    color: #333;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-/* Mensagem de Erro de info */
-
-.error {
+  .error {
     color: red;
     font-size: 14px;
-    margin-top: 10px;
-}
+  }
+
+  .btn-warning {
+    background-color: #2200ff;
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 15px;
+    padding: 10px 45px;
+    font-weight: bold;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .btn-warning:hover {
+    background-color: white;
+    color: #2200ff;
+    border: 2px solid #2200ff;
+    border-radius: 15px;
+    padding: 10px 45px;
+    font-weight: bold;
+  }
+
+  #telaInicial, 
+  #formularioContainer,
+  #telaLinks {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
