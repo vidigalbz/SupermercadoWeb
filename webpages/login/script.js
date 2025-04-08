@@ -1,37 +1,70 @@
-document.getElementById('loginForm').addEventListener('submit', async function(event) {
-    event.preventDefault();
+const API = 'http://localhost:3000';
+
+const container = document.getElementById('container');
+const signUpButton = document.getElementById('signUp');
+const signInButton = document.getElementById('signIn');
+
+signUpButton.addEventListener('click', () => {
+  container.classList.add("right-panel-active");
+});
+
+signInButton.addEventListener('click', () => {
+  container.classList.remove("right-panel-active");
+});
+
+
     
-    let email = document.getElementById('email').value;
-    let password = document.getElementById('password').value;
-    let errorMessage = document.getElementById('error-message');
 
-    try {
-        let response = await fetch('http://localhost:5000/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-        let data = await response.json();
-        if (response.ok) {
-            alert("Login bem-sucedido!");
-            window.location.href = "../inicial/index.html";
-        } else {
-            errorMessage.textContent = data.message;
-        }
-    } catch (error) {
-        errorMessage.textContent = "Erro ao conectar ao servidor.";
+document.getElementById("registerButton").addEventListener("click", function (e) {
+  e.preventDefault();
+      
+  const nome = document.getElementById("nomeCadastro").value;
+  const email = document.getElementById("emailCadastro").value;
+  const senha = document.getElementById("senhaCadastro").value;
+  const confirmar = document.getElementById("confirmedsenhaCadastro").value;
+    
+  if (senha !== confirmar) {
+    alert("As senhas não coincidem.");
+    return;
+  }
+    
+  fetch(`${API}/register`, {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ nome, email, senha })
+  })
+  .then(res => res.json())
+  .then(data => {
+  if (data.status === "success") {
+    alert("Cadastro realizado com sucesso!");
+  } else {
+      alert(data.message);
     }
+  });
 });
-
-document.getElementById('cadastrar').addEventListener('click', function (event) {
-    event.preventDefault();
-    document.querySelector('.login-container').style.display = 'none';
-    document.querySelector('.register-container').style.display = 'flex';
+    
+document.getElementById("loginButton").addEventListener("click", function (e) {
+  e.preventDefault();
+    
+  const email = document.getElementById("emailLogin").value;
+  const senha = document.getElementById("senhaLogin").value;
+    
+  fetch(`${API}/login`, {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, senha })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      alert(`Bem-vindo, ${data.nome}!`);
+    } else {
+      alert(data.message);
+    }
+  });
 });
-
-document.getElementById('irParaLogin').addEventListener('click', function (event) {
-    event.preventDefault();
-    document.querySelector('.register-container').style.display = 'none';
-    document.querySelector('.login-container').style.display = 'flex';
-});
+    

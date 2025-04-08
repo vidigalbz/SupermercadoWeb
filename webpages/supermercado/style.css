@@ -43,4 +43,8 @@ body {
   .info-produto button {
     margin-top: 5px;
   }
+
+body {
+  padding-top: 60px; /* Espaço para a navbar */
+}
   
