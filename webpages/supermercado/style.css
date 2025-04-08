@@ -66,7 +66,23 @@ button {
     cursor: pointer;
     font-size: 16px;
 }
+.botao-sem-estilo {
+    all: unset;
+    cursor: pointer;
+    color: black; 
+  }
 
-button:hover {
-    background: #c82333;
+
+
+.check-verde {
+    color: #4CAF50;
+    font-size: 1.2em;
+    display: inline-block;
+    animation: fadeIn 0.3s;
+    margin: 0%;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 0; transform: scale(0.4); }
 }
