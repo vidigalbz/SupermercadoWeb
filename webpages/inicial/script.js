@@ -1,11 +1,9 @@
-// Função para mostrar o formulário
 function adicionarSupermercado() {
-    document.getElementById("formularioContainer").style.display = "flex";
-    document.getElementById("telaInicial").style.display = "none";
-}
+    document.getElementById("formularioContainer").classList.remove("d-none");
+    document.getElementById("telaInicial").classList.add("d-none");
+  }
 
-// Função para voltar à tela inicial
-function voltar() {
-    document.getElementById("formularioContainer").style.display = "none";
-    document.getElementById("telaInicial").style.display = "flex";
-}
+  function voltar() {
+    document.getElementById("formularioContainer").classList.add("d-none");
+    document.getElementById("telaInicial").classList.remove("d-none");
+  }
