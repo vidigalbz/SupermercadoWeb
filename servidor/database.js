@@ -40,9 +40,17 @@ CREATE TABLE IF NOT EXISTS products (
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );`)});
 
+function select(table, columns = "*", condition = "*") {
+    var query = `SELECT * FROM ${table}`
+    if (condition != "*")
+        query += ` WHERE ${condition}`
 
+    db.all(
+        query
+    )
+}
 
-function Insert(table, columns, values){
+function insert(table, columns, values){
     db.run(`INSERT INTO ${table} (${columns.join(',')}) VALUES (?, ?, ?)`, values ,(err) => {
         if (err) {
             return console.log(`Erro: ${err}`)
@@ -59,6 +67,7 @@ function Query(query){
 }
 
 module.exports = {
-    Insert, 
+    insert,
+    select,
     db
 }
