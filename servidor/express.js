@@ -1,6 +1,6 @@
 const { error } = require("console");
 const express = require("express");
-const {select, Insert} = require("./database.js")
+const {select, insert, update, delet} = require("./database.js")
 const app = express();
 const port = 4000;
 
@@ -64,7 +64,6 @@ laodPages()
   //  .then(results => {
   //      console.log(results);
    // })
-
 
 app.listen(port, () => {
     console.log(`Servidor iniciado na porta localhost/${port}`)
