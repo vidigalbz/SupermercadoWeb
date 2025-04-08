@@ -14,16 +14,17 @@ CREATE TABLE IF NOT EXISTS accessKeys (
 
 CREATE TABLE IF NOT EXISTS supermarkets (
     marketId TEXT PRIMARY KEY,
-    createdAt TEXT,
-    name TEXT,
-    ownerId TEXT,
+    createdAt TEXT NOT NULL,
+    name TEXT NOT NULL,
+    ownerId TEXT NOT NULL,
     FOREIGN KEY (ownerId) REFERENCES users(userId)
 );
 
 CREATE TABLE IF NOT EXISTS users (
     userId TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
     email TEXT UNIQUE,
-    password TEXT
+    password TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -34,17 +35,17 @@ CREATE TABLE IF NOT EXISTS products (
     category TEXT,
     stock INTEGER DEFAULT 0,
     lot TEXT,
-    department TEXT, 
-    expirationDate TEXT, 
+    expirationDate TEXT,
     manufactureDate TEXT,
+    barcode TEXT NOT NULL,
+    image TEXT,
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );`)});
 
-function select(table, columns = "*", condition = "*") {
+function select(table, condition = "") {
     return new Promise((resolve, reject) => {
-        var query = `SELECT * FROM ${table}`;
-        if (condition != "*")
-            query += ` WHERE ${condition}`;
+        var query = `SELECT * FROM ${table} ${condition}`;
+
         db.all(query, (err, rows) => {
             if (err) {
                 reject(err);
@@ -56,14 +57,33 @@ function select(table, columns = "*", condition = "*") {
 }
 
 function insert(table, columns, values){
-    db.run(`INSERT INTO ${table} (${columns.join(',')}) VALUES (?, ?, ?)`, values ,(err) => {
+    db.run(`INSERT INTO ${table} (${columns.join(', ')}) VALUES (?, ?, ?, ?)`, values ,(err) => {
+
+        if (err) {
+            return console.log(`Erro: ${err}`)}
+
+    })
+
+}
+
+function update(table, columns, values, condition = ""){
+    multiColumns = columns.map(col => `${col} = ?`).join(', ')
+    var query = `UPDATE ${table} SET ${multiColumns} ${condition ? "WHERE " + condition : ""}`
+
+    db.run(query, values ,(err) => {
         if (err) {
             return console.log(`Erro: ${err}`)
         }
+
     })
 }
 
-function Query(query){
+function delet(table, condition){
+    db.run(`DELETE FROM ${table} WHERE ${condition}`)
+}
+
+
+function query(query){
     db.run(query, (err) => {
         if (err) {
             console.log(`Erro: ${err}`)
@@ -74,5 +94,7 @@ function Query(query){
 module.exports = {
     insert,
     select,
+    update,
+    delet,
     db
 }
