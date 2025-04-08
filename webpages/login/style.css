@@ -120,16 +120,35 @@ body {
 
 .btn-custom {
   background-color: #FF6F00;
-  border: none;
-  border-radius: 20px;
+  color: white;
+  border: 2px solid transparent;
+  border-radius: 15px;
+  padding: 10px 45px;
+  font-weight: bold;
+}
+.btn-custom:hover {
+  background-color: white;
+  color: #FF6F00;
+  border: 2px solid #FF6F00;
+  border-radius: 15px;
   padding: 10px 45px;
   font-weight: bold;
 }
 
 .btn-login {
   background-color: #2200ff;
-  border: none;
-  border-radius: 20px;
+  color: white;
+  border: 2px solid transparent;
+  border-radius: 15px;
+  padding: 10px 45px;
+  font-weight: bold;
+  transition: all 0.5s ease-in-out;
+}
+.btn-login:hover {
+  background-color: white;
+  color: #2200ff;
+  border: 2px solid #2200ff;
+  border-radius: 15px;
   padding: 10px 45px;
   font-weight: bold;
 }
