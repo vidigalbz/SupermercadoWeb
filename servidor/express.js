@@ -121,11 +121,23 @@ app.post('/deletarProduto', async (req, res) => {
 
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
-    const param = req.query;
-    select("products", param.conditional || "")
-        .then(results => res.status(201).json({ mensagem: results }))
-        .catch(err => res.status(500).json({ erro: "Erro ao consultar estoque." }));
+    const { busca } = req.body;
+    console.log(busca)
+    let condicao = "";
+    if (busca) {
+        const termo = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
+        condicao = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%'`;
+    }
+
+    try {
+        const results = await select("products", condicao);
+        res.status(200).json({ mensagem: results });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao consultar estoque." });
+    }
 });
+
 
 app.post("/editarProduto", (req, res) => {
     const {

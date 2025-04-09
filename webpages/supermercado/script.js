@@ -90,17 +90,21 @@ document.getElementById("btn-recarrega-estoque").addEventListener("click", () =>
   carregarProdutos();
 });
 
-// Buscar via input
 function search() {
-  fetch(`/estoqueData?conditional=WHERE name LIKE '%${searchInput.value}%'`, {
-    method: 'POST'
+  const valorBusca = searchInput.value.trim();
+
+  fetch('/estoqueData', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ busca: valorBusca })
   })
     .then(res => res.json())
     .then(data => {
       renderizarProdutos(data.mensagem);
     })
-    .catch(err => console.error('Erro:', err)); 
+    .catch(err => console.error('Erro:', err));
 }
+
 
 async function adicionarProduto () {
   const nome = document.getElementById("produto-nome").value.trim();
