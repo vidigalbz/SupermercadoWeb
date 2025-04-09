@@ -24,13 +24,13 @@ body {
   
   .imagem-produto {
     width: 40%;
-    background-color: #55b4ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-weight: bold;
-  }
+    aspect-ratio: 1 / 1; /* Mantém a proporção quadrada */
+    background-size: cover; /* Faz a imagem preencher a div */
+    background-position: center;
+    background-repeat: no-repeat;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+  }  
   
   .info-produto {
     width: 60%;

@@ -1,0 +1,96 @@
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.4);
+  display: none;
+  z-index: 999;
+}
+
+.popup-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+.popup-conteudo h5 {
+  margin-bottom: 15px;
+}
+
+.modal-content {
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+}
+
+/* Toggle customizado com labels com fundo colorido */
+.tipo-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #f1f1f1;
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+}
+
+.tipo-label {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  transition: 0.3s;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tipo-label.active {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.form-switch .form-check-input {
+  width: 3rem;
+  height: 1.5rem;
+  background-color: #ccc;
+  border: none;
+  transition: 0.4s;
+  position: relative;
+}
+
+.form-switch .form-check-input:before {
+  content: "";
+  position: absolute;
+  height: 1.2rem;
+  width: 1.2rem;
+  left: 0.2rem;
+  bottom: 0.15rem;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+.form-switch .form-check-input:checked {
+  background-color: #0d6efd;
+}
+
+.form-switch .form-check-input:checked:before {
+  transform: translateX(1.4rem);
+}
+
+.nav-tabs .nav-link {
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.btn {
+  font-weight: 500;
+}
