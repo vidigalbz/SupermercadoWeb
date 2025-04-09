@@ -29,6 +29,12 @@ const db = new sqlite3.Database('./bancodedados.sqlite', (err) => {
     email TEXT UNIQUE NOT NULL,
     senha TEXT NOT NULL
   )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS supermercados (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL
+  )`);
+  
 });
 
 // Rota de cadastro
@@ -62,6 +68,24 @@ app.post('/login', (req, res) => {
     }
   });
 });
+
+// Rota para adicionar supermercado
+app.post('/supermercados', (req, res) => {
+  const { nome } = req.body;
+
+  if (!nome) {
+    return res.status(400).json({ status: 'error', message: 'Nome do supermercado é obrigatório.' });
+  }
+
+  const query = `INSERT INTO supermercados (nome) VALUES (?)`;
+  db.run(query, [nome], function (err) {
+    if (err) {
+      return res.status(500).json({ status: 'error', message: 'Erro ao salvar supermercado.' });
+    }
+    res.status(201).json({ status: 'success', id: this.lastID, nome });
+  });
+});
+
 
 // Iniciar servidor
 app.listen(port, () => {
