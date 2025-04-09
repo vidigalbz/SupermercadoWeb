@@ -1,70 +1,116 @@
-const { error } = require("console");
 const express = require("express");
-const {select, insert, update, delet} = require("./database.js")
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
+const { select, insert, update, delet } = require("./database.js");
+
 const app = express();
 const port = 4000;
 
-const fs = require("fs")
-const path = require('path')
+const webpages_dir = path.join(__dirname, "../webpages");
+var pages = [];
 
-var webpages_dir = path.join(__dirname, "../webpages")
-var pages = []
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(express.json())
+// Configuração do multer (mas sem salvar arquivos por enquanto)
+const storage = multer.memoryStorage(); // Armazena em memória (pode ser ignorado)
+const upload = multer({ storage });
 
-async function loadPages () {
-    app.use(express.static(webpages_dir))
-    await fs.readdir(webpages_dir, (err, arquivos) => {
-        if (err){
-            return  err
-        }
+// Carregamento de páginas
+async function loadPages() {
+    app.use(express.static(webpages_dir));
+    fs.readdir(webpages_dir, (err, arquivos) => {
+        if (err) return;
         pages = arquivos.filter(arquivo => {
             const caminho = path.join(webpages_dir, arquivo);
             return fs.statSync(caminho).isDirectory();
-        })
-      
+        });
+
         for (let i = 0; i < pages.length; i++) {
-            temp_path = `${webpages_dir}/${pages[i]}/index.html`
-            console.log(temp_path)
-            if (fs.existsSync(temp_path) && pages[i] != "main"){
-                app.get(`/${pages[i]}`, (req, res) => {
-                    res.sendFile(temp_path)
-                })
-                console.log("caminho adicionado")
-            }
-            else if (pages[i] == "main"){
-                app.get("/", (req, res) => {
-                    res.sendFile(temp_path)
-                })
-            }
-            else {
-                console.log("caminho nao encontrado")
+            const temp_path = `${webpages_dir}/${pages[i]}/index.html`;
+            if (fs.existsSync(temp_path) && pages[i] != "main") {
+                app.get(`/${pages[i]}`, (req, res) => res.sendFile(temp_path));
+            } else if (pages[i] == "main") {
+                app.get("/", (req, res) => res.sendFile(temp_path));
             }
         }
-    })
+    });
 }
 
+// Endpoint para adicionar produto (imagem é ignorada)
+app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
+    try {
+        const {
+            nome,
+            codigo,
+            preco,
+            categoria,
+            estoque,
+            lote,
+            departamento,
+            marketId,
+            fabricacao,
+            validade
+        } = req.body;
+
+        const produto = {
+            nome,
+            codigo,
+            preco: parseFloat(preco),
+            categoria,
+            estoque: parseInt(estoque),
+            lote,
+            departamento,
+            marketId,
+            fabricacao,
+            validade
+        };
+        console.log([
+            produto.marketId,
+            produto.nome,
+            produto.preco,
+            produto.categoria,
+            produto.estoque,
+            produto.lote,
+            produto.validade,
+            produto.fabricacao,
+            produto.codigo
+        ])
+        insert("products", [
+            "marketId", "name", "price", "category",
+            "stock", "lot", "expirationDate", "manufactureDate",
+            "barcode"
+        ], [
+            produto.marketId,
+            produto.nome,
+            produto.preco,
+            produto.categoria,
+            produto.estoque,
+            produto.lote,
+            produto.validade,
+            produto.fabricacao,
+            produto.codigo
+        ]);
+
+        res.status(200).json({ mensagem: "Produto adicionado com sucesso!" });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao adicionar produto." });
+    }
+});
+
+// Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
-    const param = req.query
-    var sqliteData = {};    
+    const param = req.query;
+    select("products", param.conditional || "")
+        .then(results => res.status(201).json({ mensagem: results }))
+        .catch(err => res.status(500).json({ erro: "Erro ao consultar estoque." }));
+});
 
-    select("products", condition=param.conditional)
-    .then(results => {
-        if (param !=  null) {
-            return res.status(201).json({
-                mensagem:  results
-            })
-    }})
-})
-
-loadPages()
-
-//forma de usar select:
-//select("users")
-  //  .then(results => {
-  //      console.log(results);
-   // })
+loadPages();
 
 app.listen(port, () => {
-    console.log(`Servidor iniciado na porta localhost/${port}`)
-})
+    console.log(`Servidor iniciado na porta http://localhost:${port}`);
+});

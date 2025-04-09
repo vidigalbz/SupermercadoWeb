@@ -51,9 +51,9 @@ function abrirModalAdicionarItem() {
     modal.show();
 
     document.getElementById('btn-confirmar-adicionar').onclick = function () {
-        // Lógica para adicionar produto aqui
-        console.log('Produto adicionado!');
-        modal.hide();
+        if (adicionarProduto() == true){
+          modal.hide();
+        }
     };
 }
 

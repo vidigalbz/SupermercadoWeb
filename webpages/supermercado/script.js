@@ -77,5 +77,63 @@ function search() {
     .catch(err => console.error('Erro:', err)); 
 }
 
+async function adicionarProduto () {
+  const nome = document.getElementById("produto-nome").value.trim();
+  const codigo = document.getElementById("produto-barcode").value.trim();
+  const preco = parseFloat(document.getElementById("add-preco").value);
+  const categoria = document.getElementById("add-categoria").value;
+  const estoque = parseInt(document.getElementById("produto-estoque").value);
+  const lote = document.getElementById("produto-lote").value.trim();
+  const departamento = document.getElementById("add-departamento").value;
+  const marketId = document.getElementById("produto-marketId").value.trim();
+  const fabricacao = document.getElementById("produto-fabricacao").value;
+  const validade = document.getElementById("produto-validade").value;
+  const imagemInput = document.getElementById("produto-imagem");
+
+  if (!nome || !codigo || isNaN(preco) || isNaN(estoque) || !marketId) {
+    alert("Por favor, preencha todos os campos obrigatórios.");
+    return false;
+  }
+
+  const formData = new FormData();
+  formData.append("nome", nome);
+  formData.append("codigo", codigo);
+  formData.append("preco", preco);
+  formData.append("categoria", categoria);
+  formData.append("estoque", estoque);
+  formData.append("lote", lote);
+  formData.append("departamento", departamento);
+  formData.append("marketId", marketId);
+  formData.append("fabricacao", fabricacao);
+  formData.append("validade", validade);
+
+  if (imagemInput.files.length > 0) {
+    formData.append("imagem", imagemInput.files[0]);
+  }
+
+  try {
+    const res = await fetch("/adicionarProduto", {
+      method: "POST",
+      body: formData,
+    });
+
+    const resultado = await res.json();
+
+    if (res.ok) {
+      alert("Produto adicionado com sucesso!");
+      document.getElementById("form-adicionar-item").reset();
+      const modal = bootstrap.Modal.getInstance(document.getElementById("modalAdicionarItem"));
+      modal.hide();
+      document.getElementById("btn-recarrega-estoque").click();
+      return true;
+    } else {
+      alert("Erro ao adicionar produto: " + (resultado.erro || "Erro desconhecido."));
+    }
+  } catch (err) {
+    alert("Erro na requisição: " + err.message);
+  }
+};
+
+
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
 popoverTriggerList.forEach(el => new bootstrap.Popover(el));
