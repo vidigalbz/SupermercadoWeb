@@ -3,7 +3,7 @@ const container = document.getElementById("produtos-container");
 
 function criarCardHTML(produto) {
   return `
-    <div class="card-produto">
+    <div class="card-produto" data-id="${produto.productId}">
       <div class="imagem-produto">IMG</div>
       <div class="info-produto">
         <div><strong>Nome:</strong> ${produto.name}</div>
@@ -30,48 +30,71 @@ function criarCardHTML(produto) {
   `;
 }
 
-function renderizarProdutos(produtos) {
-  container.innerHTML = ""; // limpa antes
+function atualizarOuAdicionarCard(produto) {
+  const cardExistente = container.querySelector(`.card-produto[data-id="${produto.productId}"]`);
+  const novoHTML = criarCardHTML(produto);
 
-  for (let i = 0; i < produtos.length; i++) {
-    const produto = produtos[i];
-    const cardHTML = criarCardHTML(produto);
-    container.insertAdjacentHTML("beforeend", cardHTML);
+  if (cardExistente) {
+    cardExistente.outerHTML = novoHTML;
+  } else {
+    container.insertAdjacentHTML("beforeend", novoHTML);
+  }
+}
+
+function renderizarProdutos(produtos) {
+  const idsNovos = produtos.map(p => p.productId);
+  const cardsAtuais = Array.from(container.querySelectorAll('.card-produto'));
+
+  // Remover os que não estão na nova lista
+  for (let card of cardsAtuais) {
+    if (!idsNovos.includes(card.dataset.id)) {
+      card.remove();
+    }
   }
 
-  // Ativar os popovers após inserção
+  // Atualizar ou adicionar
+  for (let produto of produtos) {
+    atualizarOuAdicionarCard(produto);
+  }
+
+  // Ativar os popovers
   const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
   for (let i = 0; i < popoverTriggerList.length; i++) {
     new bootstrap.Popover(popoverTriggerList[i]);
   }
 }
 
-
-// Carregar produtos ao iniciar
-fetch('/estoqueData', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({}) // corpo vazio ou algo que a API aceite
-})
-  .then(res => res.json())
-  .then(data => {
-    console.log('Dados recebidos:', data);
-    renderizarProdutos(data.mensagem); // data deve ser um array
+// Buscar ao iniciar
+function carregarProdutos() {
+  fetch('/estoqueData', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({})
   })
-  .catch(err => console.error('Erro ao carregar produtos:', err));
+    .then(res => res.json())
+    .then(data => {
+      console.log('Dados recebidos:', data);
+      renderizarProdutos(data.mensagem);
+    })
+    .catch(err => console.error('Erro ao carregar produtos:', err));
+}
 
+carregarProdutos();
 
-// Buscar via input (mantendo sua lógica)
+// Botão de recarregar
+document.getElementById("btn-recarrega-estoque").addEventListener("click", () => {
+  carregarProdutos();
+});
+
+// Buscar via input
 function search() {
-  console.log(searchInput.value)
   fetch(`/estoqueData?conditional=WHERE name LIKE '%${searchInput.value}%'`, {
     method: 'POST'
   })
     .then(res => res.json())
     .then(data => {
-      console.log('Resposta do servidor:', data);
       renderizarProdutos(data.mensagem);
     })
     .catch(err => console.error('Erro:', err)); 
@@ -132,8 +155,4 @@ async function adicionarProduto () {
   } catch (err) {
     alert("Erro na requisição: " + err.message);
   }
-};
-
-
-const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-popoverTriggerList.forEach(el => new bootstrap.Popover(el));
+}
