@@ -12,7 +12,7 @@ var pages = []
 
 app.use(express.json())
 
-async function laodPages () {
+async function loadPages () {
     app.use(express.static(webpages_dir))
     await fs.readdir(webpages_dir, (err, arquivos) => {
         if (err){
@@ -57,7 +57,7 @@ app.post('/estoqueData', async (req, res) => {
     }})
 })
 
-laodPages()
+loadPages()
 
 //forma de usar select:
 //select("users")
