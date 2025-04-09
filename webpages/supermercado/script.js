@@ -1,38 +1,70 @@
 const container = document.getElementById("produtos-container");
 
 function criarCardHTML(produto, container) {
-  const cardHTML = `
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = `
     <div class="card-produto d-flex mb-3" style="border-radius: 10px; overflow: hidden;">
-      <div class="imagem-produto" style="background-image: url('${produto.imagem}');">
+      <div class="imagem-produto" style="background-image: url('${produto.imagem}'); width: 120px; background-size: cover;">
       </div>
       <div class="info-produto p-2 text-white" style="background-color: #009cbf; flex: 1;">
         <div><strong>Nome:</strong> ${produto.name}</div>
         <div><strong>Cód. de Barras:</strong> ${produto.barcode}</div>
-        <button type="button" class="btn btn-light btn-sm mt-2" 
-                data-bs-toggle="popover"
-                title="Detalhes"
-                data-bs-html="true"
-                data-bs-content="
-                  <strong>Nome:</strong> ${produto.name}<br>
-                  <strong>Código de Barras:</strong> ${produto.barcode}<br>
-                  <strong>Preço:</strong> R$ ${produto.price.toFixed(2)}<br>
-                  <strong>Categoria:</strong> ${produto.category}<br>
-                  <strong>Estoque:</strong> ${produto.stock} unidades<br>
-                  <strong>Lote:</strong> ${produto.lot}<br>
-                  <strong>Departamento:</strong> ${produto.department}<br>
-                  <strong>Validade:</strong> ${produto.expirationDate}<br>
-                  <strong>Fabricação:</strong> ${produto.manufactureDate}">
-          Ver mais
-        </button>
+        <div class="mt-2 d-flex gap-2">
+          <button type="button" class="btn btn-light btn-sm btn-copiar" 
+                  data-bs-toggle="tooltip" 
+                  data-bs-placement="top" 
+                  title="Copiar código de barras">
+            <i class="bi bi-clipboard"></i>
+          </button>
+          <button type="button" class="btn btn-light btn-sm btn-popover"
+                  data-bs-toggle="popover"
+                  title="Detalhes"
+                  data-bs-html="true"
+                  data-bs-content="
+                    <strong>Nome:</strong> ${produto.name}<br>
+                    <strong>Código de Barras:</strong> ${produto.barcode}<br>
+                    <strong>Preço:</strong> R$ ${produto.price.toFixed(2)}<br>
+                    <strong>Categoria:</strong> ${produto.category}<br>
+                    <strong>Estoque:</strong> ${produto.stock} unidades<br>
+                    <strong>Lote:</strong> ${produto.lot}<br>
+                    <strong>Departamento:</strong> ${produto.department}<br>
+                    <strong>Validade:</strong> ${produto.expirationDate}<br>
+                    <strong>Fabricação:</strong> ${produto.manufactureDate}"
+                  title="Ver mais detalhes">
+            <i class="bi bi-info-circle"></i>
+          </button>
+        </div>
       </div>
     </div>
   `;
 
-  container.insertAdjacentHTML("beforeend", cardHTML);
+  const cardElement = tempDiv.firstElementChild;
+  container.appendChild(cardElement);
 
-  // Ativa o popover do botão recém-criado
-  const popoverTrigger = container.querySelector('[data-bs-toggle="popover"]:last-child');
-  new bootstrap.Popover(popoverTrigger);
+  // Ativa tooltip e popover apenas para os elementos desse card
+  const btnCopiar = cardElement.querySelector('.btn-copiar');
+  const btnPopover = cardElement.querySelector('.btn-popover');
+
+  new bootstrap.Tooltip(btnCopiar);
+  new bootstrap.Popover(btnPopover, {
+    trigger: 'focus' // <-- faz o popover fechar ao clicar fora
+  });
+
+  btnCopiar.addEventListener('click', () => {
+    navigator.clipboard.writeText(produto.barcode).then(() => {
+      btnCopiar.innerHTML = '<i class="bi bi-check-lg"></i>';
+      btnCopiar.setAttribute('title', 'Copiado!');
+      const tooltip = bootstrap.Tooltip.getInstance(btnCopiar);
+      tooltip.setContent({ '.tooltip-inner': 'Copiado!' });
+      tooltip.show();
+
+      setTimeout(() => {
+        btnCopiar.innerHTML = '<i class="bi bi-clipboard"></i>';
+        btnCopiar.setAttribute('title', 'Copiar código de barras');
+        tooltip.setContent({ '.tooltip-inner': 'Copiar código de barras' });
+      }, 2000);
+    });
+  });
 }
 
 //exemplo
