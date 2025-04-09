@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS supermarkets (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    userId TEXT PRIMARY KEY,
+    userId INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE,
     password TEXT NOT NULL
@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
     name TEXT NOT NULL,
     price REAL NOT NULL,
     category TEXT,
+    departament TEXT,
     stock INTEGER DEFAULT 0,
     lot TEXT,
     expirationDate TEXT,
@@ -56,15 +57,18 @@ function select(table, condition = "") {
     })
 }
 
-function insert(table, columns, values){
-    db.run(`INSERT INTO ${table} (${columns.join(', ')}) VALUES (?, ?, ?, ?)`, values ,(err) => {
+function insert(table, columns, values) {
+    const placeholders = columns.map(() => '?').join(', ');
+    const query = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`;
 
+    db.run(query, values, (err) => {
         if (err) {
-            return console.log(`Erro: ${err}`)}
-
-    })
-
+            return console.log(`Erro: ${err}`);
+        }
+        console.log("Produto adicionado com sucesso!");
+    });
 }
+
 
 function update(table, columns, values, condition = ""){
     multiColumns = columns.map(col => `${col} = ?`).join(', ')
