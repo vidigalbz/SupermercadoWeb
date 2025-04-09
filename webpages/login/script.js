@@ -12,9 +12,6 @@ signInButton.addEventListener('click', () => {
   container.classList.remove("right-panel-active");
 });
 
-
-    
-
 document.getElementById("registerButton").addEventListener("click", function (e) {
   e.preventDefault();
       
