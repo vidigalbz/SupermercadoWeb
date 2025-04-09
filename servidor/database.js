@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS supermarkets (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    userId TEXT PRIMARY KEY,
+    userId INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE,
     password TEXT NOT NULL
@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
     name TEXT NOT NULL,
     price REAL NOT NULL,
     category TEXT,
+    departament TEXT,
     stock INTEGER DEFAULT 0,
     lot TEXT,
     expirationDate TEXT,

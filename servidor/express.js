@@ -101,12 +101,115 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     }
 });
 
+ HEAD
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
     const param = req.query;
     select("products", param.conditional || "")
         .then(results => res.status(201).json({ mensagem: results }))
         .catch(err => res.status(500).json({ erro: "Erro ao consultar estoque." }));
+});
+
+// Endpoint para deletar produto pelo código
+app.post('/deletarProduto', async (req, res) => {
+    const { codigo } = req.body;
+    console.log(codigo)
+    if (!codigo) {
+        return res.status(400).json({ erro: "Código do produto não fornecido." });
+    }
+
+    try {
+        delet("products", `productId = '${codigo}'`);
+        res.status(200).json({ mensagem: "Produto deletado com sucesso!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao deletar produto." });
+    }
+});
+
+
+// Endpoint para listar produtos
+app.post('/estoqueData', async (req, res) => {
+    const { busca } = req.body;
+    console.log(busca)
+    let condicao = "";
+    if (busca) {
+        const termo = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
+        condicao = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%'`;
+    }
+
+    try {
+        const results = await select("products", condicao);
+        res.status(200).json({ mensagem: results });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao consultar estoque." });
+    }
+});
+
+
+app.post("/editarProduto", (req, res) => {
+    const {
+        productId,
+        name,
+        price,
+        category,
+        departament,
+        stock,
+        lot,
+        expirationDate,
+        manufactureDate,
+        barcode,
+        marketId
+    } = req.body;
+
+    const columns = [
+        "name", "price", "category", "departament", "stock",
+        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
+    ];
+
+    const values = [
+        name, price, category, departament, stock,
+        lot, expirationDate, manufactureDate, barcode, marketId
+    ];
+
+    const condition = `productId = ${productId}`;
+
+    update("products", columns, values, condition);
+
+    res.json({ success: true, message: "Produto atualizado com sucesso!" });
+});
+
+app.post("/editarProduto", (req, res) => {
+    const {
+        productId,
+        name,
+        price,
+        category,
+        departament,
+        stock,
+        lot,
+        expirationDate,
+        manufactureDate,
+        barcode,
+        marketId
+    } = req.body;
+
+    const columns = [
+        "name", "price", "category", "departament", "stock",
+        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
+    ];
+
+    const values = [
+        name, price, category, departament, stock,
+        lot, expirationDate, manufactureDate, barcode, marketId
+    ];
+
+    const condition = `productId = ${productId}`;
+
+    update("products", columns, values, condition);
+
+    res.json({ success: true, message: "Produto atualizado com sucesso!" });
 });
 
 loadPages();

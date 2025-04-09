@@ -1,5 +1,6 @@
 const searchInput = document.getElementById("pesquisa");
 const container = document.getElementById("produtos-container");
+var currentData = {}
 
 function criarCardHTML(produto) {
   return `
@@ -95,9 +96,39 @@ function search() {
   })
     .then(res => res.json())
     .then(data => {
+
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Dados recebidos:', data);
+      currentData = data.mensagem;
+
       renderizarProdutos(data.mensagem);
     })
-    .catch(err => console.error('Erro:', err)); 
+    .catch(err => console.error('Erro ao carregar produtos:', err));
+}
+
+
+carregarProdutos();
+
+// Botão de recarregar
+document.getElementById("btn-recarrega-estoque").addEventListener("click", () => {
+  carregarProdutos();
+});
+
+function search() {
+  const valorBusca = searchInput.value.trim();
+
+  fetch('/estoqueData', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ busca: valorBusca })
+  })
+    .then(res => res.json())
+    .then(data => {
+      renderizarProdutos(data.mensagem);
+    })
+    .catch(err => console.error('Erro:', err));
 }
 
 async function adicionarProduto () {
@@ -156,3 +187,109 @@ async function adicionarProduto () {
     alert("Erro na requisição: " + err.message);
   }
 }
+
+
+async function confirmarEdicao () {
+  const produtoAtualizado = {
+      productId: document.getElementById("codigo-editar").value,
+      name: document.getElementById('editar-nome').value,
+      barcode: document.getElementById('editar-barcode').value,
+      price: parseFloat(document.getElementById('editar-preco').value),
+      category: document.getElementById('editar-categoria').value,
+      stock: parseInt(document.getElementById('editar-estoque').value),
+      lot: document.getElementById('editar-lote').value,
+      departament: document.getElementById('editar-departamento').value,
+      marketId: document.getElementById('editar-marketId').value,
+      manufactureDate: document.getElementById('editar-fabricacao').value,
+      expirationDate: document.getElementById('editar-validade').value
+  };
+
+  try {
+      const res = await fetch("/editarProduto", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify(produtoAtualizado)
+      });
+
+      const data = await res.json();
+      console.log(data.message);
+
+      // Atualizar UI, fechar modal, etc.
+      bootstrap.Modal.getInstance(document.getElementById('modalEditarProduto')).hide();
+      carregarProdutos(); // se você tiver essa função para recarregar a lista
+
+  } catch (error) {
+      console.error("Erro ao editar produto:", error);
+  }
+};
+
+
+async function excluirProduto() {
+  const id = parseInt(document.getElementById("codigo-excluir").value);
+  if (isNaN(id)) {
+    alert("ID inválido.");
+  }
+
+  try {
+    const res = await fetch("/deletarProduto", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ codigo: id }) // Enviando productId no campo "codigo"
+    });
+
+    const resultado = await res.json();
+
+    if (res.ok) {
+      alert("Produto excluído com sucesso!");
+      document.getElementById("btn-recarrega-estoque").click();
+      return true;
+    } else {
+      alert("Erro ao excluir produto: " + (resultado.erro || "Erro desconhecido."));
+    }
+  } catch (err) {
+    alert("Erro na requisição: " + err.message);
+  }
+}
+
+async function confirmarEdicao() {
+  const produtoAtualizado = {
+    productId: parseInt(document.getElementById("codigo-editar").value),
+    name: document.getElementById('editar-nome').value,
+    barcode: document.getElementById('editar-barcode').value,
+    price: parseFloat(document.getElementById('editar-preco').value),
+    category: document.getElementById('editar-categoria').value,
+    stock: parseInt(document.getElementById('editar-estoque').value),
+    lot: document.getElementById('editar-lote').value,
+    departament: document.getElementById('editar-departamento').value,
+    marketId: document.getElementById('editar-marketId').value,
+    manufactureDate: document.getElementById('editar-fabricacao').value,
+    expirationDate: document.getElementById('editar-validade').value
+  };
+
+  try {
+    const response = await fetch("/editarProduto", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(produtoAtualizado)
+    });
+
+    const resultado = await response.json();
+
+    if (response.ok) {
+      alert("Produto editado com sucesso!");
+      document.getElementById("btn-recarrega-estoque").click(); // Atualiza os cards
+    } else {
+      alert("Erro ao editar produto: " + (resultado.erro || "Erro desconhecido."));
+    }
+  } catch (error) {
+    alert("Erro ao tentar editar: " + error.message);
+  }
+}
+
+
