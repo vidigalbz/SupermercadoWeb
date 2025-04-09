@@ -57,25 +57,36 @@ function abrirModalAdicionarItem() {
     };
 }
 
-function abrirModalExclusao(produto) {
-    // Preenche os dados no modal
-    let codigo = document.getElementById("codigo-excluir").textContent;
-    //document.getElementById("excluir-nome").textContent = produto.name;
-    //document.getElementById("excluir-codigo").textContent = produto.barcode;
-    //document.getElementById("excluir-categoria").textContent = produto.category;
-    //document.getElementById("excluir-estoque").textContent = produto.stock;
+function abrirModalExclusao() {
+  productId = document.getElementById("codigo-excluir").value
+  const produto = currentData.find(p => p.productId == productId);
 
-    // Mostra o modal
-    const modal = new bootstrap.Modal(document.getElementById("modalConfirmarExclusao"));
-    modal.show();
+  if (!produto) {
+    alert("Produto não encontrado.");
+    return;
+  }
 
-    // Define a ação do botão "Excluir"
-    document.getElementById("confirmar-exclusao").onclick = function () {
-        // Aqui você coloca a lógica para remover o item
-        console.log("Excluir produto:", produto);
-        modal.hide();
-    };
+  // Preenche os dados no modal
+  document.getElementById("codigo-excluir").value = produto.productId;
+  document.getElementById("excluir-nome").textContent = produto.name;
+  document.getElementById("excluir-codigo").textContent = produto.productId;
+  document.getElementById("excluir-categoria").textContent = produto.category;
+  document.getElementById("excluir-estoque").textContent = produto.stock;
+
+  // Mostra o modal
+  const modal = new bootstrap.Modal(document.getElementById("modalConfirmarExclusao"));
+  modal.show();
+
+  // Define a ação do botão "Excluir"
+  document.getElementById("confirmar-exclusao").onclick = async function () {
+    const sucesso = await excluirProduto();
+    if (sucesso) {
+      modal.hide();
+      console.log("Produto removido!");
+    }
+  };
 }
+
 
 const produtoExemplo = {
     nome: "Arroz Tio João",

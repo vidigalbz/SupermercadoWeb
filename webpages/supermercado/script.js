@@ -1,5 +1,6 @@
 const searchInput = document.getElementById("pesquisa");
 const container = document.getElementById("produtos-container");
+var currentData = {}
 
 function criarCardHTML(produto) {
   return `
@@ -76,6 +77,7 @@ function carregarProdutos() {
     .then(res => res.json())
     .then(data => {
       console.log('Dados recebidos:', data);
+      currentData = data.mensagem;
       renderizarProdutos(data.mensagem);
     })
     .catch(err => console.error('Erro ao carregar produtos:', err));
@@ -156,3 +158,33 @@ async function adicionarProduto () {
     alert("Erro na requisição: " + err.message);
   }
 }
+
+async function excluirProduto() {
+  const id = parseInt(document.getElementById("codigo-excluir").value);
+  if (isNaN(id)) {
+    alert("ID inválido.");
+  }
+
+  try {
+    const res = await fetch("/deletarProduto", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ codigo: id }) // Enviando productId no campo "codigo"
+    });
+
+    const resultado = await res.json();
+
+    if (res.ok) {
+      alert("Produto excluído com sucesso!");
+      document.getElementById("btn-recarrega-estoque").click();
+      return true;
+    } else {
+      alert("Erro ao excluir produto: " + (resultado.erro || "Erro desconhecido."));
+    }
+  } catch (err) {
+    alert("Erro na requisição: " + err.message);
+  }
+}
+

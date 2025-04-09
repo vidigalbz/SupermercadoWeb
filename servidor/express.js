@@ -101,6 +101,24 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     }
 });
 
+// Endpoint para deletar produto pelo código
+app.post('/deletarProduto', async (req, res) => {
+    const { codigo } = req.body;
+    console.log(codigo)
+    if (!codigo) {
+        return res.status(400).json({ erro: "Código do produto não fornecido." });
+    }
+
+    try {
+        delet("products", `productId = '${codigo}'`);
+        res.status(200).json({ mensagem: "Produto deletado com sucesso!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao deletar produto." });
+    }
+});
+
+
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
     const param = req.query;
