@@ -64,7 +64,7 @@
           <!-- Adicionar setor -->
           <div class="col-md-2 h-100 d-flex align-items-end">
             <button class="btn btn-primary w-100 mt-2" onclick="abrirModalDepCat()">
-              ➕/🗑️ Departamento / Categoria
+              ⚙️Gerenciar Setores
             </button>
           </div>                   
         </div>
@@ -200,6 +200,7 @@
       </div>
     </div>
     
+    <!-- Modal para Gerenciar setores -->
     <div class="modal fade" id="modal-dep-cat" tabindex="-1" aria-labelledby="modalDepCatLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -208,16 +209,16 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
           <div class="modal-body">
-    
-            <!-- Toggle Categoria / Departamento -->
-            <div class="d-flex justify-content-center align-items-center mb-3 gap-2">
-              <span id="label-toggle">Departamento</span>
-              <div class="form-check form-switch">
+
+            <!-- Toggle Tipo -->
+            <div class="tipo-toggle mb-3">
+              <span id="label-toggle" class="tipo-label active">Departamento</span>
+              <div class="form-check form-switch m-0">
                 <input class="form-check-input" type="checkbox" id="toggleTipo" onchange="alternarTipo()">
               </div>
-              <span id="label-toggle-2">Categoria</span>
+              <span id="label-toggle-2" class="tipo-label">Categoria</span>
             </div>
-    
+
             <!-- Tabs -->
             <ul class="nav nav-tabs" role="tablist">
               <li class="nav-item" role="presentation">
@@ -227,7 +228,7 @@
                 <button class="nav-link" id="tab-del-btn" data-bs-toggle="tab" data-bs-target="#tab-del" type="button" role="tab">Excluir</button>
               </li>
             </ul>
-    
+
             <!-- Conteúdo -->
             <div class="tab-content pt-3">
               <!-- Adicionar -->
@@ -238,7 +239,7 @@
                 </div>
                 <button class="btn btn-success w-100" onclick="adicionarDepartamentoCategoria()">Adicionar</button>
               </div>
-    
+
               <!-- Excluir -->
               <div class="tab-pane fade" id="tab-del" role="tabpanel">
                 <div class="mb-3">
@@ -250,11 +251,11 @@
                 <button class="btn btn-danger w-100" onclick="excluirDepartamentoCategoria()">Excluir</button>
               </div>
             </div>
-    
+
           </div>
         </div>
       </div>
-    </div>       
+    </div>    
     
     <!-- Modal de Edição de Produto -->
     <div class="modal fade" id="modalEditarProduto" tabindex="-1" aria-labelledby="modalEditarProdutoLabel" aria-hidden="true">
