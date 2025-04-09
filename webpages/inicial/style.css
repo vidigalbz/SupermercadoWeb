@@ -59,6 +59,40 @@ body {
     font-weight: bold;
   }
 
+  /* Botão PDV - Azul */
+  .btn-pdv {
+    background-color: #2200ff;
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 15px;
+    padding: 10px 45px;
+    font-weight: bold;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .btn-pdv:hover {
+    background-color: white;
+    color: #2200ff;
+    border: 2px solid #2200ff;
+  }
+
+  /* Botão Estoque - Laranja */
+  .btn-estoque {
+    background-color: #ff8800;
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 15px;
+    padding: 10px 45px;
+    font-weight: bold;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .btn-estoque:hover {
+    background-color: white;
+    color: #ff8800;
+    border: 2px solid #ff8800;
+  }
+
   #telaInicial, 
   #formularioContainer,
   #telaLinks {

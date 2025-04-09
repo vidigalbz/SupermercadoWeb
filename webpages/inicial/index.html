@@ -67,34 +67,28 @@
         <h4 class="mb-4">Painel do Supermercado</h4>
     
         <!-- PDV -->
-        <div class="mb-4">
-          <a href="pdv.html" class="btn btn-warning text-white fw-bold w-100 mb-2">
-            <ion-icon name="cash-outline" class="me-2"></ion-icon>
-            Ponto de Venda (PDV)
-          </a>
-          <div class="input-group">
-            <input type="text" class="form-control" id="linkPdv" value="https://seusite.com/pdv" readonly>
-            <button class="btn btn-outline-secondary" onclick="copiarLink('linkPdv')"><ion-icon name="copy-outline"></ion-icon></button>
-          </div>
-        </div>
-    
-        <!-- Estoque -->
-        <div class="mb-4">
-          <a href="estoque.html" class="btn btn-info text-white fw-bold w-100 mb-2">
-            <ion-icon name="cube-outline" class="me-2"></ion-icon>
-            Estoque
-          </a>
-          <div class="input-group">
-            <input type="text" class="form-control" id="linkEstoque" value="https://seusite.com/estoque" readonly>
-            <button class="btn btn-outline-secondary" onclick="copiarLink('linkEstoque')"><ion-icon name="copy-outline"></ion-icon></button>
-          </div>
-        </div>
-    
-        <!-- Botão Resetar -->
-        <button class="btn btn-danger w-100 mt-2" id="resetar">
-          <ion-icon name="refresh-outline" class="me-2"></ion-icon>
-          Resetar Simulação
-        </button>
+    <div class="mb-4">
+      <a href="https://TelaDaBruna.web.app/pdv" class="btn btn-pdv fw-bold w-100 mb-2">
+        <ion-icon name="cash-outline" class="me-2"></ion-icon>
+        Ponto de Venda (PDV)
+      </a>
+      <div class="input-group">
+        <input type="text" class="form-control" id="linkPdv" value="https://TelaDaBruna.web.app/pdv" readonly>
+        <button class="btn btn-outline-secondary" onclick="copiarLink('linkPdv')"><ion-icon name="copy-outline"></ion-icon></button>
+      </div>
+    </div>
+
+    <!-- Estoque -->
+    <div class="mb-4">
+      <a href="../supermercado/index.html" class="btn btn-estoque fw-bold w-100 mb-2" id="estoque">
+        <ion-icon name="cube-outline" class="me-2"></ion-icon>
+        Estoque
+      </a>
+      <div class="input-group">
+        <input type="text" class="form-control" id="linkEstoque" value="https://TelaDoAndré.web.app/estoque" readonly>
+        <button class="btn btn-outline-secondary" onclick="copiarLink('linkEstoque')"><ion-icon name="copy-outline"></ion-icon></button>
+      </div>
+    </div>
       </div>
     </div>
     
