@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
     name TEXT NOT NULL,
     price REAL NOT NULL,
     category TEXT,
-    departament TEXT
+    departament TEXT,
     stock INTEGER DEFAULT 0,
     lot TEXT,
     expirationDate TEXT,

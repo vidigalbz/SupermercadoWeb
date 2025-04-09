@@ -103,31 +103,40 @@ const produtoExemplo = {
 };
   
 function abrirModalEditarProduto() {
-    preencherCombosEdicao();
+  preencherCombosEdicao();
 
-    let produto = produtoExemplo;
-    // Preenche os campos com os dados do produto recebido
-    document.getElementById('editar-nome').value = produto.nome || '';
-    document.getElementById('editar-barcode').value = produto.barcode || '';
-    document.getElementById('editar-preco').value = produto.preco || '';
-    document.getElementById('editar-categoria').value = produto.categoria || '';
-    document.getElementById('editar-estoque').value = produto.estoque || '';
-    document.getElementById('editar-lote').value = produto.lote || '';
-    document.getElementById('editar-departamento').value = produto.departamento || '';
-    document.getElementById('editar-marketId').value = produto.marketId || '';
-    document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
-    document.getElementById('editar-validade').value = produto.expirationDate || '';
-    // Não preenche imagem porque não é possível definir o valor de um <input type="file">
-  
-    const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
-    modal.show();
-  
-    document.getElementById('btn-confirmar-edicao').onclick = () => {
-      // Lógica para salvar as alterações aqui
-      console.log('Alterações salvas!');
-      modal.hide();
-    };
+  const productId = document.getElementById("codigo-editar").value;
+
+  const produto = currentData.find(p => String(p.productId) === String(productId));
+  console.log(produto)
+  if (!produto) {
+    alert("Produto não encontrado.");
+    return;
+  }
+
+  // Preenche os campos com os dados do produto encontrado
+  document.getElementById('editar-nome').value = produto.name || '';
+  document.getElementById('editar-barcode').value = produto.barcode || '';
+  document.getElementById('editar-preco').value = produto.price || '';
+  document.getElementById('editar-categoria').value = produto.category || '';
+  document.getElementById('editar-estoque').value = produto.stock || '';
+  document.getElementById('editar-lote').value = produto.lot || '';
+  document.getElementById('editar-departamento').value = produto.departament || '';
+  document.getElementById('editar-marketId').value = produto.marketId || '';
+  document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
+  document.getElementById('editar-validade').value = produto.expirationDate || '';
+  // Não preenche imagem porque input file não permite setar valor via JS
+
+  const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
+  modal.show();
+
+  document.getElementById('btn-confirmar-edicao').onclick = () => {
+    confirmarEdicao()
+    console.log('Alterações salvas!');
+    modal.hide();
+  };
 }
+
 
 function preencherCombosCategoriasEDepartamentos() {
     const selectSetor = document.getElementById("select-excluir-setor");

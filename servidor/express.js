@@ -127,6 +127,72 @@ app.post('/estoqueData', async (req, res) => {
         .catch(err => res.status(500).json({ erro: "Erro ao consultar estoque." }));
 });
 
+app.post("/editarProduto", (req, res) => {
+    const {
+        productId,
+        name,
+        price,
+        category,
+        departament,
+        stock,
+        lot,
+        expirationDate,
+        manufactureDate,
+        barcode,
+        marketId
+    } = req.body;
+
+    const columns = [
+        "name", "price", "category", "departament", "stock",
+        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
+    ];
+
+    const values = [
+        name, price, category, departament, stock,
+        lot, expirationDate, manufactureDate, barcode, marketId
+    ];
+
+    const condition = `productId = ${productId}`;
+
+    update("products", columns, values, condition);
+
+    res.json({ success: true, message: "Produto atualizado com sucesso!" });
+});
+
+app.post("/editarProduto", (req, res) => {
+    const {
+        productId,
+        name,
+        price,
+        category,
+        departament,
+        stock,
+        lot,
+        expirationDate,
+        manufactureDate,
+        barcode,
+        marketId
+    } = req.body;
+
+    const columns = [
+        "name", "price", "category", "departament", "stock",
+        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
+    ];
+
+    const values = [
+        name, price, category, departament, stock,
+        lot, expirationDate, manufactureDate, barcode, marketId
+    ];
+
+    const condition = `productId = ${productId}`;
+
+    update("products", columns, values, condition);
+
+    res.json({ success: true, message: "Produto atualizado com sucesso!" });
+});
+
+
+
 loadPages();
 
 app.listen(port, () => {
