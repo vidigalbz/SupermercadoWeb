@@ -33,12 +33,6 @@ function limparFiltros() {
     console.log("Filtros limpos");
 }
   
-// Abertura dos Modais
-function abrirModalAdicionarItem() {
-    const modal = new bootstrap.Modal(document.getElementById("modalAdicionarItem"));
-    modal.show();
-}
-  
 function abrirModalEdicao() {
   const codigo = document.getElementById("codigo-editar").value.trim();
   if (codigo === "") {
