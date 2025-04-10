@@ -4,24 +4,38 @@ const container = document.getElementById('container');
 const signUpButton = document.getElementById('signUp');
 const signInButton = document.getElementById('signIn');
 
-signUpButton.addEventListener('click', () => {
-  container.classList.add("right-panel-active");
-});
+// Alterna entre login e cadastro
+signUpButton.addEventListener('click', () => container.classList.add("right-panel-active"));
+signInButton.addEventListener('click', () => container.classList.remove("right-panel-active"));
 
-signInButton.addEventListener('click', () => {
-  container.classList.remove("right-panel-active");
-});
+// Função para mostrar toast com mensagem e cor
+function showToast(message, color = 'danger') {
+  const toast = document.getElementById('liveToast');
+  const toastMessage = document.getElementById('toastMessage');
 
+  toast.className = `toast align-items-center text-white bg-${color} border-0`;
+  toastMessage.textContent = message;
+
+  const toastBootstrap = new bootstrap.Toast(toast);
+  toastBootstrap.show();
+}
+
+// CADASTRO
 document.getElementById("registerButton").addEventListener("click", function (e) {
   e.preventDefault();
-      
+
   const nome = document.getElementById("nomeCadastro").value;
   const email = document.getElementById("emailCadastro").value;
   const senha = document.getElementById("senhaCadastro").value;
   const confirmar = document.getElementById("confirmedsenhaCadastro").value;
-    
+
+  if (!nome || !email || !senha || !confirmar) {
+    showToast("Preencha todos os campos!", "warning");
+    return;
+  }
+
   if (senha !== confirmar) {
-    alert("As senhas não coincidem.");
+    showToast("As senhas não coincidem!", "danger");
     return;
   }
     
@@ -34,26 +48,32 @@ document.getElementById("registerButton").addEventListener("click", function (e)
   })
   .then(res => res.json())
   .then(data => {
-  if (data.status === "success") {
-    alert("Cadastro realizado com sucesso!");
-  } else {
-      alert(data.message);
+    if (data.status === "success") {
+      showToast("Cadastro realizado com sucesso!", "success");
+      container.classList.remove("right-panel-active"); // Volta para login
+    } else {
+      showToast(data.message || "Erro ao cadastrar.", "danger");
     }
-  });
+  })
+  .catch(() => showToast("Erro ao conectar com o servidor!", "danger"));
 });
-    
+
+// LOGIN
 document.getElementById("loginButton").addEventListener("click", async function (e) {
   e.preventDefault();
 
   const email = document.getElementById("emailLogin").value;
   const senha = document.getElementById("senhaLogin").value;
 
+  if (!email || !senha) {
+    showToast("Preencha todos os campos!", "warning");
+    return;
+  }
+
   try {
     const response = await fetch(`${API}/login`, {
       method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, senha })
     });
 
@@ -63,10 +83,10 @@ document.getElementById("loginButton").addEventListener("click", async function 
       alert(`Bem-vindo, ${result.nome}!`);
       window.location.href = '/supermercado';
     } else {
-      alert(result.message);
+      showToast(result.message || "Email ou senha incorretos!", "danger");
     }
   } catch (error) {
     console.error("Erro ao fazer login:", error);
-    alert("Erro na conexão com o servidor.");
+    showToast("Erro na conexão com o servidor.", "danger");
   }
 });
