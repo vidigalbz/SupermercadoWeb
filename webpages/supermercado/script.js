@@ -55,7 +55,6 @@ function alternarVisibilidade(botao) {
 }
 
 function criarCardSupermercado(supermercado) {
-  deleteEmpty(0)
   const card = document.createElement('div');
   card.className = 'col-md-4 col-lg-3';
   card.innerHTML = `
@@ -69,8 +68,11 @@ function criarCardSupermercado(supermercado) {
           <button class="btn btn-outline-info btn-sm" data-bs-toggle="popover" title="Detalhes do Supermercado"
             data-bs-html="true"
             data-bs-content="
-              <strong>Nome:</strong> ${supermercado.nome}<br>
+              <strong>Nome:</strong> ${supermercado.nome}
+              <strong>Gerente:</strong> ${supermercado.gerente}
               <strong>Local:</strong> ${supermercado.local}
+              <strong>Icone:</strong> ${supermercado.icone}
+              <strong>Cor:</strong> ${supermercado.cor}
             ">
             <i class="bi bi-info-circle"></i>
           </button>
@@ -103,23 +105,26 @@ function criarCardSupermercado(supermercado) {
   `;
 
   // Adiciona o card na área onde os cards ficam
-  document.querySelector('.card-container').appendChild(card);
+  document.querySelector('.card-container').prepend(card);
 
   // Ativa popovers do Bootstrap nesse card
   const popoverTriggerList = card.querySelectorAll('[data-bs-toggle="popover"]');
   popoverTriggerList.forEach(el => new bootstrap.Popover(el));
 }
 
-function deleteEmpty(index) {
-  let card = document.getElementById(`empty-card-${index}`)
+function deleteEmpty() {
+  let card = document.querySelector("#empty-card")
   card.remove();
 }
 
 // teste
+deleteEmpty();
 criarCardSupermercado({
-  nome: 'Supermercado A',
+  nome: 'aaaaaaaaaaaa',
   local: 'Xique Xique Bahia',
+  gerente: 'Tralalero Tralala',
   icone: '🏪',
+  cor: "Azul",
   linkPDV: 'https://pdv.link',
   linkEstoque: 'https://estoque.link'
 });
