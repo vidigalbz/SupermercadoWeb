@@ -1,0 +1,47 @@
+.divisao {
+    flex: 1;
+    background-color: #e9ecef;
+    width:1400px;
+    height:400px;
+}
+.sticky{
+    position: fixed;
+    top:0;
+    width:100%
+}
+.sticky + .content {
+    padding-top: 102;
+}
+.segundo{
+    flex:8;
+    background-color: #9698c3;
+    overflow-y:auto ;
+}
+    {background-color: #04AA6D;}
+    {background-color: #008CBA;}
+.img{
+
+}
+/* Style the footer */
+.section{
+    background: #ffa040;
+    
+}
+.container{
+    display: grid;
+    grid-template-columns: auto, auto, auto;
+    padding:10px;
+}
+.numeros div {
+    display:grid;
+    grid-template-columns: auto,auto,auto;
+    background-color: lightgrey;
+    padding: 10px;
+  }
+.numeros div {
+    background-color: #f1f1f1;
+    border: 1px solid black;
+    padding: 20px;
+    font-size: 30px;
+    text-align: center;
+}
