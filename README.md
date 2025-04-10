@@ -45,6 +45,7 @@ Este projeto faz parte da proposta educativa da **Rede de Ensino SENAC**, promov
 - Node.js com Express
 - SQLite3 (Banco de dados leve e local)
 - Bootstrap 5 (Frontend responsivo)
+- Multer
 
 ---
 
@@ -55,8 +56,9 @@ Este projeto faz parte da proposta educativa da **Rede de Ensino SENAC**, promov
 git clone https://github.com/vidigalbz/SupermercadoWeb.git
 
 # Instale as dependências
-cd supermercado-web-senac
-npm install
+cd supermercadoWeb
+npm install express
+npm install multer
 
 # Inicie o servidor
 node index.js
