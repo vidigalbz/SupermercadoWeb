@@ -101,7 +101,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     }
 });
 
- HEAD
+
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
     const param = req.query;
@@ -211,6 +211,52 @@ app.post("/editarProduto", (req, res) => {
 
     res.json({ success: true, message: "Produto atualizado com sucesso!" });
 });
+
+
+
+app.post('/login', async (req, res) => {
+    let { email, senha } = req.body;
+
+
+
+    email = email?.toLowerCase().trim();
+    senha = senha?.trim();
+
+    try {
+        const users = await select("users", "WHERE email = ?", [email]);
+
+        console.log(" Resultado do SELECT:", users);
+
+        if (users.length === 0) {
+            return res.status(401).json({ 
+                status: "error", 
+                message: "E-mail não cadastrado!" 
+            });
+        }
+
+        const user = users[0];
+        if (senha !== user.password) {
+            return res.status(401).json({ 
+                status: "error", 
+                message: "Senha incorreta!" 
+            });
+        }
+
+        res.status(200).json({ 
+            status: "success", 
+            name: user.name,
+            email: user.email
+        });
+
+    } catch (err) {
+        console.error("Erro no login:", err);
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro no servidor." 
+        });
+    }
+});
+
 
 loadPages();
 
