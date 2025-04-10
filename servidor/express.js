@@ -16,6 +16,8 @@ app.use(express.urlencoded({ extended: true }));
 // Configuração do multer (mas sem salvar arquivos por enquanto)
 const upload = multer({ dest: 'upload'});
 
+app.use('/uploads', express.static(path.resolve(__dirname, './uploads')));  
+
 // Carregamento de páginas
 async function loadPages() {
     app.use(express.static(webpages_dir));
