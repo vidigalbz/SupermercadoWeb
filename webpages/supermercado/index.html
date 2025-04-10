@@ -84,17 +84,17 @@
       </div>
     </div>
 
-    <div class="flex-row-reverse row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4 card-container">
-        <div id="empty-card-0" class="col">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4 card-container">
+        <div id="empty-card" class="col">
           <div class="card bg-light h-100"></div>
         </div>
-        <div id="empty-card-1" class="col">
+        <div id="empty-card" class="col">
           <div class="card bg-light h-100"></div>
         </div>
-        <div id="empty-card-2" class="col">
+        <div id="empty-card" class="col">
           <div class="card bg-light h-100"></div>
         </div>
-        <div id="empty-card-3" class="col">
+        <div id="empty-card" class="col">
           <div class="card bg-light h-100"></div>
         </div>
       </div>      
@@ -124,7 +124,7 @@
 
   <!-- Modal: Adicionar Supermercado -->
   <div class="modal fade" id="modalAdicionar" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Adicionar Supermercado</h5>
@@ -174,7 +174,7 @@
 
   <!-- Modal: Editar Supermercado -->
   <div class="modal fade" id="modalEditar" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Editar Supermercado</h5>
@@ -212,10 +212,6 @@
 
             <!-- Exclusão -->
             <hr>
-            <div class="mb-3">
-              <label class="form-label text-danger fw-bold">Digite o nome do supermercado para confirmar exclusão:</label>
-              <input type="text" class="form-control" placeholder="Supermercado A" id="confirmarExclusao">
-            </div>
             <button type="button" class="btn btn-outline-danger w-100" onclick="confirmarExclusao()">Excluir Supermercado</button>
           </form>
         </div>
