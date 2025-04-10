@@ -26,21 +26,18 @@
     </nav>
 
     <!-- Conteúdo principal -->
-    <div class="container">
-        <br>
-        <div class="card shadow-sm h-50">
+    <div class="container p-4">
+        <div class="card shadow-sm h-50 no-hover bg-primary">
             <div class="d-flex align-items-center p-3">
                 <div class="input-group search-box me-3">
                     <input type="text" class="form-control" placeholder="Pesquisar produto">
-                    <button class="btn btn-outline-dark"><i class="bi bi-search"></i></button>
+                    <button class="btn btn-outline-dark text-black bg-white"><i class="bi bi-search"></i></button>
                 </div>
-                <button class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> Cancelar</button>
+                <button class="btn btn-outline-danger text-white bg-danger">Cancelar</button>
             </div> 
-        </div>
+        </div>        
 
-        <br>
-
-        <div class="row">
+        <div class="row p-4">   
             <!-- Card Produto -->
             <div class="col-6 col-sm-4 col-md-3 col-xxl-2 mb-4">
                 <div class="card shadow-sm h-100">
@@ -64,15 +61,16 @@
         <div class="container">
             <div class="row g-2 text-center align-items-center">
                 <div class="col-6 col-md-2">
-                    <div class="info-label">🔍 Estoque</div>
-                </div>
+                    <div class="d-flex gap-2 align-items-center">
+                      <input type="text" class="form-control form-control-sm" id="codigoProdutoInput" placeholder="Código">
+                      <button class="btn btn-success btn-sm" onclick="adicionarProduto()">➕</button>
+                    </div>
+                  </div>                  
                 <div class="col-6 col-md-2">
-                    <div class="info-label">➕ Adição</div>
+                    <button class="footer-btn" onclick="adicaoAvancada()">
+                        ➕ Adição
+                    </button>
                 </div>
-                <div class="col-6 col-md-2">
-                    <div class="info-label">🧾 Diferentes</div>
-                </div>
-
                 <div class="col-6 col-md-2">
                     <label class="info-label">📦 Total: <span id="total-produtos">0</span></label>
                 </div>
@@ -90,6 +88,7 @@
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="carrinho.js"></script>
 </body>
 
 </html>
