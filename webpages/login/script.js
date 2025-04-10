@@ -80,7 +80,7 @@ document.getElementById("loginButton").addEventListener("click", async function 
     const result = await response.json();
 
     if (result.status === "success") {
-      alert(`Bem-vindo, ${result.nome}!`);
+      alert(`Bem-vindo, ${result.name}!`);
       window.location.href = '/supermercado';
     } else {
       showToast(result.message || "Email ou senha incorretos!", "danger");
