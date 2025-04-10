@@ -1,80 +1,85 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 
-<head >
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap Example</title>
     <!-- Incluindo o Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <title>Bootstrap Example</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="carrinho.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="carrinho.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
 
 <body>
-  
-<!-- Navbar -->
-<nav class="navbar navbar-light bg-warning fixed-top">
-  <div class="container d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center">
-      <h1>🛒</h1>
-      <span class="navbar-brand mb-0 h1">Super Mercado Didático</span>
-    </div>
-    <button class="btn btn-outline-dark" type="button">
-      Login
-    </button>
-    <div class="cancelar">
-      <button class="button2">Cancelar</button>
-<div class="pesquisa">
-  <input type placeholder="pesquisar produto na lista">
-  <button class="button1">Pesquisar</button>
-  <div class="row">
-  </div>
-  </div>
-</nav>
+    <!-- Navbar -->
+    <nav class="navbar navbar-light bg-warning fixed-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <h1>🛒</h1>
+                <span class="navbar-brand mb-0 h1 ms-2">Super Mercado Didático</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="pesquisa me-3">
+                    <input type="text" placeholder="pesquisar produto na lista">
+                    <button class="button1">Pesquisar</button>
+                </div>
+                <button class="btn btn-outline-dark me-2" type="button">
+                    Login
+                </button>
+                <button class="button2">Cancelar</button>
+            </div>
+        </div>
+    </nav>
 
-</div>
-  <!-- elementos abaixo da navbar -->
-  <div class="divisao">
-    <h2>Container</h2>
-   <div class="card">
-    <div class="container">
-    <div class="card">
-      <img src="not-found-png/">
-      <div class="card-body">
-        <h4 class="card-title">Card title</h4>
-        <p class="card-title">Some text, some exemple text</p>
-        <button>-1</button>
-    <button>Remover</button>
-      </div>
-    </div>
-    </div>
-    </button>
-  </div>
-    </div>
-    <div class="section">
-      
-    </section>
-  </div>
-    </div>
-    <div class="numeros div">
-  
-      <div>Pesquisar produto no estoque</div>
-      <div>Adição avançada</div>
-      <div>Add</div>
-      <div>Quantidade total de produtos</div>
-      <div>Quantidade de produtos diferentes </div>
-      <div>Finalizar</div>
-      <div>Preço total</div>
-      
+    <!-- Conteúdo principal -->
+    <div class="container mt-5 pt-4">
+        <h3 class="text-center mb-4">Produtos</h3>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="not-found.png" class="card-img-top" alt="Produto">
+                    <div class="card-body">
+                        <h4 class="card-title">Card title</h4>
+                        <p class="card-text">Some text, some exemple text</p>
+                        <button class="btn btn-secondary">-1</button>
+                        <button class="btn btn-danger">Remover</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Adicione mais cards de produtos aqui -->
+        </div>
     </div>
 
-  </div>
-</div>
+    <!-- Seção de informações -->
+    <div class="section bg-warning py-4">
+        <div class="container">
+            <div class="numeros row text-center">
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light border">Pesquisar produto no estoque</div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light border">Adição avançada</div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light border">Quantidade total de produtos</div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light border">Quantidade de produtos diferentes</div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 bg-light border">Preço total</div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-success w-100 py-3">Finalizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
