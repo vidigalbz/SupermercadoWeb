@@ -51,14 +51,16 @@ Este projeto faz parte da proposta educativa da **Rede de Ensino SENAC**, promov
 
 ## 📂 Como Executar
 
-```bash
 # Clone o repositório
+```bash
 git clone https://github.com/vidigalbz/SupermercadoWeb.git
-
+```
 # Instale as dependências
+```bash
 cd supermercadoWeb
 npm install express
 npm install multer
-
+```
 # Inicie o servidor
-node index.js
+```bash
+node express.js
