@@ -65,7 +65,6 @@ function insert(table, columns, values) {
         if (err) {
             return console.log(`Erro: ${err}`);
         }
-        console.log("Produto adicionado com sucesso!");
     });
 }
 
