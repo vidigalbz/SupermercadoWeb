@@ -270,6 +270,11 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.post("/adicionarSupermercado", async (req, res) => {
+    const {nome, local, onwerId} = req.body
+
+    insert("supermarket", ["name", "local", "onwerId"], [nome, local, onwerId])
+})
 
 loadPages();
 

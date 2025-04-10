@@ -61,7 +61,7 @@ document.getElementById("loginButton").addEventListener("click", async function 
 
     if (result.status === "success") {
       alert(`Bem-vindo, ${result.nome}!`);
-      window.location.href = '/inicial/index.html';
+      window.location.href = '/supermercado';
     } else {
       alert(result.message);
     }

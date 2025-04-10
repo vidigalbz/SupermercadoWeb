@@ -14,8 +14,9 @@ CREATE TABLE IF NOT EXISTS accessKeys (
 
 CREATE TABLE IF NOT EXISTS supermarkets (
     marketId TEXT PRIMARY KEY,
-    createdAt TEXT NOT NULL,
+    createdAt TEXT,
     name TEXT NOT NULL,
+    local TEXT NOT NULL,
     ownerId TEXT NOT NULL,
     FOREIGN KEY (ownerId) REFERENCES users(userId)
 );
