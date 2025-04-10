@@ -43,11 +43,11 @@ CREATE TABLE IF NOT EXISTS products (
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );`)});
 
-function select(table, condition = "") {
+function select(table, condition = "", params = []) {
     return new Promise((resolve, reject) => {
         var query = `SELECT * FROM ${table} ${condition}`;
 
-        db.all(query, (err, rows) => {
+        db.all(query, params, (err, rows) => {
             if (err) {
                 reject(err);
             } else {
