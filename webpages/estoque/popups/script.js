@@ -184,7 +184,7 @@ function atualizarLabelTipo() {
   document.getElementById("label-select").textContent = tipoAtual;
 }
 
-function preencherCombo() {
+function preencherComboExcluirSetor() {
   const select = document.getElementById("select-del");
   select.innerHTML = '<option value="">Selecione</option>';
 
@@ -248,3 +248,108 @@ function alternarTipo() {
 
   preencherCombo();
 }
+
+function atualizarAlertas(unidadeAlertas, validadeAlertas) {
+  const containerUnidades = document.getElementById("alertas-unidades");
+  const containerValidade = document.getElementById("alertas-validade");
+  const total = unidadeAlertas.length + validadeAlertas.length;
+
+  containerUnidades.innerHTML = "";
+  containerValidade.innerHTML = "";
+
+  unidadeAlertas.forEach(prod => {
+    containerUnidades.innerHTML += criarCardAlerta(prod);
+  });
+
+  validadeAlertas.forEach(prod => {
+    containerValidade.innerHTML += criarCardAlerta(prod);
+  });
+
+  document.getElementById("quantidade-alertas").textContent = total;
+}
+
+function criarCardAlerta(produto) {
+  let classe = "alerta-amarelo";
+  if (produto.urgencia === "alta") classe = "alerta-vermelho";
+  else if (produto.urgencia === "media") classe = "alerta-laranja";
+
+  return `
+    <div class="alerta-card ${classe}">
+      <strong>${produto.nome}</strong><br>
+      <small><b>Cód:</b> ${produto.codigo} | <b>Qtd:</b> ${produto.quantidade} | <b>Validade:</b> ${produto.validade}</small>
+    </div>
+  `;
+}
+
+atualizarAlertas(
+  [
+    {
+      nome: "Arroz",
+      codigo: "P001",
+      quantidade: 2,
+      validade: "2025-04-20",
+      urgencia: "alta" // 🔴 vermelho
+    },
+    {
+      nome: "Feijão",
+      codigo: "P002",
+      quantidade: 5,
+      validade: "2025-04-25",
+      urgencia: "media" // 🟠 laranja
+    },
+    {
+      nome: "Macarrão",
+      codigo: "P003",
+      quantidade: 9,
+      validade: "2025-05-01",
+      urgencia: "baixa" // 🟡 amarelo
+    }
+  ],
+  [
+    {
+      nome: "Leite",
+      codigo: "P004",
+      quantidade: 10,
+      validade: "2025-04-08",
+      urgencia: "alta" // 🔴 vermelho
+    },
+    {
+      nome: "Iogurte",
+      codigo: "P005",
+      quantidade: 15,
+      validade: "2025-04-12",
+      urgencia: "media" // 🟠 laranja
+    },
+    {
+      nome: "Requeijão",
+      codigo: "P006",
+      quantidade: 20,
+      validade: "2025-04-18",
+      urgencia: "baixa" // 🟡 amarelo
+    }
+  ]
+);
+
+function preencherComboGerenciadorDeEstoque() {
+  const select_cat = document.getElementById("filtro-categoria");
+  const select_dep = document.getElementById("filtro-departamento");
+
+  select_cat.innerHTML = '<option value="">Todos</option>';
+  select_dep.innerHTML = '<option value="">Todos</option>';
+
+  categorias.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item;
+    option.textContent = item;
+    select_cat.appendChild(option);
+  });
+
+  departamentos.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item;
+    option.textContent = item;
+    select_dep.appendChild(option);
+  });
+}
+
+window.onload = preencherComboGerenciadorDeEstoque();
