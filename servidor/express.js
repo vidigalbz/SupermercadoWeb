@@ -14,8 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configuração do multer (mas sem salvar arquivos por enquanto)
-const storage = multer.memoryStorage(); // Armazena em memória (pode ser ignorado)
-const upload = multer({ storage });
+const upload = multer({ dest: 'upload'});
 
 // Carregamento de páginas
 async function loadPages() {
@@ -41,6 +40,10 @@ async function loadPages() {
 // Endpoint para adicionar produto (imagem é ignorada)
 app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     try {
+        const imagem = req.file
+        if (!imagem) {
+            return res.status(400).json({error: 'Nenhuma imagem enviada'})
+        }
         const {
             nome,
             codigo,
@@ -51,7 +54,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             departamento,
             marketId,
             fabricacao,
-            validade
+            validade,
+
         } = req.body;
 
         const produto = {
@@ -64,7 +68,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             departamento,
             marketId,
             fabricacao,
-            validade
+            validade,
+            imagem: imagem.path
         };
         console.log([
             produto.marketId,
@@ -75,12 +80,13 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.lote,
             produto.validade,
             produto.fabricacao,
-            produto.codigo
+            produto.codigo,
+            produto.imagem
         ])
         insert("products", [
             "marketId", "name", "price", "category",
             "stock", "lot", "expirationDate", "manufactureDate",
-            "barcode"
+            "barcode", "image"
         ], [
             produto.marketId,
             produto.nome,
@@ -90,7 +96,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.lote,
             produto.validade,
             produto.fabricacao,
-            produto.codigo
+            produto.codigo,
+            produto.imagem
         ]);
 
         res.status(200).json({ mensagem: "Produto adicionado com sucesso!" });
@@ -203,6 +210,65 @@ app.post("/editarProduto", (req, res) => {
     res.json({ success: true, message: "Produto atualizado com sucesso!" });
 });
 
+app.post("/cadastro", async (req, res) => {
+    const {name, email, password} = req.body;
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
+    }
+
+    try {
+        insert("users", ["name", "email", "password"], [name, email, password]);
+        res.status(200).json({ mensagem: "Usuario cadastrado com sucesso"});
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao cadastrar usuario"})
+    }
+});
+
+app.post('/login', async (req, res) => {
+    let { email, senha } = req.body;
+
+
+
+    email = email?.toLowerCase().trim();
+    senha = senha?.trim();
+
+    try {
+        const users = await select("users", "WHERE email = ?", [email]);
+
+        console.log(" Resultado do SELECT:", users);
+
+        if (users.length === 0) {
+            return res.status(401).json({ 
+                status: "error", 
+                message: "E-mail não cadastrado!" 
+            });
+        }
+
+        const user = users[0];
+        if (senha !== user.password) {
+            return res.status(401).json({ 
+                status: "error", 
+                message: "Senha incorreta!" 
+            });
+        }
+
+        res.status(200).json({ 
+            status: "success", 
+            name: user.name,
+            email: user.email
+        });
+
+    } catch (err) {
+        console.error("Erro no login:", err);
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro no servidor." 
+        });
+    }
+});
 
 
 loadPages();

@@ -57,34 +57,40 @@ function abrirModalAdicionarItem() {
     };
 }
 
-function abrirModalExclusao() {
-  productId = document.getElementById("codigo-excluir").value
-  const produto = currentData.find(p => p.productId == productId);
+function abrirModalExclusaoProduto() {
+  const productId = document.getElementById("codigo-excluir").value;
+  const produto = currentData.find(p => String(p.productId) === String(productId));
 
   if (!produto) {
     alert("Produto não encontrado.");
     return;
   }
 
-  // Preenche os dados no modal
-  document.getElementById("codigo-excluir").value = produto.productId;
-  document.getElementById("excluir-nome").textContent = produto.name;
-  document.getElementById("excluir-codigo").textContent = produto.productId;
-  document.getElementById("excluir-categoria").textContent = produto.category;
-  document.getElementById("excluir-estoque").textContent = produto.stock;
+  // Preenche os dados no modal com formatação
+  document.getElementById("codigo-excluir").value = produto.productId || '';
+  document.getElementById("excluir-nome").textContent = produto.name || 'Nome não informado';
+  document.getElementById("excluir-codigo").textContent = produto.productId || '—';
+  document.getElementById("excluir-categoria").textContent = produto.category || '—';
+  document.getElementById("excluir-estoque").textContent = formatarNumero(produto.stock);
 
   // Mostra o modal
-  const modal = new bootstrap.Modal(document.getElementById("modalConfirmarExclusao"));
+  const modal = new bootstrap.Modal(document.getElementById("modalExcluirProduto"));
   modal.show();
 
-  // Define a ação do botão "Excluir"
-  document.getElementById("confirmar-exclusao").onclick = async function () {
-    const sucesso = await excluirProduto();
-    if (sucesso) {
+  // Previne múltiplos event listeners
+  const btnExcluir = document.getElementById("confirmar-exclusao");
+  const novoBtn = btnExcluir.cloneNode(true);
+  btnExcluir.parentNode.replaceChild(novoBtn, btnExcluir);
+
+  novoBtn.addEventListener('click', async () => {
       modal.hide();
-      console.log("Produto removido!");
-    }
-  };
+  });
+}
+
+// Função utilitária para formatar números com separador de milhar
+function formatarNumero(valor) {
+  if (!valor && valor !== 0) return '—';
+  return Number(valor).toLocaleString('pt-BR');
 }
 
 
@@ -102,19 +108,25 @@ const produtoExemplo = {
     imagem: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/800px-Placeholder_view_vector.svg.png"
 };
   
-function abrirModalEditarProduto() {
-  preencherCombosEdicao();
+function abrirModalEditarProduto(productId) {
+  preencherCombosEdicao(); // Carrega os <select> de categorias e departamentos, por exemplo.
+  console.log(currentData)
+  // Caso o parâmetro não seja passado, tenta pegar do input manual
+  if (!productId) {
+    productId = document.getElementById("codigo-editar").value;
+  }
 
-  const productId = document.getElementById("codigo-editar").value;
-
+  // Garante que o ID seja tratado como string para comparação
   const produto = currentData.find(p => String(p.productId) === String(productId));
-  console.log(produto)
+  console.log("Produto encontrado para edição:", produto);
+  
   if (!produto) {
     alert("Produto não encontrado.");
     return;
   }
 
-  // Preenche os campos com os dados do produto encontrado
+  // Preenche os campos com os dados do produto
+  document.getElementById('codigo-editar').value = produto.productId || '';
   document.getElementById('editar-nome').value = produto.name || '';
   document.getElementById('editar-barcode').value = produto.barcode || '';
   document.getElementById('editar-preco').value = produto.price || '';
@@ -125,18 +137,20 @@ function abrirModalEditarProduto() {
   document.getElementById('editar-marketId').value = produto.marketId || '';
   document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
   document.getElementById('editar-validade').value = produto.expirationDate || '';
-  // Não preenche imagem porque input file não permite setar valor via JS
+  // Nota: não é possível preencher um <input type="file"> via JavaScript por segurança
 
   const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
   modal.show();
 
-  document.getElementById('btn-confirmar-edicao').onclick = () => {
-    confirmarEdicao()
-    console.log('Alterações salvas!');
-    modal.hide();
-  };
-}
+  // Evita múltiplos bindings duplicados
+  const btnConfirmar = document.getElementById('btn-confirmar-edicao');
+  const novoBtn = btnConfirmar.cloneNode(true);
+  btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
 
+  novoBtn.addEventListener('click', async () => {
+    modal.hide();
+  });
+}
 
 function preencherCombosCategoriasEDepartamentos() {
     const selectSetor = document.getElementById("select-excluir-setor");
@@ -184,7 +198,7 @@ function atualizarLabelTipo() {
   document.getElementById("label-select").textContent = tipoAtual;
 }
 
-function preencherCombo() {
+function preencherComboExcluirSetor() {
   const select = document.getElementById("select-del");
   select.innerHTML = '<option value="">Selecione</option>';
 
@@ -248,3 +262,108 @@ function alternarTipo() {
 
   preencherCombo();
 }
+
+function atualizarAlertas(unidadeAlertas, validadeAlertas) {
+  const containerUnidades = document.getElementById("alertas-unidades");
+  const containerValidade = document.getElementById("alertas-validade");
+  const total = unidadeAlertas.length + validadeAlertas.length;
+
+  containerUnidades.innerHTML = "";
+  containerValidade.innerHTML = "";
+
+  unidadeAlertas.forEach(prod => {
+    containerUnidades.innerHTML += criarCardAlerta(prod);
+  });
+
+  validadeAlertas.forEach(prod => {
+    containerValidade.innerHTML += criarCardAlerta(prod);
+  });
+
+  document.getElementById("quantidade-alertas").textContent = total;
+}
+
+function criarCardAlerta(produto) {
+  let classe = "alerta-amarelo";
+  if (produto.urgencia === "alta") classe = "alerta-vermelho";
+  else if (produto.urgencia === "media") classe = "alerta-laranja";
+
+  return `
+    <div class="alerta-card ${classe}">
+      <strong>${produto.nome}</strong><br>
+      <small><b>Cód:</b> ${produto.codigo} | <b>Qtd:</b> ${produto.quantidade} | <b>Validade:</b> ${produto.validade}</small>
+    </div>
+  `;
+}
+
+atualizarAlertas(
+  [
+    {
+      nome: "Arroz",
+      codigo: "P001",
+      quantidade: 2,
+      validade: "2025-04-20",
+      urgencia: "alta" // 🔴 vermelho
+    },
+    {
+      nome: "Feijão",
+      codigo: "P002",
+      quantidade: 5,
+      validade: "2025-04-25",
+      urgencia: "media" // 🟠 laranja
+    },
+    {
+      nome: "Macarrão",
+      codigo: "P003",
+      quantidade: 9,
+      validade: "2025-05-01",
+      urgencia: "baixa" // 🟡 amarelo
+    }
+  ],
+  [
+    {
+      nome: "Leite",
+      codigo: "P004",
+      quantidade: 10,
+      validade: "2025-04-08",
+      urgencia: "alta" // 🔴 vermelho
+    },
+    {
+      nome: "Iogurte",
+      codigo: "P005",
+      quantidade: 15,
+      validade: "2025-04-12",
+      urgencia: "media" // 🟠 laranja
+    },
+    {
+      nome: "Requeijão",
+      codigo: "P006",
+      quantidade: 20,
+      validade: "2025-04-18",
+      urgencia: "baixa" // 🟡 amarelo
+    }
+  ]
+);
+
+function preencherComboGerenciadorDeEstoque() {
+  const select_cat = document.getElementById("filtro-categoria");
+  const select_dep = document.getElementById("filtro-departamento");
+
+  select_cat.innerHTML = '<option value="">Todos</option>';
+  select_dep.innerHTML = '<option value="">Todos</option>';
+
+  categorias.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item;
+    option.textContent = item;
+    select_cat.appendChild(option);
+  });
+
+  departamentos.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item;
+    option.textContent = item;
+    select_dep.appendChild(option);
+  });
+}
+
+window.onload = preencherComboGerenciadorDeEstoque();

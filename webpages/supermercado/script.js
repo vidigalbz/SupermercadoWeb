@@ -100,6 +100,36 @@ function search() {
   })
     .then(res => res.json())
     .then(data => {
+
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Dados recebidos:', data);
+      currentData = data.mensagem;
+
+      renderizarProdutos(data.mensagem);
+    })
+    .catch(err => console.error('Erro ao carregar produtos:', err));
+}
+
+
+carregarProdutos();
+
+// Botão de recarregar
+document.getElementById("btn-recarrega-estoque").addEventListener("click", () => {
+  carregarProdutos();
+});
+
+function search() {
+  const valorBusca = searchInput.value.trim();
+
+  fetch('/estoqueData', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ busca: valorBusca })
+  })
+    .then(res => res.json())
+    .then(data => {
       renderizarProdutos(data.mensagem);
     })
     .catch(err => console.error('Erro:', err));
@@ -136,8 +166,11 @@ async function adicionarProduto () {
   formData.append("fabricacao", fabricacao);
   formData.append("validade", validade);
 
-  if (imagemInput.files.length > 0) {
-    formData.append("imagem", imagemInput.files[0]);
+  const arquivoImagem = imagemInput.files[0];  
+
+  if (arquivoImagem) {
+    console.log("Tem Imagem")
+    formData.append("imagem", arquivoImagem);
   }
 
   try {

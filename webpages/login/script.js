@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000';
+const API = 'http://localhost:4000';
 
 const container = document.getElementById('container');
 const signUpButton = document.getElementById('signUp');
@@ -25,12 +25,12 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     return;
   }
     
-  fetch(`${API}/register`, {
+  fetch(`/cadastro`, {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ nome, email, senha })
+    body: JSON.stringify({ name: nome, email: email, password: senha })
   })
   .then(res => res.json())
   .then(data => {
