@@ -1,0 +1,80 @@
+/* Estilos gerais */
+body {
+    padding-top: 60px;
+}
+
+/* Navbar */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pesquisa input {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.button1, .button2 {
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.button1 {
+    background-color: #04AA6D;
+    color: white;
+    border: none;
+}
+
+.button2 {
+    background-color: #008CBA;
+    color: white;
+    border: none;
+}
+
+/* Cards de produtos */
+.card {
+    transition: transform 0.2s;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+/* Seção de informações */
+.section {
+    margin-top: 30px;
+}
+
+.numeros div {
+    margin-bottom: 15px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .navbar .container {
+        flex-direction: column;
+    }
+    
+    .pesquisa {
+        margin: 10px 0;
+        width: 100%;
+    }
+    
+    .pesquisa input {
+        width: 70%;
+    }
+}
