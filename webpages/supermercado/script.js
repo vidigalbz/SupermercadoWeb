@@ -136,8 +136,11 @@ async function adicionarProduto () {
   formData.append("fabricacao", fabricacao);
   formData.append("validade", validade);
 
-  if (imagemInput.files.length > 0) {
-    formData.append("imagem", imagemInput.files[0]);
+  const arquivoImagem = imagemInput.files[0];  
+
+  if (arquivoImagem) {
+    console.log("Tem Imagem")
+    formData.append("imagem", arquivoImagem);
   }
 
   try {
