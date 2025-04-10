@@ -25,12 +25,12 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     return;
   }
     
-  fetch(`/cadastro`, {
+  fetch(`${API}/register`, {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ name: nome, email: email, password: senha })
+    body: JSON.stringify({ nome, email, senha })
   })
   .then(res => res.json())
   .then(data => {
@@ -69,5 +69,4 @@ document.getElementById("loginButton").addEventListener("click", async function 
     console.error("Erro ao fazer login:", error);
     alert("Erro na conexão com o servidor.");
   }
-  
 });

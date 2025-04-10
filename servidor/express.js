@@ -210,23 +210,6 @@ app.post("/editarProduto", (req, res) => {
     res.json({ success: true, message: "Produto atualizado com sucesso!" });
 });
 
-app.post("/cadastro", async (req, res) => {
-    const {name, email, password} = req.body;
-
-    if (!name || !email || !password) {
-        return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
-    }
-
-    try {
-        insert("users", ["name", "email", "password"], [name, email, password]);
-        res.status(200).json({ mensagem: "Usuario cadastrado com sucesso"});
-    }
-    catch (err) {
-        console.error(err);
-        res.status(500).json({ erro: "Erro ao cadastrar usuario"})
-    }
-});
-
 app.post('/login', async (req, res) => {
     let { email, senha } = req.body;
 
