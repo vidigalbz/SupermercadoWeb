@@ -42,4 +42,33 @@ function adicionarSupermercado() {
       nomeInput.value = "";
     }
   });
+
+  document.getElementById("loginButton").addEventListener("click", async function (e) {
+    e.preventDefault();
+  
+    const email = document.getElementById("emailLogin").value;
+    const senha = document.getElementById("senhaLogin").value;
+  
+    try {
+      const response = await fetch(`${API}/login`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, senha })
+      });
+  
+      const result = await response.json();
+  
+      if (result.status === "success") {
+        alert(`Bem-vindo, ${result.name}!`);
+        window.location.href = '/inicial/index.html';
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+      alert("Erro na conexão com o servidor.");
+    }
+  });
   
