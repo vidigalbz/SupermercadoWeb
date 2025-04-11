@@ -51,31 +51,48 @@ function abrirModalAdicionarItem() {
     modal.show();
 
     document.getElementById('btn-confirmar-adicionar').onclick = function () {
-        // Lógica para adicionar produto aqui
-        console.log('Produto adicionado!');
-        modal.hide();
+        if (adicionarProduto() == true){
+          modal.hide();
+        }
     };
 }
 
-function abrirModalExclusao(produto) {
-    // Preenche os dados no modal
-    let codigo = document.getElementById("codigo-excluir").textContent;
-    //document.getElementById("excluir-nome").textContent = produto.name;
-    //document.getElementById("excluir-codigo").textContent = produto.barcode;
-    //document.getElementById("excluir-categoria").textContent = produto.category;
-    //document.getElementById("excluir-estoque").textContent = produto.stock;
+function abrirModalExclusaoProduto() {
+  const productId = document.getElementById("codigo-excluir").value;
+  const produto = currentData.find(p => String(p.productId) === String(productId));
 
-    // Mostra o modal
-    const modal = new bootstrap.Modal(document.getElementById("modalConfirmarExclusao"));
-    modal.show();
+  if (!produto) {
+    alert("Produto não encontrado.");
+    return;
+  }
 
-    // Define a ação do botão "Excluir"
-    document.getElementById("confirmar-exclusao").onclick = function () {
-        // Aqui você coloca a lógica para remover o item
-        console.log("Excluir produto:", produto);
-        modal.hide();
-    };
+  // Preenche os dados no modal com formatação
+  document.getElementById("codigo-excluir").value = produto.productId || '';
+  document.getElementById("excluir-nome").textContent = produto.name || 'Nome não informado';
+  document.getElementById("excluir-codigo").textContent = produto.productId || '—';
+  document.getElementById("excluir-categoria").textContent = produto.category || '—';
+  document.getElementById("excluir-estoque").textContent = formatarNumero(produto.stock);
+
+  // Mostra o modal
+  const modal = new bootstrap.Modal(document.getElementById("modalExcluirProduto"));
+  modal.show();
+
+  // Previne múltiplos event listeners
+  const btnExcluir = document.getElementById("confirmar-exclusao");
+  const novoBtn = btnExcluir.cloneNode(true);
+  btnExcluir.parentNode.replaceChild(novoBtn, btnExcluir);
+
+  novoBtn.addEventListener('click', async () => {
+      modal.hide();
+  });
 }
+
+// Função utilitária para formatar números com separador de milhar
+function formatarNumero(valor) {
+  if (!valor && valor !== 0) return '—';
+  return Number(valor).toLocaleString('pt-BR');
+}
+
 
 const produtoExemplo = {
     nome: "Arroz Tio João",
@@ -91,31 +108,48 @@ const produtoExemplo = {
     imagem: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/800px-Placeholder_view_vector.svg.png"
 };
   
-function abrirModalEditarProduto() {
-    preencherCombosEdicao();
+function abrirModalEditarProduto(productId) {
+  preencherCombosEdicao(); // Carrega os <select> de categorias e departamentos, por exemplo.
+  console.log(currentData)
+  // Caso o parâmetro não seja passado, tenta pegar do input manual
+  if (!productId) {
+    productId = document.getElementById("codigo-editar").value;
+  }
 
-    let produto = produtoExemplo;
-    // Preenche os campos com os dados do produto recebido
-    document.getElementById('editar-nome').value = produto.nome || '';
-    document.getElementById('editar-barcode').value = produto.barcode || '';
-    document.getElementById('editar-preco').value = produto.preco || '';
-    document.getElementById('editar-categoria').value = produto.categoria || '';
-    document.getElementById('editar-estoque').value = produto.estoque || '';
-    document.getElementById('editar-lote').value = produto.lote || '';
-    document.getElementById('editar-departamento').value = produto.departamento || '';
-    document.getElementById('editar-marketId').value = produto.marketId || '';
-    document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
-    document.getElementById('editar-validade').value = produto.expirationDate || '';
-    // Não preenche imagem porque não é possível definir o valor de um <input type="file">
+  // Garante que o ID seja tratado como string para comparação
+  const produto = currentData.find(p => String(p.productId) === String(productId));
+  console.log("Produto encontrado para edição:", produto);
   
-    const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
-    modal.show();
-  
-    document.getElementById('btn-confirmar-edicao').onclick = () => {
-      // Lógica para salvar as alterações aqui
-      console.log('Alterações salvas!');
-      modal.hide();
-    };
+  if (!produto) {
+    alert("Produto não encontrado.");
+    return;
+  }
+
+  // Preenche os campos com os dados do produto
+  document.getElementById('codigo-editar').value = produto.productId || '';
+  document.getElementById('editar-nome').value = produto.name || '';
+  document.getElementById('editar-barcode').value = produto.barcode || '';
+  document.getElementById('editar-preco').value = produto.price || '';
+  document.getElementById('editar-categoria').value = produto.category || '';
+  document.getElementById('editar-estoque').value = produto.stock || '';
+  document.getElementById('editar-lote').value = produto.lot || '';
+  document.getElementById('editar-departamento').value = produto.departament || '';
+  document.getElementById('editar-marketId').value = produto.marketId || '';
+  document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
+  document.getElementById('editar-validade').value = produto.expirationDate || '';
+  // Nota: não é possível preencher um <input type="file"> via JavaScript por segurança
+
+  const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
+  modal.show();
+
+  // Evita múltiplos bindings duplicados
+  const btnConfirmar = document.getElementById('btn-confirmar-edicao');
+  const novoBtn = btnConfirmar.cloneNode(true);
+  btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
+
+  novoBtn.addEventListener('click', async () => {
+    modal.hide();
+  });
 }
 
 function preencherCombosCategoriasEDepartamentos() {

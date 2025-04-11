@@ -33,12 +33,6 @@ function limparFiltros() {
     console.log("Filtros limpos");
 }
   
-// Abertura dos Modais
-function abrirModalAdicionarItem() {
-    const modal = new bootstrap.Modal(document.getElementById("modalAdicionarItem"));
-    modal.show();
-}
-  
 function abrirModalEdicao() {
   const codigo = document.getElementById("codigo-editar").value.trim();
   if (codigo === "") {
@@ -47,8 +41,7 @@ function abrirModalEdicao() {
     return;
   }
 
-  const modal = new bootstrap.Modal(document.getElementById("modalEditarProduto"));
-  modal.show();
+  abrirModalEditarProduto();
 }
   
 function abrirModalExclusao() {
@@ -59,8 +52,7 @@ function abrirModalExclusao() {
     return;
   }
 
-  const modal = new bootstrap.Modal(document.getElementById("modalExcluirProduto"));
-  modal.show();
+  abrirModalExclusaoProduto()
 }
   
 function abrirModalDepCat() {
@@ -84,7 +76,7 @@ function abrirConfirmarExclusao() {
   modalConfirmar.show();
 }
 
-function confirmarEdicaoFinal() {
+async function confirmarEdicaoFinal() {
   // Fecha o modal de confirmação
   const modalConfirmar = bootstrap.Modal.getInstance(document.getElementById("modalConfirmarEdicao"));
   if (modalConfirmar) modalConfirmar.hide();
@@ -94,7 +86,8 @@ function confirmarEdicaoFinal() {
   if (modalEdicao) modalEdicao.hide();
 
   // Chama a função real de edição (opcional)
-  realizarEdicao();
+  await confirmarEdicao();
+  console.log('Alterações salvas!');
 }
 
 function confirmarExclusaoFinal() {
@@ -105,17 +98,13 @@ function confirmarExclusaoFinal() {
   if (modalExclusao) modalExclusao.hide();
 
   // Chama a função real de exclusão (opcional)
-  realizarExclusao();
+  excluirProduto();
 }
 
 
 // Botões de ação
 document.getElementById("btn-pesquisar").addEventListener("click", () => {
-  const termo = obterPesquisa();
-  console.log("Pesquisando por:", termo);
-
-      // Aqui você faria a filtragem dos produtos
-      // filtrarProdutos(termo);
+  search();
 });
   
 document.getElementById("btn-limpar-filtros").addEventListener("click", limparFiltros);
