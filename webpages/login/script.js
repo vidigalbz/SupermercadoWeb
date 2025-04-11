@@ -38,11 +38,13 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     showToast("As senhas não coincidem!", "danger");
     return;
   }
-
-  fetch(`${API}/register`, {
+    
+  fetch(`/cadastro`, {
     method: "POST",
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, email, senha })
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name: nome, email: email, password: senha })
   })
   .then(res => res.json())
   .then(data => {
@@ -78,10 +80,8 @@ document.getElementById("loginButton").addEventListener("click", async function 
     const result = await response.json();
 
     if (result.status === "success") {
-      showToast(`Bem-vindo, ${result.nome}!`, "success");
-      setTimeout(() => {
-        window.location.href = '/inicial/index.html';
-      }, 1500);
+      alert(`Bem-vindo, ${result.name}!`);
+      window.location.href = '/supermercado';
     } else {
       showToast(result.message || "Email ou senha incorretos!", "danger");
     }

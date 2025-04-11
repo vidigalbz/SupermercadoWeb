@@ -13,9 +13,11 @@ CREATE TABLE IF NOT EXISTS accessKeys (
 );
 
 CREATE TABLE IF NOT EXISTS supermarkets (
-    marketId TEXT PRIMARY KEY,
-    createdAt TEXT NOT NULL,
+    marketId INTEGER PRIMARY KEY AUTOINCREMENT,
+    createdAt TEXT,
     name TEXT NOT NULL,
+    local TEXT NOT NULL,
+    icon TEXT NOT NULL,
     ownerId TEXT NOT NULL,
     FOREIGN KEY (ownerId) REFERENCES users(userId)
 );
@@ -99,5 +101,6 @@ module.exports = {
     select,
     update,
     delet,
+    query,
     db
 }

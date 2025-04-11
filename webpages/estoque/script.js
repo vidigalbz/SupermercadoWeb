@@ -3,8 +3,13 @@ const container = document.getElementById("produtos-container");
 var currentData = []
 
 function criarCardHTML(produto) {
-  const imagemURL = produto.image || 'https://via.placeholder.com/120x120?text=Sem+Imagem';
-
+  var rawImagePath = ""
+  if (produto.image != null){
+    rawImagePath = produto.image.replace(/\\/g, '/')
+  }
+  const imagemURL = rawImagePath 
+  ? `http://localhost:4000/${rawImagePath}` 
+  : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = `
     <div class="card-produto d-flex mb-3" data-id="${produto.productId}" style="border-radius: 10px; overflow: hidden;">
@@ -101,6 +106,7 @@ function carregarProdutos() {
     .then(data => {
       currentData = data.mensagem;
       renderizarProdutos(data.mensagem);
+      console.log(`${data.mensagem.image}`)
     })
     .catch(err => console.error('Erro ao carregar produtos:', err));
 }
@@ -153,8 +159,9 @@ async function adicionarProduto() {
   formData.append("fabricacao", fabricacao);
   formData.append("validade", validade);
 
-  if (imagemInput.files.length > 0) {
-    formData.append("imagem", imagemInput.files[0]);
+  const imagemPath = imagemInput.files[0]
+  if (imagemPath){
+    formData.append("imagem", imagemPath)
   }
 
   try {

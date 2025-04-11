@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
-const { select, insert, update, delet } = require("./database.js");
+const { select, insert, update, delet, query} = require("./database.js");
 
 const app = express();
 const port = 4000;
@@ -14,9 +14,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configuração do multer (mas sem salvar arquivos por enquanto)
-const upload = multer({ dest: 'upload'});
+const storage = multer.diskStorage({
+    destination: ('servidor/uploads'),
+    filename: (req, file, cb) => {
+        const ext = file.originalname.split(".").pop()
+        cb(null, `imagem-${Date.now()}.${ext}`)
+    }
+    
+})
+const upload = multer({storage: storage});
 
-app.use('/uploads', express.static(path.resolve(__dirname, './uploads')));  
+app.use('/servidor/uploads', express.static(path.resolve(__dirname, './uploads')));  
 
 // Carregamento de páginas
 async function loadPages() {
@@ -45,6 +53,9 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         const imagem = req.file
         if (!imagem) {
             return res.status(400).json({error: 'Nenhuma imagem enviada'})
+        }
+        else{
+            console.log(imagem.path)
         }
         const {
             nome,
@@ -247,7 +258,7 @@ app.post('/login', async (req, res) => {
                 status: "error", 
                 message: "E-mail não cadastrado!" 
             });
-        }
+        }   
 
         const user = users[0];
         if (senha !== user.password) {
@@ -272,6 +283,11 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.post("/adicionarSupermercado", async (req, res) => {
+    const {nome, local, onwerId, icon} = req.body
+
+    insert("supermarkets", ["name", "local", "ownerId", "icon"], [nome, local, onwerId, icon])
+})
 
 loadPages();
 
