@@ -14,9 +14,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configuração do multer (mas sem salvar arquivos por enquanto)
-const upload = multer({ dest: 'upload'});
+const storage = multer.diskStorage({
+    destination: ('servidor/uploads'),
+    filename: (req, file, cb) => {
+        const ext = file.originalname.split(".").pop()
+        cb(null, `imagem-${Date.now()}.${ext}`)
+    }
+    
+})
+const upload = multer({storage: storage});
 
-app.use('/uploads', express.static(path.resolve(__dirname, './uploads')));  
+app.use('/servidor/uploads', express.static(path.resolve(__dirname, './uploads')));  
 
 // Carregamento de páginas
 async function loadPages() {
@@ -45,6 +53,9 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         const imagem = req.file
         if (!imagem) {
             return res.status(400).json({error: 'Nenhuma imagem enviada'})
+        }
+        else{
+            console.log(imagem.path)
         }
         const {
             nome,
