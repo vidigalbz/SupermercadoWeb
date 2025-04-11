@@ -50,20 +50,3 @@ function criarCardEstoque(produto) {
 
   tooltips.forEach(btn => new bootstrap.Tooltip(btn));
 }
-
-for (let index = 0; index < 12; index++) {
-  const produtoExemplo = {
-    name: "Leite Integral",
-    barcode: "7891234567890",
-    price: 5.49,
-    stock: 42,
-    category: "Laticínios",
-    lot: "A1B2C3",
-    department: "Refrigerados",
-    expirationDate: "10/05/2025",
-    manufactureDate: "10/03/2025",
-    imagem: "https://via.placeholder.com/150"
-  };
-  
-  criarCardEstoque(produtoExemplo);
-}
