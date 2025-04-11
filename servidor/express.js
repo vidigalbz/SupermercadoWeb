@@ -289,6 +289,23 @@ app.post("/adicionarSupermercado", async (req, res) => {
     insert("supermarkets", ["name", "local", "ownerId", "icon"], [nome, local, onwerId, icon])
 })
 
+app.post('/supermercadoData', async (req, res) => {
+    const {busca} = req.body;
+    let condicao = "";
+    if (busca) {
+        const termo = busca.replace(/'/g, "''")
+        condicao = `Where ownerId == ${termo}` 
+    }
+    try{
+    const results = await select("supermarkets", condicao);
+    res.status(200).json({mensagem: results});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({erro: "Erro ao consultar supermercados."})
+    }
+})
+
+
 loadPages();
 
 app.listen(port, () => {

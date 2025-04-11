@@ -55,7 +55,6 @@ function alternarVisibilidade(botao) {
 }
 
 function criarCardSupermercado(supermercado) {
-  deleteEmpty(0)
   const card = document.createElement('div');
   card.className = 'col-md-4 col-lg-3';
   card.innerHTML = `
@@ -100,32 +99,74 @@ function criarCardSupermercado(supermercado) {
         </div>
       </div>
     </div>
-  `;
-
-  // Adiciona o card na área onde os cards ficam
-  document.querySelector('.card-container').appendChild(card);
-
-  // Ativa popovers do Bootstrap nesse card
-  const popoverTriggerList = card.querySelectorAll('[data-bs-toggle="popover"]');
-  popoverTriggerList.forEach(el => new bootstrap.Popover(el));
-}
-
-function deleteEmpty(index) {
-  let card = document.getElementById(`empty-card-${index}`)
-  card.remove();
-}
-
-// CADASTRO
-document.getElementById("addMarket").addEventListener("click", function (e){
-  e.preventDefault();
-  var name = document.getElementById("nomeSupermercado").value;
-  var local = document.getElementById("localizacao").value;
-  var gerente = document.getElementById("nomeGerente").value;
-  var icon =  document.getElementById("icon").value;
+    `;
+    
+    // Adiciona o card na área onde os cards ficam
+    document.querySelector('.card-container').appendChild(card);
+    
+    // Ativa popovers do Bootstrap nesse card
+    const popoverTriggerList = card.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach(el => new bootstrap.Popover(el));
+  }
   
-  fetch('/adicionarSupermercado', {
-    method: "POST",
-    headers: {
+  function deleteEmpty(index) {
+    let card = document.getElementById(`empty-card-${index}`)
+    card.remove();
+  }
+  function atualizarOuAdicionarCard(supermercado) {
+    const cardExistente = container.querySelector(`.card-super[data-id="${supermercado.marketId}"]`);
+    if (cardExistente) {
+      cardExistente.remove();
+    }
+    criarCardSupermercado(supermercado);
+  }
+  
+  function renderizarSupermercados(supermercados) {
+    const idsNovos = supermercados.map(s => s.marketId);
+    const cardsAtuais = Array.from(container.querySelectorzAll('.card-super'));
+  
+    for (let card of cardsAtuais) {
+      if (!idsNovos.includes(parseInt(card.dataset.id))) {
+        card.remove();
+      }
+    }
+  
+    for (let supermercado of supermercados) {
+      criarCardSdupermercado(supermercado);
+    }
+  }
+  
+  function carregarSupermercados(){
+    fetch('/supermercadoData', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    })
+      .then(res => res.json())
+      .then(data => {
+        currentData = data.mensagem;
+        currentData.forEach(element => {
+          console.log(element)
+          criarCardSupermercado({nome: element.name,
+            local: element.local,
+            gerente: element.onwerId,
+            icone: element.icon
+        })
+        });
+        console.log(`${data.mensagem.image}`)
+    })
+  }
+  // CADASTRO
+  document.getElementById("addMarket").addEventListener("click", function (e){
+    e.preventDefault();
+    var name = document.getElementById("nomeSupermercado").value;
+    var local = document.getElementById("localizacao").value;
+    var gerente = document.getElementById("nomeGerente").value;
+    var icon =  document.getElementById("icon").value;
+    
+    fetch('/adicionarSupermercado', {
+      method: "POST",
+      headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({nome: name, local: local, onwerId: gerente, icon: icon})
@@ -134,24 +175,14 @@ document.getElementById("addMarket").addEventListener("click", function (e){
   .then(data => {
     if (data.status === "sucess"){
       showToast("Supermercado Adicionado com sucesso", "sucess");
-      criarCardSupermercado({
-        nome: nome,
-        local: local,
-        icone: icon,
-        linkPDV: 'https://pdv.link',
-        linkEstoque: 'https://estoque.link'
-      });
     } else {
       showToast(data.message || "Erro ao adicionar supermercado", "danger");
     }
   })
   .catch(() => showToast("Erro ao conectar com servidor!", "danger")),
+
 )})
 
-criarCardSupermercado({
-  nome: 'Supermercado A',
-  local: 'Xique Xique Bahia',
-  icone: '🏪',
-  linkPDV: 'https://pdv.link',
-  linkEstoque: 'https://estoque.link'
-});
+
+
+carregarSupermercados()

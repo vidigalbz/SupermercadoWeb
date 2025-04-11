@@ -115,6 +115,7 @@ document.getElementById("btn-recarrega-estoque").addEventListener("click", () =>
   carregarProdutos();
 });
 
+
 function search() {
   const valorBusca = document.getElementById("pesquisa").value.trim();
   fetch('/estoqueData', {
