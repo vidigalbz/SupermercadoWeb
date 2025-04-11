@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
-const { select, insert, update, delet } = require("./database.js");
+const { select, insert, update, delet, query} = require("./database.js");
 
 const app = express();
 const port = 4000;
@@ -258,7 +258,7 @@ app.post('/login', async (req, res) => {
                 status: "error", 
                 message: "E-mail não cadastrado!" 
             });
-        }
+        }   
 
         const user = users[0];
         if (senha !== user.password) {
@@ -284,9 +284,9 @@ app.post('/login', async (req, res) => {
 });
 
 app.post("/adicionarSupermercado", async (req, res) => {
-    const {nome, local, onwerId} = req.body
+    const {nome, local, onwerId, icon} = req.body
 
-    insert("supermarket", ["name", "local", "onwerId"], [nome, local, onwerId])
+    insert("supermarkets", ["name", "local", "ownerId", "icon"], [nome, local, onwerId, icon])
 })
 
 loadPages();
