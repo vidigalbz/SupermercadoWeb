@@ -119,6 +119,39 @@ function deleteEmpty() {
 
 // teste
 deleteEmpty();
+// CADASTRO
+document.getElementById("addMarket").addEventListener("click", function (e){
+  e.preventDefault();
+  var name = document.getElementById("nomeSupermercado").value;
+  var local = document.getElementById("localizacao").value;
+  var gerente = document.getElementById("nomeGerente").value;
+  var icon =  document.getElementById("icon").value;
+  
+  fetch('/adicionarSupermercado', {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({nome: name, local: local, onwerId: gerente, icon: icon})
+  })
+  .then(res => res.json()
+  .then(data => {
+    if (data.status === "sucess"){
+      showToast("Supermercado Adicionado com sucesso", "sucess");
+      criarCardSupermercado({
+        nome: nome,
+        local: local,
+        icone: icon,
+        linkPDV: 'https://pdv.link',
+        linkEstoque: 'https://estoque.link'
+      });
+    } else {
+      showToast(data.message || "Erro ao adicionar supermercado", "danger");
+    }
+  })
+  .catch(() => showToast("Erro ao conectar com servidor!", "danger")),
+)})
+
 criarCardSupermercado({
   nome: 'aaaaaaaaaaaa',
   local: 'Xique Xique Bahia',
