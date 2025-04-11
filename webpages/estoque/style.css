@@ -11,7 +11,7 @@ body {
   overflow-y: auto;
   padding: 1rem;
   background-color: #e9ecef;
-  border-radius: 10px;
+  border-radius: 10px; 
 }
 
 .card-produto {

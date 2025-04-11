@@ -1,94 +1,263 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Super Mercado Didático</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Ícones Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Super Mercado Didático</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      padding-top: 60px;
+      background-color: #f5f5f5;
+    }
+
+    .navbar {
+      background: linear-gradient(to left, #ff6f00, #ffa040);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-img-top {
+      height: 100px;
+      object-fit: cover;
+    }
+
+    #produtos-container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .nova-footer {
+      background-color: #ffffff;
+      border-top: 1px solid #ddd;
+      box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .grid-produtos {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 1rem;
+        background-color: #e9ecef;
+        border-radius: 10px;
+    }
+
+    .grid-produtos > div {
+        height: 100%; /* faz o card ocupar toda a grid cell */
+    }
     
-    <link rel="stylesheet" href="style.css">
+    .card {
+        height: 100%; /* card completo usa o espaço da célula */
+        display: flex;
+        flex-direction: column;
+    }
+    .card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+    }
+  </style>
 </head>
-
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-warning bg-warning fixed-top">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <h2 class="mb-0">🛒</h2>
-                <span class="ms-2 fw-bold">Super Mercado Didático</span>
-            </a>
-            
-        </div>
-    </nav>
 
-    <!-- Conteúdo principal -->
-    <div class="container p-4">
-        <div class="card shadow-sm h-50 no-hover bg-primary">
-            <div class="d-flex align-items-center p-3">
-                <div class="input-group search-box me-3">
-                    <input type="text" class="form-control" placeholder="Pesquisar produto">
-                    <button class="btn btn-outline-dark text-black bg-white"><i class="bi bi-search"></i></button>
-                </div>
-                <button class="btn btn-outline-danger text-white bg-danger">Cancelar</button>
-            </div> 
-        </div>        
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container d-flex justify-content-between">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <h2 class="mb-0">🛒</h2>
+        <span class="ms-2 fw-bold">Super Mercado Didático</span>
+      </a>
+      <button class="btn btn-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-alertas">Caixa</button>
+    </div>
+  </nav>
 
-        <div class="row p-4" id="produtos-container">   
-            <!-- Card Produto -->
-            <div class="col-6 col-sm-4 col-md-3 col-xxl-2 mb-4">
-                <div class="card shadow-sm h-100">
-                    <img src="not-found.png" class="card-img-top" alt="Produto" style="height: 120px; object-fit: cover;">
-                    <div class="card-body d-flex flex-column p-2">
-                        <h6 class="card-title mb-1">Produto Exemplo</h6>
-                        <p class="card-text small text-muted mb-2">Breve descrição.</p>
-                        <div class="mt-auto d-flex justify-content-between">
-                            <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-dash-circle"></i></button>
-                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                        </div>
-                    </div>
-                </div>
+  <!-- Offcanvas do caixa -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-alertas">
+    <div class="offcanvas-header bg-warning">
+      <h5 class="offcanvas-title">Informações do Caixa</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body bg-warning" style="--bs-bg-opacity: .5;">
+      <p>Aqui vão os detalhes do caixa...</p>
+    </div>
+  </div>
+
+  <!-- Conteúdo principal -->
+  <div class="container py-4">
+    <!-- Pesquisa -->
+    <div class="card shadow-sm mb-4 no-hover">
+        <div class="card-body">
+        <div class="row gy-3">
+    
+            <!-- Pesquisa -->
+            <div class="col-12">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Pesquisar produto">
+                <button class="btn btn-outline-secondary">
+                <i class="bi bi-search"></i>
+                </button>
             </div>
-            <!-- Adicione mais produtos duplicando o bloco acima -->
+            </div>
+    
+            <!-- Código + Botão Adicionar + Avançado -->
+            <div class="col-12 col-md-6 d-flex gap-2">
+            <div class="input-group input-group-sm flex-grow-1">
+                <input type="text" class="form-control" id="codigoProdutoInput" placeholder="Código do produto">
+                <button class="btn btn-success" onclick="adicionarProduto()">Adicionar</button>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAdicaoAvancada">
+                <i class="bi bi-plus-circle"></i> Avançado
+            </button>
+            </div>
+    
+            <!-- Informações de preço -->
+            <div class="col-6 col-md-3">
+            <div class="bg-light rounded p-2 small fw-semibold d-flex justify-content-between">
+                <span>📦 Total:</span>
+                <span id="total-produtos">0</span>
+            </div>
+            </div>
+            <div class="col-6 col-md-3">
+            <div class="bg-light rounded p-2 small fw-semibold d-flex justify-content-between">
+                <span>💲 Total:</span>
+                <span id="preco-total">0.00</span>
+            </div>
+            </div>
+    
+            <!-- Botões empilhados -->
+            <div class="col-6 col-md-3">
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalCancelarCompra">
+                    Cancelar
+                </button>
+            </div>
+            <div class="col-6 col-md-3">
+                <button class="btn btn-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#modalConfirmarCompra">
+                    <i class="bi bi-cart-check-fill"></i> Finalizar
+                </button>
+            </div>
+    
+        </div>
         </div>
     </div>
+  
+    <!-- Produtos -->
+    <div class="grid-produtos" id="produtos-container">
+  </div>
 
-    <!-- Seção de informações -->
-    <div class="footer-bar bg-warning py-3">
-        <div class="container">
-            <div class="row g-2 text-center align-items-center">
-                <div class="col-6 col-md-2">
-                    <div class="d-flex gap-2 align-items-center">
-                      <input type="text" class="form-control form-control-sm" id="codigoProdutoInput" placeholder="Código">
-                      <button class="btn btn-success btn-sm" onclick="adicionarProduto()">➕</button>
-                    </div>
-                  </div>                  
-                <div class="col-6 col-md-2">
-                    <button class="footer-btn" onclick="adicaoAvancada()">
-                        ➕ Adição
-                    </button>
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="info-label">📦 Total: <span id="total-produtos">0</span></label>
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="info-label">💲 Preço: R$ <span id="preco-total">0.00</span></label>
-                </div>
-                <div class="col-6 col-md-2">
-                    <button class="btn btn-success w-100 btn-sm">
-                        <i class="bi bi-cart-check-fill"></i> Finalizar
-                    </button>
-                </div>
-            </div>
+  <!-- Modal: Adição Avançada -->
+  <div class="modal fade" id="modalAdicaoAvancada" tabindex="-1" aria-labelledby="modalAdicaoAvancadaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAdicaoAvancadaLabel">Adicionar Produto - Modo Avançado</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
+        <div class="modal-body">
+          <form id="formProdutoAvancado">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nome do Produto</label>
+                <input type="text" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Código de Barras</label>
+                <input type="text" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Preço</label>
+                <input type="number" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Quantidade</label>
+                <input type="number" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Lote</label>
+                <input type="text" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Departamento</label>
+                <input type="text" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Categoria</label>
+                <input type="text" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Validade</label>
+                <input type="date" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Data de Fabricação</label>
+                <input type="date" class="form-control">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Imagem (URL)</label>
+                <input type="text" class="form-control">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" form="formProdutoAvancado">Adicionar Produto</button>
+        </div>
+      </div>
     </div>
-
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+  </div>
+  
+  <!-- Modal: Confirmar Compra -->
+  <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-labelledby="modalConfirmarCompraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="modalConfirmarCompraLabel">Compra Finalizada</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-3">A compra foi finalizada com sucesso!</p>
+          <button class="btn btn-outline-primary" onclick="gerarNotaFiscal()">
+            <i class="bi bi-file-earmark-text"></i> Gerar Nota Fiscal
+          </button>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Concluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Cancelar Compra -->
+  <div class="modal fade" id="modalCancelarCompra" tabindex="-1" aria-labelledby="modalCancelarCompraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="modalCancelarCompraLabel">Cancelar Compra</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Para cancelar a compra, digite a senha do administrador:</p>
+          <input type="password" class="form-control mb-3" id="senhaCancelamento" placeholder="Senha de confirmação">
+          <div class="text-danger d-none" id="erroSenha">Senha incorreta. Tente novamente.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+          <button type="button" class="btn btn-danger" onclick="confirmarCancelamento()">Confirmar Cancelamento</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Scripts Bootstrap e Funções -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./script.js"></script>
 </body>
-
 </html>

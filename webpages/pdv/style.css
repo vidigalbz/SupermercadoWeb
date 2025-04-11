@@ -1,6 +1,7 @@
 /* Estilos gerais */
 body {
     padding-top: 60px;
+    padding-bottom: 60px;
 }
 
 /* Navbar */
@@ -105,15 +106,15 @@ body {
 
 #bloco-adicao-manual {
     margin-bottom: 1.5rem;
-  }
+}
 
-  #formAdicionarProduto input {
+#formAdicionarProduto input {
     flex: 1;
-  }
+}
 
-  #formAdicionarProduto button {
+#formAdicionarProduto button {
     white-space: nowrap;
-  }
+}
 
 /* Responsividade */
 @media (max-width: 768px) {
@@ -129,4 +130,8 @@ body {
     .pesquisa input {
         width: 70%;
     }
+}
+
+#produtos-container {
+
 }
