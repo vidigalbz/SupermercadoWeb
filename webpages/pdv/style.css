@@ -1,133 +1,179 @@
 /* Estilos gerais */
 body {
-    padding-top: 60px;
-    padding-bottom: 60px;
+  padding-top: 60px;
+  padding-bottom: 60px;
+  background-color: #f5f5f5;
 }
 
 /* Navbar */
 .navbar {
-    background: linear-gradient(to left, #ff6f00, #ffa040);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.pesquisa input {
-    padding: 5px 10px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
-.button1, .button2 {
-    padding: 5px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.button1 {
-    background-color: #04AA6D;
-    color: white;
-    border: none;
-}
-
-.button2 {
-    background-color: #008CBA;
-    color: white;
-    border: none;
+  background: linear-gradient(to left, #ff6f00, #ffa040);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Cards de produtos */
 .card {
-    transition: transform 0.2s;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
+  transition: transform 0.2s;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  height: 100%;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .card.no-hover:hover {
-    box-shadow: none !important;
-    transform: none !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
-.card-img-top {
-    height: 200px;
-    object-fit: cover;
+/* 產品卡片布局 */
+.card-produto .row {
+  height: 100%;
 }
 
-.card-body {
-    padding: 15px;
+.card-produto .col-md-4 {
+  border-right: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
 }
 
-/* Seção de informações */
-.section {
-    margin-top: 30px;
+.card-produto .card-img {
+  max-height: 120px;
+  width: auto;
+  object-fit: contain;
 }
 
-.numeros div {
-    margin-bottom: 15px;
+.card-produto .card-body {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.footer-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1030;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-    background: linear-gradient(to left, #ff6f00, #ffa040);
+.card-produto .card-title {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-.info-label {
-    display: block;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    padding: 6px;
-    font-size: 0.9rem;
+.card-produto .card-text {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 0.3rem;
 }
 
-.footer-btn {
-    width: 100%;
-    padding: 6px;
-    font-size: 0.9rem;
-    border-radius: 0.375rem;
-    border: 1px solid #dee2e6;
-    background-color: #f8f9fa;
-    color: #212529;
-    transition: background-color 0.2s ease;
+.card-produto .card-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
 }
 
-.footer-btn:hover {
-    background-color: #e2e6ea;
+/* 產品容器布局 */
+.grid-produtos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-#bloco-adicao-manual {
-    margin-bottom: 1.5rem;
+/* Modal 樣式 */
+.modal-content {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
-#formAdicionarProduto input {
-    flex: 1;
+.modal-header {
+  background: linear-gradient(to right, #ff6f00, #ffa040);
+  color: white;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0 !important;
 }
 
-#formAdicionarProduto button {
-    white-space: nowrap;
+.modal-body {
+  padding: 20px;
+  font-size: 1.1rem;
 }
 
-/* Responsividade */
+.modal-footer {
+  border-top: none;
+  justify-content: center;
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+}
+
+/* 不同類型的Modal樣式 */
+.modal-warning .modal-header {
+  background: linear-gradient(to right, #ffc107, #ffab00);
+}
+
+.modal-error .modal-header {
+  background: linear-gradient(to right, #dc3545, #c82333);
+}
+
+.modal-success .modal-header {
+  background: linear-gradient(to right, #28a745, #218838);
+}
+
+/* Checkout Modal Styles */
+#checkoutModalBody {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkout-summary {
+  width: 100%;
+}
+
+.checkout-summary table {
+  margin-bottom: 1rem;
+}
+
+.checkout-summary th {
+  white-space: nowrap;
+}
+
+#checkoutItemsList tr:last-child {
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Empty cart animation */
+.bi-cart-x-fill {
+  animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* 響應式設計 */
 @media (max-width: 768px) {
-    .navbar .container {
-        flex-direction: column;
-    }
-    
-    .pesquisa {
-        margin: 10px 0;
-        width: 100%;
-    }
-    
-    .pesquisa input {
-        width: 70%;
-    }
+  .navbar .container {
+    flex-direction: column;
+  }
+  
+  .grid-produtos {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-produto .col-md-4 {
+    border-right: none;
+    border-bottom: 1px solid #dee2e6;
+    height: 150px;
+  }
 }
