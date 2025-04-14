@@ -1,3 +1,5 @@
+
+
 function confirmarExclusao() {
   const input = document.getElementById("confirmarExclusao");
   const nome = "Supermercado A"; // Substituir pelo nome atual
@@ -157,31 +159,37 @@ function criarCardSupermercado(supermercado) {
     })
   }
   // CADASTRO
-  document.getElementById("addMarket").addEventListener("click", function (e){
+  document.getElementById("addMarket").addEventListener("click", function(e){
     e.preventDefault();
-    var name = document.getElementById("nomeSupermercado").value;
-    var local = document.getElementById("localizacao").value;
-    var gerente = document.getElementById("nomeGerente").value;
-    var icon =  document.getElementById("icon").value;
+    const name = document.getElementById("nomeSupermercado").value;
+    const local = document.getElementById("localizacao").value;
+    const gerente = document.getElementById("nomeGerente").value;
+    const icon = document.getElementById("icon").value;
     
     fetch('/adicionarSupermercado', {
       method: "POST",
-      headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({nome: name, local: local, onwerId: gerente, icon: icon})
-  })
-  .then(res => res.json()
-  .then(data => {
-    if (data.status === "sucess"){
-      showToast("Supermercado Adicionado com sucesso", "sucess");
-    } else {
-      showToast(data.message || "Erro ao adicionar supermercado", "danger");
-    }
-  })
-  .catch(() => showToast("Erro ao conectar com servidor!", "danger")),
-
-)})
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: name, 
+        local: local, 
+        ownerId: gerente, // Corrigido o nome do campo
+        icon: icon
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "success"){
+        showToast("Supermercado Adicionado com sucesso", "success");
+        criarCardSupermercado(data.data); // Usa os dados da resposta
+      } else {
+        showToast(data.message || "Erro ao adicionar supermercado", "danger");
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showToast("Erro ao conectar com servidor!", "danger");
+    });
+  });
 
 
 

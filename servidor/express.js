@@ -2,10 +2,12 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
-const { select, insert, update, delet, query} = require("./database.js");
+const { select, insert, update, delet, query, insertLink} = require("./database.js");
 
 const app = express();
 const port = 4000;
+
+const { db } = require('./database.js'); // Importa o db do seu arquivo database.js
 
 const webpages_dir = path.join(__dirname, "../webpages");
 var pages = [];
@@ -283,11 +285,125 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Rota para cadastrar supermercado + gerar links
 app.post("/adicionarSupermercado", async (req, res) => {
-    const {nome, local, onwerId, icon} = req.body
+    const { nome, local, ownerId, icon } = req.body;
 
-    insert("supermarkets", ["name", "local", "ownerId", "icon"], [nome, local, onwerId, icon])
-})
+    try {
+        // 1. Insere o supermercado (usando sua função original)
+        insert("supermarkets", 
+            ["name", "local", "ownerId", "icon", "createdAt"],
+            [nome, local, ownerId, icon, new Date().toISOString()]
+        );
+
+        // 2. Obtém o ID do último registro inserido
+        const market = await new Promise((resolve, reject) => {
+            db.get(
+                "SELECT marketId FROM supermarkets ORDER BY marketId DESC LIMIT 1",
+                (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                }
+            );
+        });
+
+        if (!market) throw new Error("Falha ao obter ID do supermercado");
+        const marketId = market.marketId;
+
+        // 3. Gera e armazena os links
+        const baseUrl = `http://localhost:${port}`;
+        const pdvLink = `${baseUrl}/pdv/${marketId}`;
+        const estoqueLink = `${baseUrl}/estoque/${marketId}`;
+
+        await insertLink(pdvLink, marketId, "pdv");
+        await insertLink(estoqueLink, marketId, "estoque");
+
+        // 4. Retorna a resposta
+        res.status(201).json({
+            success: true,
+            data: {
+                marketId,
+                pdvLink,
+                estoqueLink
+            }
+        });
+
+    } catch (err) {
+        console.error("Erro:", err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message 
+        });
+    }
+});
+
+// Rota para o PDV de um supermercado específico
+app.get('/pdv/:marketId', async (req, res) => {
+    try {
+        const marketId = req.params.marketId;
+        console.log(`Acessando PDV para marketId: ${marketId}`);
+
+        // Consulta atualizada para marketId
+        const market = await select(
+            "supermarkets", 
+            "WHERE marketId = ?", 
+            [marketId]
+        );
+        
+        if (!market || market.length === 0) {
+            console.warn(`Supermercado com marketId ${marketId} não encontrado`);
+            return res.status(404).send("Supermercado não encontrado");
+        }
+        
+        console.log(`Supermercado encontrado:`, market[0]);
+        res.sendFile(path.join(webpages_dir, "pdv/index.html"));
+    } catch (err) {
+        console.error(`Erro ao acessar PDV:`, err);
+        res.status(500).send("Erro interno do servidor");
+    }
+});
+
+app.get('/estoque/:marketId', async (req, res) => {
+    try {
+        const marketId = req.params.marketId;
+        console.log(`Acessando Estoque para marketId: ${marketId}`);
+
+        const market = await select(
+            "supermarkets", 
+            "WHERE marketId = ?", 
+            [marketId]
+        );
+        
+        if (!market || market.length === 0) {
+            return res.status(404).send("Supermercado não encontrado");
+        }
+        
+        res.sendFile(path.join(webpages_dir, "estoque/index.html"));
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Erro interno do servidor");
+    }
+});
+
+// Rota para o Estoque de um supermercado específico
+app.get('/estoque/:supermarketId', async (req, res) => {
+    try {
+        const supermarketId = req.params.marketId;
+        
+        // Verificar se o supermercado existe
+        const supermarket = await select("supermarkets", "WHERE supermarketId = ?", [supermarketId]);
+        
+        if (supermarket.length === 0) {
+            return res.status(404).send("Supermercado não encontrado");
+        }
+        
+        res.sendFile(path.join(webpages_dir, "estoque/index.html"));
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Erro ao acessar Estoque");
+    }
+});
 
 app.post('/supermercadoData', async (req, res) => {
     const {busca} = req.body;

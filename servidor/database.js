@@ -96,11 +96,25 @@ function query(query){
     })
 }
 
+function insertLink(key, marketId, type) {
+    return new Promise((resolve, reject) => {
+        db.run(
+            `INSERT INTO accessKeys (key, marketId, type) VALUES (?, ?, ?)`,
+            [key, marketId, type],
+            function(err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            }
+        );
+    });
+}
+
 module.exports = {
     insert,
     select,
     update,
     delet,
     query,
+    insertLink,
     db
 }
