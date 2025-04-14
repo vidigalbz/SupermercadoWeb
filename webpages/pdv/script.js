@@ -23,19 +23,12 @@ function init() {
     updateTotals();
 }
 
-// Setup event listeners (fixed to prevent duplicates)
+// Setup event listeners
 function setupEventListeners() {
-    // Clear existing listeners first
     const codigoInput = document.getElementById("codigoProdutoInput");
     const searchInput = document.querySelector('.input-group input[placeholder="Pesquisar produto"]');
     const checkoutModal = document.getElementById('modalConfirmarCompra');
     
-    codigoInput.removeEventListener("keypress", handleEnterKey);
-    searchInput.removeEventListener("input", handleSearch);
-    checkoutModal.removeEventListener('show.bs.modal', prepareCheckoutModal);
-    confirmCheckoutBtn.removeEventListener("click", finalizarCompra);
-
-    // Add new listeners
     codigoInput.addEventListener("keypress", handleEnterKey);
     searchInput.addEventListener("input", handleSearch);
     checkoutModal.addEventListener('show.bs.modal', prepareCheckoutModal);
@@ -58,25 +51,17 @@ function handleSearch(e) {
 function initTooltips() {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.forEach(btn => {
-        // Destroy old instance if exists
-        const oldInstance = bootstrap.Tooltip.getInstance(btn);
-        if (oldInstance) oldInstance.dispose();
-        
-        // Create new tooltip
         new bootstrap.Tooltip(btn);
     });
 }
 
-// Show alert modal
 function showAlert(message, title = 'Aviso', type = 'info') {
     const modal = document.getElementById('globalAlertModal');
     const modalLabel = document.getElementById('globalAlertModalLabel');
     const modalBody = document.getElementById('globalAlertModalBody');
     
-    // Remove all type classes
     modal.classList.remove('modal-warning', 'modal-error', 'modal-success');
     
-    // Add appropriate class based on type
     switch(type.toLowerCase()) {
         case 'warning':
             modal.classList.add('modal-warning');
@@ -94,21 +79,21 @@ function showAlert(message, title = 'Aviso', type = 'info') {
     modalInstance.show();
 }
 
-// Update totals
 function updateTotals() {
     totalPrice = 0;
     totalQuantity = 0;
     
     for (const barcode in productsOnScreen) {
-        totalPrice += parseFloat(productsOnScreen[barcode].totalPrice);
-        totalQuantity += productsOnScreen[barcode].quant;
+        const product = productsOnScreen[barcode];
+        const price = parseFloat(product.productData.price);
+        totalPrice += price * product.quant;
+        totalQuantity += product.quant;
     }
     
     labelPrice.textContent = totalPrice.toFixed(2);
     labelQuant.textContent = totalQuantity;
 }
 
-// Search products
 function searchProducts(query) {
     const container = document.getElementById("produtos-container");
     const cards = container.querySelectorAll('.card-produto');
@@ -125,7 +110,6 @@ function searchProducts(query) {
     });
 }
 
-// Add new product (fixed to work multiple times)
 function AdicionarProdutoNovo() {
     const code = document.getElementById("codigoProdutoInput").value.trim();
     if (!code) {
@@ -139,13 +123,9 @@ function AdicionarProdutoNovo() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ busca: code })
     })
-    .then(res => {
-        if (!res.ok) throw new Error('Network error');
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
         if (data.mensagem && data.mensagem.length > 0) {
-            // Process each product in response
             data.mensagem.forEach(produto => {
                 criarCardEstoque(produto);
             });
@@ -160,52 +140,45 @@ function AdicionarProdutoNovo() {
     });
 }
 
-// Create product card (fixed for multiple additions)
 function criarCardEstoque(produto) {
     const barcode = produto.barcode;
+    const price = parseFloat(produto.price);
 
     if (productsOnScreen[barcode]) {
-        // Update existing product
-        productsOnScreen[barcode].totalPrice += parseFloat(produto.price);
         productsOnScreen[barcode].quant += 1;
+        productsOnScreen[barcode].totalPrice = price * productsOnScreen[barcode].quant;
         
-        // Update card display if exists
         const existingCard = document.getElementById(`card(${barcode})`);
         if (existingCard) {
             existingCard.querySelector('.card-text:nth-of-type(1)').textContent = 
                 `Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}`;
             existingCard.querySelector('.card-text:nth-of-type(2)').textContent = 
                 `Qtd: ${productsOnScreen[barcode].quant}`;
+            updateTotals();
             return;
         }
     } else {
-        // Add new product
         productsOnScreen[barcode] = {
-            "totalPrice": parseFloat(produto.price), 
+            "totalPrice": price,
             "quant": 1,
             "productData": produto
         };
     }
     
-    // Create new card
     const container = document.getElementById("produtos-container");
     const tempDiv = document.createElement("div");
 
     tempDiv.innerHTML = `
         <div id="card(${produto.barcode})" class="card card-produto">
             <div class="row g-0 h-100">
-                <!-- Image on left -->
                 <div class="col-md-4">
                     <img src="${produto.imagem}" class="card-img" alt="${produto.name}" onerror="this.src='https://via.placeholder.com/150?text=Produto'">
                 </div>
-                
-                <!-- Info on right -->
                 <div class="col-md-8">
                     <div class="card-body">
                         <h6 class="card-title">${produto.name}</h6>
                         <p class="card-text">Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}</p>
                         <p class="card-text">Qtd: ${productsOnScreen[barcode].quant}</p>
-                        
                         <div class="card-actions">
                             <button type="button" class="btn btn-sm btn-outline-secondary btn-popover m-1" 
                                     data-bs-toggle="popover" 
@@ -213,7 +186,7 @@ function criarCardEstoque(produto) {
                                     data-bs-content="
                                         <strong>Nome:</strong> ${produto.name}<br>
                                         <strong>Cód. Barras:</strong> ${produto.barcode}<br>
-                                        <strong>Preço:</strong> R$ ${produto.price.toFixed(2)}<br>
+                                        <strong>Preço:</strong> R$ ${produto.price}<br>
                                         <strong>Categoria:</strong> ${produto.category}<br>
                                         <strong>Estoque:</strong> ${produto.stock} unidades<br>
                                         <strong>Lote:</strong> ${produto.lot}<br>
@@ -239,33 +212,31 @@ function criarCardEstoque(produto) {
     const cardElement = tempDiv.firstElementChild;
     container.appendChild(cardElement);
 
-    // Initialize popover and tooltips for new card
+    // Initialize popover and tooltips
     const btnPopover = cardElement.querySelector('.btn-popover');
     new bootstrap.Popover(btnPopover, { trigger: 'focus' });
 
-    // Initialize tooltips for this card
     const tooltips = cardElement.querySelectorAll('[data-bs-toggle="tooltip"]');
     tooltips.forEach(btn => new bootstrap.Tooltip(btn));
     
     updateTotals();
 }
 
-// Remove one unit of product
 function removerUnidade(barcode) {
     if (productsOnScreen[barcode]) {
-        const product = productsOnScreen[barcode].productData;
+        const product = productsOnScreen[barcode];
+        const price = parseFloat(product.productData.price);
         
-        if (productsOnScreen[barcode].quant > 1) {
-            productsOnScreen[barcode].totalPrice -= parseFloat(product.price);
-            productsOnScreen[barcode].quant -= 1;
+        if (product.quant > 1) {
+            product.quant -= 1;
+            product.totalPrice = price * product.quant;
             
-            // Update card display
             const card = document.getElementById(`card(${barcode})`);
             if (card) {
                 card.querySelector('.card-text:nth-of-type(1)').textContent = 
-                    `Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}`;
+                    `Preço Total: R$ ${product.totalPrice.toFixed(2)}`;
                 card.querySelector('.card-text:nth-of-type(2)').textContent = 
-                    `Qtd: ${productsOnScreen[barcode].quant}`;
+                    `Qtd: ${product.quant}`;
             }
         } else {
             removerProduto(barcode);
@@ -275,131 +246,101 @@ function removerUnidade(barcode) {
     }
 }
 
-// Remove product completely
 function removerProduto(barcode) {
     if (productsOnScreen[barcode]) {
-        // Remove from DOM
         const card = document.getElementById(`card(${barcode})`);
         if (card) {
             card.remove();
         }
-        
-        // Remove from products list
         delete productsOnScreen[barcode];
-        
         updateTotals();
     }
 }
 
 function prepareCheckoutModal() {
-  // Show loading state
-  checkoutModalBody.innerHTML = `
-      <div class="text-center py-4">
-          <div class="spinner-border text-success" role="status">
-              <span class="visually-hidden">Carregando...</span>
-          </div>
-      </div>
-  `;
+    checkoutModalBody.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    `;
 
-  // Check cart status after delay
-  setTimeout(() => {
-      if (totalQuantity === 0) {
-          // Empty cart
-          checkoutModalBody.innerHTML = `
-              <div class="alert alert-warning text-center">
-                  <i class="bi bi-cart-x-fill fs-1"></i>
-                  <h4 class="mt-3">Carrinho Vazio</h4>
-                  <p class="mb-0">Adicione produtos antes de finalizar a compra</p>
-              </div>
-          `;
-          confirmCheckoutBtn.disabled = true;
-      } else {
-          // Has products, show summary
-          checkoutModalBody.innerHTML = `
-              <div class="checkout-summary">
-                  <h5 class="mb-3">Resumo da Compra</h5>
-                  <div class="table-responsive">
-                      <table class="table table-sm">
-                          <thead>
-                              <tr>
-                                  <th>Produto</th>
-                                  <th>Qtd</th>
-                                  <th>Subtotal</th>
-                              </tr>
-                          </thead>
-                          <tbody id="checkoutItemsList">
-                              ${Object.entries(productsOnScreen).map(([barcode, product]) => `
-                                  <tr>
-                                      <td>${product.productData.name}</td>
-                                      <td>${product.quant}</td>
-                                      <td>R$ ${product.totalPrice.toFixed(2)}</td>
-                                  </tr>
-                              `).join('')}
-                          </tbody>
-                          <tfoot>
-                              <tr class="table-active">
-                                  <th colspan="2">Total</th>
-                                  <th>R$ ${totalPrice.toFixed(2)}</th>
-                              </tr>
-                          </tfoot>
-                      </table>
-                  </div>
-                  <div class="mt-3">
-                      <label for="paymentMethod" class="form-label">Método de Pagamento</label>
-                      <select class="form-select" id="paymentMethod">
-                          <option value="cash">Dinheiro</option>
-                          <option value="credit">Cartão de Crédito</option>
-                          <option value="debit">Cartão de Débito</option>
-                          <option value="pix">PIX</option>
-                      </select>
-                  </div>
-              </div>
-          `;
-          confirmCheckoutBtn.disabled = false;
-      }
-  }, 300);
+    setTimeout(() => {
+        if (totalQuantity === 0) {
+            checkoutModalBody.innerHTML = `
+                <div class="alert alert-warning text-center">
+                    <i class="bi bi-cart-x-fill fs-1"></i>
+                    <h4 class="mt-3">Carrinho Vazio</h4>
+                    <p class="mb-0">Adicione produtos antes de finalizar a compra</p>
+                </div>
+            `;
+            confirmCheckoutBtn.disabled = true;
+        } else {
+            let itemsHTML = '';
+            let calculatedTotal = 0;
+            
+            for (const [barcode, product] of Object.entries(productsOnScreen)) {
+                const productTotal = parseFloat(product.productData.price) * product.quant;
+                calculatedTotal += productTotal;
+                
+                itemsHTML += `
+                    <tr>
+                        <td>${product.productData.name}</td>
+                        <td>${product.quant}</td>
+                        <td>R$ ${productTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+
+            checkoutModalBody.innerHTML = `
+                <div class="checkout-summary">
+                    <h5 class="mb-3">Resumo da Compra</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Qtd</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="checkoutItemsList">
+                                ${itemsHTML}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-active">
+                                    <th colspan="2">Total</th>
+                                    <th>R$ ${calculatedTotal.toFixed(2)}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <label for="paymentMethod" class="form-label">Método de Pagamento</label>
+                        <select class="form-select" id="paymentMethodInModal">
+                            <option value="cash">Dinheiro</option>
+                            <option value="credit">Cartão de Crédito</option>
+                            <option value="debit">Cartão de Débito</option>
+                            <option value="pix">PIX</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            
+            confirmCheckoutBtn.disabled = false;
+        }
+    }, 300);
 }
 
-// Populate checkout summary
-function populateCheckoutSummary(template) {
-    const itemsList = template.querySelector("#checkoutItemsList");
-    const totalPriceElement = template.querySelector("#checkoutTotalPrice");
-    
-    // Clear existing items
-    itemsList.innerHTML = '';
-    
-    // Add each product to the list
-    for (const barcode in productsOnScreen) {
-        const product = productsOnScreen[barcode];
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-            <td>${product.productData.name}</td>
-            <td>${product.quant}</td>
-            <td>R$ ${product.totalPrice.toFixed(2)}</td>
-        `;
-        
-        itemsList.appendChild(row);
-    }
-    
-    // Update total price
-    totalPriceElement.textContent = `R$ ${totalPrice.toFixed(2)}`;
-}
-
-// Finalize purchase (fixed for multiple uses)
 function finalizarCompra() {
     if (totalQuantity === 0) {
         showAlert("Não há produtos no carrinho", "Carrinho vazio", "warning");
         return;
     }
     
-    // Disable button during processing
-    confirmCheckoutBtn.disabled = true;
+    const paymentMethod = document.getElementById("paymentMethodInModal").value;
     
-    // Get payment method
-    const paymentMethod = document.getElementById("paymentMethod").value;
-    
-    // Create invoice
     currentInvoice = {
         date: new Date().toLocaleString(),
         items: [],
@@ -408,77 +349,87 @@ function finalizarCompra() {
         paymentMethod: paymentMethod
     };
 
-    // Add all products to invoice
     for (const barcode in productsOnScreen) {
         const product = productsOnScreen[barcode];
         currentInvoice.items.push({
             name: product.productData.name,
             barcode: barcode,
-            unitPrice: product.productData.price,
+            unitPrice: parseFloat(product.productData.price),
             quantity: product.quant,
-            subtotal: product.totalPrice
+            subtotal: parseFloat(product.totalPrice)
         });
     }
     
-    // Process payment
     processPayment();
 }
 
-// Process payment (fixed for multiple uses)
 function processPayment() {
-    // Show processing state
-    checkoutModalBody.innerHTML = `
-        <div class="text-center py-4">
-            <div class="spinner-border text-success mb-3" role="status">
-                <span class="visually-hidden">Processando...</span>
-            </div>
-            <h5>Processando pagamento...</h5>
-        </div>
-    `;
-    
-    // Simulate payment processing
-    setTimeout(() => {
-        showPaymentSuccess();
-    }, 2000);
+  // Remove the Confirmar button during processing
+  const confirmBtn = document.getElementById("confirmCheckoutBtn");
+  confirmBtn.style.display = 'none';
+  
+  // Show processing state
+  checkoutModalBody.innerHTML = `
+      <div class="text-center py-4">
+          <div class="spinner-border text-success mb-3" role="status">
+              <span class="visually-hidden">Processando...</span>
+          </div>
+          <h5>Processando pagamento...</h5>
+      </div>
+  `;
+  
+  setTimeout(() => {
+      showPaymentSuccess();
+  }, 2000);
 }
 
 function showPaymentSuccess() {
-    // Show success message
-    checkoutModalBody.innerHTML = `
-        <div class="alert alert-success text-center">
-            <i class="bi bi-check-circle-fill fs-1"></i>
-            <h4 class="mt-3">Compra concluída!</h4>
-            <p>Pagamento realizado com sucesso via ${getPaymentMethodName(currentInvoice.paymentMethod)}</p>
-            <p class="mb-0">Total: R$ ${currentInvoice.total.toFixed(2)}</p>
-        </div>
-    `;
-    
-    // Add print button
-    const printBtn = document.createElement('button');
-    printBtn.className = 'btn btn-outline-primary mt-3';
-    printBtn.innerHTML = '<i class="bi bi-printer-fill"></i> Imprimir Recibo';
-    printBtn.onclick = printReceipt;
-    checkoutModalBody.appendChild(printBtn);
-    
-    // Add close button
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'btn btn-secondary mt-3 ms-2';
-    closeBtn.innerHTML = '<i class="bi bi-x-circle-fill"></i> Fechar';
-    closeBtn.onclick = completeCheckout;
-    checkoutModalBody.appendChild(closeBtn);
+  // Get modal footer and clear it
+  const modalFooter = document.querySelector('#modalConfirmarCompra .modal-footer');
+  modalFooter.innerHTML = '';
+  
+  // Update modal body with success message
+  checkoutModalBody.innerHTML = `
+      <div class="alert alert-success text-center">
+          <i class="bi bi-check-circle-fill fs-1"></i>
+          <h4 class="mt-3">Compra concluída!</h4>
+          <p>Pagamento realizado com sucesso via ${getPaymentMethodName(currentInvoice.paymentMethod)}</p>
+          <p class="mb-0">Total: R$ ${currentInvoice.total.toFixed(2)}</p>
+      </div>
+  `;
+
+  // Add print button
+  const printBtn = document.createElement('button');
+  printBtn.className = 'btn btn-primary';
+  printBtn.innerHTML = '<i class="bi bi-printer-fill"></i> Imprimir Recibo';
+  printBtn.onclick = printReceipt;
+  modalFooter.appendChild(printBtn);
+
+  // Add close button
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'btn btn-secondary ms-2';
+  closeBtn.innerHTML = '<i class="bi bi-x-circle-fill"></i> Fechar';
+  closeBtn.onclick = completeCheckout;
+  modalFooter.appendChild(closeBtn);
 }
 
-// Complete checkout process
 function completeCheckout() {
-    resetCart();
-    const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarCompra'));
-    modal.hide();
-    
-    // Re-enable button for next use
-    confirmCheckoutBtn.disabled = false;
+  resetCart();
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarCompra'));
+  modal.hide();
+  
+  // Restore original footer buttons
+  const modalFooter = document.querySelector('#modalConfirmarCompra .modal-footer');
+  modalFooter.innerHTML = `
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+      <button type="button" class="btn btn-success" id="confirmCheckoutBtn">
+          <i class="bi bi-cart-check-fill"></i> Confirmar
+      </button>
+  `;
+  
+  // Reattach event listener to Confirmar button
+  document.getElementById('confirmCheckoutBtn').addEventListener('click', finalizarCompra);
 }
-
-// Reset cart
 function resetCart() {
     productsOnScreen = {};
     totalPrice = 0;
@@ -487,7 +438,6 @@ function resetCart() {
     updateTotals();
 }
 
-// Print receipt
 function printReceipt() {
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
@@ -554,7 +504,6 @@ function printReceipt() {
     printWindow.document.close();
 }
 
-// Get payment method name
 function getPaymentMethodName(method) {
     switch(method) {
         case 'cash': return 'Dinheiro';
@@ -565,14 +514,11 @@ function getPaymentMethodName(method) {
     }
 }
 
-// Confirm cancellation
 function confirmarCancelamento() {
     const senha = document.getElementById("senhaCancelamento").value;
     if (senha === "admin") {
         resetCart();
         showAlert("Compra cancelada com sucesso", "Cancelamento", "success");
-        
-        // Close cancel modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('modalCancelarCompra'));
         modal.hide();
     } else {
