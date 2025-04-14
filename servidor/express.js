@@ -2,6 +2,8 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+const cookieParser = require('cookie-parser');
+
 const { select, insert, update, delet, query} = require("./database.js");
 
 const app = express();
@@ -10,6 +12,7 @@ const port = 4000;
 const webpages_dir = path.join(__dirname, "../webpages");
 var pages = [];
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -120,6 +123,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         res.status(500).json({ erro: "Erro ao adicionar produto." });
     }
 });
+
+
 
 // Endpoint para deletar produto pelo código
 app.post('/deletarProduto', async (req, res) => {
@@ -287,6 +292,20 @@ app.post("/adicionarSupermercado", async (req, res) => {
     const {nome, local, onwerId, icon} = req.body
 
     insert("supermarkets", ["name", "local", "ownerId", "icon"], [nome, local, onwerId, icon])
+})
+
+//Adicionar Cookie para o Carrinho de Compras
+app.post('/addCarrinho', async (req, res) => {
+    const carrinho = req.body;
+
+    if (!carrinho){
+        res.status(400).send('Dados não recebidos')
+    }
+    res.cookie('carrinho', carrinho, {
+        maxAge : 900000,
+        httpOnly: true,
+    });
+    res.status(200).json({mensagem : carrinho})
 })
 
 loadPages();

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supermercado Didático</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container d-flex justify-content-between">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <h2 class="mb-0">🛒</h2>
+        <span class="ms-2 fw-bold">Super Mercado Didático</span>
+      </a>
+      <div class="container d-flex justify-content-between align-items-center">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto gap-3">
+            <li class="nav-item">
+              <a class="nav-link" href="#features"><i class="bi bi-box"></i> Recursos</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#how"><i class="bi bi-info-circle"></i> Sobre</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-light text-dark px-3 fw-semibold" href="#cadastro">
+                <i class="bi bi-person-plus-fill"></i> Cadastrar-se
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero d-flex align-items-center" id="home">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6 col-md-12 text-md-start text-center" data-aos="fade-right">
+          <h1>Simplifique a Gestão do seu Supermercado</h1>
+          <p>Com o Supermercado Didático, você gerencia estoques, controla vendas e fideliza clientes — tudo em um só lugar!</p>
+          <a href="#cadastro" class="btn btn-hero mt-3">Começar Agora</a>
+        </div>
+        <div class="col-lg-6 col-md-12 text-center mt-4 mt-lg-0" data-aos="fade-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" alt="Supermercado" class="img-fluid hero-img">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Soluções -->
+  <section id="features" class="bg-light py-5">
+    <div class="container text-center">
+      <h2 class="mb-5" data-aos="zoom-in">Tudo o que seu supermercado precisa</h2>
+
+      <div class="d-flex flex-wrap justify-content-center gap-4">
+        <div class="feature-box" data-aos="fade-up">
+          <i class="bi bi-box-seam feature-icon"></i>
+          <h5>Gestão de Estoque</h5>
+          <p class="text-muted">Acompanhe produtos em tempo real e evite rupturas</p>
+        </div>
+
+        <div class="feature-box" data-aos="fade-up" data-aos-delay="100">
+          <i class="bi bi-calculator feature-icon text-success"></i>
+          <h5>PDV Inteligente</h5>
+          <p class="text-muted">Vendas rápidas com interface moderna e segura</p>
+        </div>
+
+        <div class="feature-box" data-aos="fade-up" data-aos-delay="200">
+          <i class="bi bi-lightning-charge feature-icon text-warning"></i>
+          <h5>Ativação Imediata</h5>
+          <p class="text-muted">Configure e comece a vender em poucos cliques</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="steps py-5">
+    <div class="container text-center">
+      <h2 class="mb-5" data-aos="zoom-in">Como Funciona</h2>
+      <div class="row align-items-center justify-content-center">
+  
+        <!-- Texto formatado -->
+        <div class="col-lg-6 col-md-12 text-md-start text-center" data-aos="fade-up">
+          <p class="fs-5 mb-4">
+            <strong class="text-dark">1. Crie sua conta:</strong> Rápido e sem burocracia.
+          </p>
+          <p class="fs-5 mb-4">
+            <strong class="text-dark">2. Cadastre seu supermercado:</strong> Adicione produtos, categorias e funcionários.
+          </p>
+          <p class="fs-5 mb-0">
+            <strong class="text-dark">3. Comece a vender:</strong> Controle total de caixa, estoque e clientes.
+          </p>
+        </div>
+  
+        <!-- Ícone flutuante -->
+        <div class="col-lg-6 col-md-12 text-center mt-5 mt-lg-0" data-aos="fade-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/4341/4341139.png" 
+               alt="Supermercado" 
+               class="img-fluid floating-icon" 
+               style="max-width: 280px;">
+        </div>
+  
+      </div>
+    </div>
+  </section>
+
+  <!-- Cadastro -->
+  <section id="cadastro" class="bg-light text-center">
+    <div class="container">
+      <h2 class="mb-3" data-aos="zoom-in">Pronto para transformar seu supermercado?</h2>
+      <p data-aos="fade-up">Cadastre-se gratuitamente e experimente agora mesmo o WebMarket.</p>
+      <a href="../login/index.html?cadastro=1" class="btn btn-hero mt-3" data-aos="fade-up">Quero me cadastrar</a>
+    </div>
+  </section>
+
+  <!-- Rodapé -->
+  <footer>
+    <p>&copy; 2025 WebMarket - Todos os direitos reservados.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init();</script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      let prevScrollPos = window.pageYOffset;
+      const navbar = document.querySelector(".navbar");
+
+      window.addEventListener("scroll", function () {
+        const currentScrollPos = window.pageYOffset;
+        if (navbar) {
+          navbar.style.top = prevScrollPos > currentScrollPos ? "0" : "-100px";
+          prevScrollPos = currentScrollPos;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
