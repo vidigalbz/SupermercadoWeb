@@ -5,6 +5,8 @@ let totalQuantity = 0;
 let currentInvoice = null;
 let modalInstance = null;
 
+let buyState = false;
+
 // DOM elements
 const labelPrice = document.getElementById("preco-total");
 const labelQuant = document.getElementById("total-produtos");
@@ -141,7 +143,7 @@ function AdicionarProdutoNovo() {
 }
 
 function criarCardEstoque(produto) {
-    const barcode = produto.barcode;
+    
     const price = parseFloat(produto.price);
 
     if (productsOnScreen[barcode]) {
@@ -164,7 +166,15 @@ function criarCardEstoque(produto) {
             "productData": produto
         };
     }
+    var rawImagePath = ""
     
+  if (produto.image != null){
+    rawImagePath = produto.image.replace(/\\/g, '/')
+  }
+  const imagemURL = rawImagePath 
+  ? `http://localhost:4000/${rawImagePath}` 
+  : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+  
     const container = document.getElementById("produtos-container");
     const tempDiv = document.createElement("div");
 
@@ -220,7 +230,16 @@ function criarCardEstoque(produto) {
     tooltips.forEach(btn => new bootstrap.Tooltip(btn));
     
     updateTotals();
-}
+  }
+  fetch("/addcarrinho", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(productsOnScreen),
+    credentials: 'include'
+  }).then(response => response.json())
+  .then(data => {
+    console.log(data)
+  })
 
 function removerUnidade(barcode) {
     if (productsOnScreen[barcode]) {
