@@ -12,9 +12,10 @@ function criarCardEstoque(produto) {
   let barcode = produto.barcode;
 
   if (productsOnScreen[barcode]) {
-    produtosNaTela[barcode].totalPrice += parseFloat(produto.price);
-    produtosNaTela[barcode].quant += 1;
+    productsOnScreen[barcode].totalPrice += parseFloat(produto.price);
+    productsOnScreen[barcode].quant += 1;
     let temp_card = document.getElementById(`card(${barcode})`);
+    console.log(productsOnScreen);
     //atualizar informaçoes do card do produto
   } else {
     productsOnScreen[barcode] = {"totalPrice" : produto.price, "quant" : 1}
