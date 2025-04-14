@@ -70,7 +70,6 @@ function insert(table, columns, values) {
     });
 }
 
-
 function update(table, columns, values, condition = ""){
     multiColumns = columns.map(col => `${col} = ?`).join(', ')
     var query = `UPDATE ${table} SET ${multiColumns} ${condition ? "WHERE " + condition : ""}`
@@ -86,7 +85,6 @@ function update(table, columns, values, condition = ""){
 function delet(table, condition){
     db.run(`DELETE FROM ${table} WHERE ${condition}`)
 }
-
 
 function query(query){
     db.run(query, (err) => {

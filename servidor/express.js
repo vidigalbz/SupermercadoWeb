@@ -146,7 +146,7 @@ app.post('/estoqueData', async (req, res) => {
     let condicao = "";
     if (busca) {
         const termo = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
-        condicao = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%'`;
+        condicao = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%'  OR barcode = '${termo}'`;
     }
 
     try {
