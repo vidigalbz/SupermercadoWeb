@@ -172,7 +172,7 @@ function criarCardEstoque(produto) {
         <div id="card(${produto.barcode})" class="card card-produto">
             <div class="row g-0 h-100">
                 <div class="col-md-4">
-                    <img src="${produto.imagem}" class="card-img" alt="${produto.name}" onerror="this.src='https://via.placeholder.com/150?text=Produto'">
+                    <img src="${produto.imagem}" class="card-img" alt="${produto.name}"">
                 </div>
                 <div class="col-md-8">
                     <div class="card-body">
