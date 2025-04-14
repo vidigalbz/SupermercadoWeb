@@ -19,13 +19,21 @@ function criarCardEstoque(produto) {
     //atualizar informaçoes do card do produto
   } else {
     productsOnScreen[barcode] = {"totalPrice" : produto.price, "quant" : 1}
-    
+
+    var rawImagePath = ""
+  if (produto.image != null){
+    rawImagePath = produto.image.replace(/\\/g, '/')
+  }
+  const imagemURL = rawImagePath 
+  ? `http://localhost:4000/${rawImagePath}` 
+  : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+  
     const container = document.getElementById("produtos-container");
     const tempDiv = document.createElement("div");
 
     tempDiv.innerHTML = `
       <div id="card(${produto.barcode})" class="card-hover card card-produto h-100" style="border-radius: 10px; overflow: hidden;">
-        <img src="${produto.imagem}" class="card-img-top" alt="${produto.name}" style="height: 100px; object-fit: cover;">
+        <img src='${imagemURL}' class="card-img-top" alt="${produto.name}" style="height: 100px; object-fit: cover;">
         <div class="card-body d-flex flex-column p-2 bg-light">
           <h6 class="card-title mb-1">${produto.name}</h6>
           <p class="small text-muted mb-1">Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}</p>
