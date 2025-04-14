@@ -1,6 +1,7 @@
 body {
     background-color: #f4f6f8;
     padding-top: 60px; /* Espaço para a navbar */
+    font-family: "Poppins", sans-serif;
   }
   
   .offcanvas-body {
