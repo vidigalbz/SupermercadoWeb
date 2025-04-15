@@ -53,9 +53,8 @@ function getRealWirelessIP() {
 app.get('/api/ip', (req, res) => {
     const ip = getRealWirelessIP();
     res.json({ ip });
-  });
+});
   
-
 // Carregamento de páginas
 async function loadPages() {
     app.use(express.static(webpages_dir));
@@ -150,8 +149,6 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         res.status(500).json({ erro: "Erro ao adicionar produto." });
     }
 });
-
-
 
 // Endpoint para deletar produto pelo código
 app.post('/deletarProduto', async (req, res) => {
@@ -272,6 +269,23 @@ app.post('/estoqueData', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ erro: "Erro ao consultar estoque." });
+    }
+});
+
+app.post('/getSetor', async (req, res) => {
+    try {
+        const cats = await select("setors", "WHERE type = 'cat'");
+        const depts = await select("setors", "WHERE type = 'dept'");
+
+        const response = {
+            cat: cats.map(item => item.name),
+            dept: depts.map(item => item.name)
+        };
+
+        res.status(200).json(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao consultar setores." });
     }
 });
 
