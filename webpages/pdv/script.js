@@ -158,6 +158,7 @@ function AdicionarProdutoNovo() {
 
 function criarCardEstoque(produto) {
     
+    const barcode = produto.barcode
     const price = parseFloat(produto.price);
 
     if (productsOnScreen[barcode]) {
@@ -191,14 +192,6 @@ function criarCardEstoque(produto) {
   
     const container = document.getElementById("produtos-container");
     const tempDiv = document.createElement("div");
-
-    var rawImagePath = ""
-    if (produto.image != null){
-      rawImagePath = produto.image.replace(/\\/g, '/')
-    }
-    const imagemURL = rawImagePath 
-    ? `http://localhost:4000/${rawImagePath}` 
-    : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
 
     tempDiv.innerHTML = `
       <div id="card(${produto.barcode})" class="card card-produto" style="border: 1px solid #dee2e6;">
@@ -255,16 +248,17 @@ function criarCardEstoque(produto) {
     tooltips.forEach(btn => new bootstrap.Tooltip(btn));
     
     updateTotals();
+    fetch("/addcarrinho", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productsOnScreen),
+        credentials: 'include'
+      }).then(response => response.json())
+      .then(data => {
+        console.log(data)
+      })
   }
-  fetch("/addcarrinho", {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(productsOnScreen),
-    credentials: 'include'
-  }).then(response => response.json())
-  .then(data => {
-    console.log(data)
-  })
+  
 
 function removerUnidade(barcode) {
     if (productsOnScreen[barcode]) {
