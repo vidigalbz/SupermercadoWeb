@@ -30,7 +30,7 @@ async function criarCardHTML(produto) {
           <button type="button" class="btn btn-light btn-sm btn-copiar"
                   data-bs-toggle="tooltip"
                   data-bs-placement="top"
-                  title="Copiar código de barras">
+                  title="Copiar código de Sistema">
             <i class="bi bi-clipboard"></i>
           </button>
           <button type="button" class="btn btn-light btn-sm btn-popover"
