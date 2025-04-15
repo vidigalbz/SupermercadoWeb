@@ -31,6 +31,7 @@ function criarCardHTML(produto) {
                   data-bs-content="
                     <strong>Nome:</strong> ${produto.name}<br>
                     <strong>Código de Barras:</strong> ${produto.barcode}<br>
+                    <strong>Código de Sistema:</strong> ${produto.productId}<br>
                     <strong>Preço:</strong> R$ ${produto.price.toFixed(2)}<br>
                     <strong>Categoria:</strong> ${produto.category}<br>
                     <strong>Estoque:</strong> ${produto.stock} unidades<br>
@@ -57,7 +58,7 @@ function criarCardHTML(produto) {
   });
 
   btnCopiar.addEventListener('click', () => {
-    navigator.clipboard.writeText(produto.barcode).then(() => {
+    navigator.clipboard.writeText(produto.productId).then(() => {
       btnCopiar.innerHTML = '<i class="bi bi-check-lg"></i>';
       btnCopiar.setAttribute('title', 'Copiado!');
       const tooltip = bootstrap.Tooltip.getInstance(btnCopiar);
@@ -66,8 +67,8 @@ function criarCardHTML(produto) {
 
       setTimeout(() => {
         btnCopiar.innerHTML = '<i class="bi bi-clipboard"></i>';
-        btnCopiar.setAttribute('title', 'Copiar código de barras');
-        tooltip.setContent({ '.tooltip-inner': 'Copiar código de barras' });
+        btnCopiar.setAttribute('title', 'Copiar código de Sistema');
+        tooltip.setContent({ '.tooltip-inner': 'Copiar código de Sistema' });
       }, 2000);
     });
   });
