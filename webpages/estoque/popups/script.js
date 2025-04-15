@@ -1,6 +1,24 @@
-const categorias = ["Alimentos", "Bebidas", "Higiene", "Limpeza"];
-const departamentos = ["Mercearia", "Gelados", "Farmácia", "Hortifruti"];
+let categorias;
+let departamentos;
 let tipoAtual = "Departamento"; // ou "Categoria"
+
+function buscarSetores() {
+  fetch('/getSetor', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+      body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+      categorias = data.cat;
+      departamentos = data.dept;
+    })
+    .catch(error => {
+      console.error("Erro ao buscar setores:", error);
+  });
+}
 
 function preencherCombosAdicao() {
   const selectCategoria = document.getElementById("add-categoria");
@@ -366,4 +384,5 @@ function preencherComboGerenciadorDeEstoque() {
   });
 }
 
-window.onload = preencherComboGerenciadorDeEstoque();
+buscarSetores();
+preencherComboGerenciadorDeEstoque();

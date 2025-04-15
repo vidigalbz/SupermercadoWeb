@@ -63,6 +63,14 @@ CREATE TABLE IF NOT EXISTS sale_items (
     FOREIGN KEY (saleId) REFERENCES sales(saleId),
     FOREIGN KEY (productId) REFERENCES products(productId)
 );
+
+CREATE TABLE IF NOT EXISTS setors (
+    itemId INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    marketId INTEGER NOT NULL,
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
+);
 `)});
 
 function select(table, condition = "", params = []) {
