@@ -5,8 +5,7 @@ let totalQuantity = 0;
 let currentInvoice = null;
 let modalInstance = null;
 const codigoInput = document.getElementById("codigoProdutoInput");
-
-let buyState = false;
+let currentMarketId = 1; // Default market ID - should be set based on logged-in market
 
 // DOM elements
 const labelPrice = document.getElementById("preco-total");
@@ -27,6 +26,118 @@ function init() {
     
     // Update totals
     updateTotals();
+    
+    // Load cart from cookie if exists
+    loadCartFromCookie();
+}
+
+// Load cart from cookie
+async function loadCartFromCookie() {
+    try {
+        const response = await fetch('/getCarrinho');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.carrinho && Object.keys(data.carrinho).length > 0) {
+                productsOnScreen = data.carrinho;
+                
+                // First clear all existing products
+                document.getElementById("produtos-container").innerHTML = "";
+                
+                // Then recreate cards for products in cart
+                for (const barcode in productsOnScreen) {
+                    await recreateProductCard(productsOnScreen[barcode].productData);
+                }
+                updateTotals();
+            }
+        }
+    } catch (err) {
+        console.error('Error loading cart:', err);
+    }
+}
+
+// Recreate product card from cart data
+async function recreateProductCard(productData) {
+    // If productData is missing essential fields, fetch it from server
+    if (!productData.name || !productData.price) {
+        const response = await fetch('/estoqueData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busca: productData.barcode })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.mensagem && data.mensagem.length > 0) {
+                productData = data.mensagem[0];
+            }
+        }
+    }
+
+    const container = document.getElementById("produtos-container");
+    const tempDiv = document.createElement("div");
+    const barcode = productData.barcode;
+
+    tempDiv.innerHTML = `
+        <div id="card(${barcode})" class="card card-produto" style="border: 1px solid #dee2e6;">
+            <div class="row g-0 h-100">
+                <div class="col-md-4 p-0 overflow-hidden" style="height: 100%;">
+                    <img src="${getImageUrl(productData.image)}" 
+                        class="h-100 w-100" 
+                        style="object-fit: cover; object-position: center;"
+                        alt="${productData.name}"
+                        onerror="this.src='https://via.placeholder.com/150?text=Produto'">
+                </div>
+                <div class="col-md-8 p-0">
+                    <div class="card-body h-100">
+                        <h6 class="card-title">${productData.name}</h6>
+                        <p class="card-text">Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}</p>
+                        <p class="card-text">Qtd: ${productsOnScreen[barcode].quant}</p>
+                        <div class="card-actions">
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-popover m-1" 
+                                    data-bs-toggle="popover" 
+                                    data-bs-html="true"
+                                    data-bs-content="
+                                        <strong>Nome:</strong> ${productData.name}<br>
+                                        <strong>Cód. Barras:</strong> ${barcode}<br>
+                                        <strong>Preço:</strong> R$ ${productData.price}<br>
+                                        <strong>Categoria:</strong> ${productData.category}<br>
+                                        <strong>Estoque:</strong> ${productData.stock} unidades<br>
+                                        <strong>Lote:</strong> ${productData.lot}<br>
+                                        <strong>Departamento:</strong> ${productData.departament}<br>
+                                        <strong>Validade:</strong> ${productData.expirationDate}<br>
+                                        <strong>Fabricação:</strong> ${productData.manufactureDate}"
+                                    title="Detalhes">
+                                <i class="bi bi-info-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover 1 unidade" onclick="removerUnidade('${barcode}')">
+                                <i class="bi bi-dash-circle"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover do estoque" onclick="removerProduto('${barcode}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const cardElement = tempDiv.firstElementChild;
+    container.appendChild(cardElement);
+
+    const btnPopover = cardElement.querySelector('.btn-popover');
+    new bootstrap.Popover(btnPopover, { trigger: 'focus' });
+
+    const tooltips = cardElement.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(btn => new bootstrap.Tooltip(btn));
+}
+
+// Helper function to get image URL
+function getImageUrl(imagePath) {
+    if (!imagePath) return 'https://via.placeholder.com/150?text=Sem+Imagem';
+    // Normalize path and ensure it points to the correct server URL
+    const normalizedPath = imagePath.replace(/\\/g, '/').replace(/^\/?/, '');
+    return `http://localhost:4000/${normalizedPath}`;
 }
 
 // Focus function
@@ -130,7 +241,6 @@ function AdicionarProdutoNovo() {
         return;
     }
     
-    // Simulate API request
     fetch('/estoqueData', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -143,7 +253,7 @@ function AdicionarProdutoNovo() {
                 criarCardEstoque(produto);
             });
             codigoInput.value = "";
-            focusCodigoInput(); // Re-focus after adding
+            focusCodigoInput();
         } else {
             showAlert("Produto não encontrado!", "Erro na busca", "error");
             focusCodigoInput();
@@ -157,8 +267,7 @@ function AdicionarProdutoNovo() {
 }
 
 function criarCardEstoque(produto) {
-    
-    const barcode = produto.barcode
+    const barcode = produto.barcode;
     const price = parseFloat(produto.price);
 
     if (productsOnScreen[barcode]) {
@@ -172,71 +281,67 @@ function criarCardEstoque(produto) {
             existingCard.querySelector('.card-text:nth-of-type(2)').textContent = 
                 `Qtd: ${productsOnScreen[barcode].quant}`;
             updateTotals();
+            saveCartToCookie();
             return;
         }
     } else {
         productsOnScreen[barcode] = {
             "totalPrice": price,
             "quant": 1,
-            "productData": produto
+            "productData": {
+                ...produto,
+                productId: produto.productId // Ensure productId is included
+            }
         };
     }
-    var rawImagePath = ""
     
-  if (produto.image != null){
-    rawImagePath = produto.image.replace(/\\/g, '/')
-  }
-  const imagemURL = rawImagePath 
-  ? `http://localhost:4000/${rawImagePath}` 
-  : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
-  
     const container = document.getElementById("produtos-container");
     const tempDiv = document.createElement("div");
 
     tempDiv.innerHTML = `
-      <div id="card(${produto.barcode})" class="card card-produto" style="border: 1px solid #dee2e6;">
-          <div class="row g-0 h-100">
-              <div class="col-md-4 p-0 overflow-hidden" style="height: 100%;">
-                  <img src="${imagemURL}" 
-                      class="h-100 w-100" 
-                      style="object-fit: cover; object-position: center;"
-                      alt="${produto.name}"
-                      onerror="this.src='https://via.placeholder.com/150?text=Produto'">
-              </div>
-              <div class="col-md-8 p-0">
-                  <div class="card-body h-100">
-                      <h6 class="card-title">${produto.name}</h6>
-                      <p class="card-text">Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}</p>
-                      <p class="card-text">Qtd: ${productsOnScreen[barcode].quant}</p>
-                      <div class="card-actions">
-                          <button type="button" class="btn btn-sm btn-outline-secondary btn-popover m-1" 
-                                  data-bs-toggle="popover" 
-                                  data-bs-html="true"
-                                  data-bs-content="
-                                      <strong>Nome:</strong> ${produto.name}<br>
-                                      <strong>Cód. Barras:</strong> ${produto.barcode}<br>
-                                      <strong>Preço:</strong> R$ ${produto.price}<br>
-                                      <strong>Categoria:</strong> ${produto.category}<br>
-                                      <strong>Estoque:</strong> ${produto.stock} unidades<br>
-                                      <strong>Lote:</strong> ${produto.lot}<br>
-                                      <strong>Departamento:</strong> ${produto.department}<br>
-                                      <strong>Validade:</strong> ${produto.expirationDate}<br>
-                                      <strong>Fabricação:</strong> ${produto.manufactureDate}"
-                                  title="Detalhes">
-                              <i class="bi bi-info-square"></i>
-                          </button>
-                          <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover 1 unidade" onclick="removerUnidade('${barcode}')">
-                              <i class="bi bi-dash-circle"></i>
-                          </button>
-                          <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover do estoque" onclick="removerProduto('${barcode}')">
-                              <i class="bi bi-trash"></i>
-                          </button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  `;
+        <div id="card(${barcode})" class="card card-produto" style="border: 1px solid #dee2e6;">
+            <div class="row g-0 h-100">
+                <div class="col-md-4 p-0 overflow-hidden" style="height: 100%;">
+                    <img src="${getImageUrl(produto.image)}" 
+                        class="h-100 w-100" 
+                        style="object-fit: cover; object-position: center;"
+                        alt="${produto.name}"
+                        onerror="this.src='https://via.placeholder.com/150?text=Produto'">
+                </div>
+                <div class="col-md-8 p-0">
+                    <div class="card-body h-100">
+                        <h6 class="card-title">${produto.name}</h6>
+                        <p class="card-text">Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}</p>
+                        <p class="card-text">Qtd: ${productsOnScreen[barcode].quant}</p>
+                        <div class="card-actions">
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-popover m-1" 
+                                    data-bs-toggle="popover" 
+                                    data-bs-html="true"
+                                    data-bs-content="
+                                        <strong>Nome:</strong> ${produto.name}<br>
+                                        <strong>Cód. Barras:</strong> ${barcode}<br>
+                                        <strong>Preço:</strong> R$ ${produto.price}<br>
+                                        <strong>Categoria:</strong> ${produto.category}<br>
+                                        <strong>Estoque:</strong> ${produto.stock} unidades<br>
+                                        <strong>Lote:</strong> ${produto.lot}<br>
+                                        <strong>Departamento:</strong> ${produto.departament}<br>
+                                        <strong>Validade:</strong> ${produto.expirationDate}<br>
+                                        <strong>Fabricação:</strong> ${produto.manufactureDate}"
+                                    title="Detalhes">
+                                <i class="bi bi-info-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover 1 unidade" onclick="removerUnidade('${barcode}')">
+                                <i class="bi bi-dash-circle"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover do estoque" onclick="removerProduto('${barcode}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
     const cardElement = tempDiv.firstElementChild;
     container.appendChild(cardElement);
@@ -248,17 +353,22 @@ function criarCardEstoque(produto) {
     tooltips.forEach(btn => new bootstrap.Tooltip(btn));
     
     updateTotals();
-    fetch("/addcarrinho", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productsOnScreen),
-        credentials: 'include'
-      }).then(response => response.json())
-      .then(data => {
-        console.log(data)
-      })
-  }
-  
+    saveCartToCookie();
+}
+
+// Save cart to cookie
+async function saveCartToCookie() {
+    try {
+        await fetch('/addCarrinho', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(productsOnScreen),
+            credentials: 'include'
+        });
+    } catch (err) {
+        console.error('Error saving cart:', err);
+    }
+}
 
 function removerUnidade(barcode) {
     if (productsOnScreen[barcode]) {
@@ -281,6 +391,7 @@ function removerUnidade(barcode) {
         }
         
         updateTotals();
+        saveCartToCookie();
     }
 }
 
@@ -292,6 +403,7 @@ function removerProduto(barcode) {
         }
         delete productsOnScreen[barcode];
         updateTotals();
+        saveCartToCookie();
     }
 }
 
@@ -371,7 +483,7 @@ function prepareCheckoutModal() {
     }, 300);
 }
 
-function finalizarCompra() {
+async function finalizarCompra() {
     if (totalQuantity === 0) {
         showAlert("Não há produtos no carrinho", "Carrinho vazio", "warning");
         return;
@@ -384,7 +496,8 @@ function finalizarCompra() {
         items: [],
         total: totalPrice,
         quantity: totalQuantity,
-        paymentMethod: paymentMethod
+        paymentMethod: paymentMethod,
+        marketId: currentMarketId
     };
 
     for (const barcode in productsOnScreen) {
@@ -392,13 +505,29 @@ function finalizarCompra() {
         currentInvoice.items.push({
             name: product.productData.name,
             barcode: barcode,
+            productId: product.productData.productId,
             unitPrice: parseFloat(product.productData.price),
             quantity: product.quant,
             subtotal: parseFloat(product.totalPrice)
         });
     }
     
-    processPayment();
+    try {
+        const response = await fetch('/finalizarCompra', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentInvoice)
+        });
+        
+        if (response.ok) {
+            processPayment();
+        } else {
+            showAlert("Erro ao finalizar compra no servidor", "Erro", "error");
+        }
+    } catch (err) {
+        console.error('Error finalizing sale:', err);
+        showAlert("Erro de conexão ao finalizar compra", "Erro", "error");
+    }
 }
 
 function processPayment() {
@@ -477,6 +606,12 @@ function resetCart() {
     totalQuantity = 0;
     document.getElementById("produtos-container").innerHTML = "";
     updateTotals();
+    
+    // Clear cart cookie
+    fetch('/clearCarrinho', {
+        method: 'POST',
+        credentials: 'include'
+    }).catch(err => console.error('Error clearing cart:', err));
 }
 
 function printReceipt() {

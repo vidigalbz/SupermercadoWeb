@@ -29,6 +29,33 @@ const upload = multer({storage: storage});
 
 app.use('/servidor/uploads', express.static(path.resolve(__dirname, './uploads')));  
 
+const os = require('os');
+
+function getRealWirelessIP() {
+  const interfaces = os.networkInterfaces();
+
+  for (const name in interfaces) {
+    for (const iface of interfaces[name]) {
+      // Filter: IPv4, not internal, and IP starts with 172.16 (your Wi-Fi network)
+      if (
+        iface.family === 'IPv4' &&
+        !iface.internal &&
+        iface.address.startsWith('172.16')
+      ) {
+        return iface.address;
+      }
+    }
+  }
+
+  return 'localhost'; // fallback
+}
+
+app.get('/api/ip', (req, res) => {
+    const ip = getRealWirelessIP();
+    res.json({ ip });
+  });
+  
+
 // Carregamento de páginas
 async function loadPages() {
     app.use(express.static(webpages_dir));
@@ -143,6 +170,91 @@ app.post('/deletarProduto', async (req, res) => {
     }
 });
 
+// Get cart from cookie
+app.get('/getCarrinho', (req, res) => {
+    const carrinho = req.cookies.carrinho || {};
+    res.json({ carrinho });
+});
+
+// Finalize purchase
+app.post('/finalizarCompra', async (req, res) => {
+    try {
+        const { items, total, paymentMethod, marketId } = req.body;
+        
+        // Validate required fields
+        if (!items || !total || !paymentMethod || !marketId) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // 1. Create sale record
+        const saleDate = new Date().toISOString();
+        await insert('sales', [
+            'marketId', 
+            'total', 
+            'paymentMethod',
+            'saleDate'
+        ], [
+            marketId,
+            total,
+            paymentMethod,
+            saleDate
+        ]);
+        
+        // 2. Get the sale ID
+        const sales = await select('sales', 'WHERE saleDate = ? ORDER BY saleId DESC LIMIT 1', [saleDate]);
+        
+        if (!sales || sales.length === 0) {
+            throw new Error('Failed to retrieve sale ID');
+        }
+        
+        const saleId = sales[0].saleId;
+        
+        // 3. Add sale items and update inventory
+        for (const item of items) {
+            // Validate item structure
+            if (!item.productId || !item.quantity || !item.unitPrice || !item.subtotal) {
+                console.warn('Invalid item structure:', item);
+                continue;
+            }
+
+            // Insert sale item
+            await insert('sale_items', [
+                'saleId',
+                'productId',
+                'quantity',
+                'unitPrice',
+                'subtotal'
+            ], [
+                saleId,
+                item.productId,
+                item.quantity,
+                item.unitPrice,
+                item.subtotal
+            ]);
+            
+            // Update product stock
+            const product = await select('products', 'WHERE productId = ?', [item.productId]);
+            if (product.length > 0) {
+                const currentStock = product[0].stock;
+                const newStock = currentStock - item.quantity;
+                await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+            } else {
+                console.warn(`Product not found: ${item.productId}`);
+            }
+        }
+        
+        // Clear cart cookie
+        res.clearCookie('carrinho');
+        res.json({ success: true, saleId });
+        
+    } catch (err) {
+        console.error('Error processing sale:', err);
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: err.message 
+        });
+    }
+});
 
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
@@ -310,6 +422,7 @@ app.post('/addCarrinho', async (req, res) => {
 
 loadPages();
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Servidor iniciado na porta http://localhost:${port}`);
 });
+

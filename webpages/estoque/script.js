@@ -2,14 +2,23 @@ const container = document.getElementById("produtos-container");
 
 var currentData = []
 
-function criarCardHTML(produto) {
+async function getImageURL(rawImagePath) {
+  const response = await fetch('/api/ip');
+  const data = await response.json();
+  const ip = data.ip;
+  
+  return rawImagePath 
+    ? `http://${ip}:4000/${rawImagePath}` 
+    : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+}
+
+async function criarCardHTML(produto) {
   var rawImagePath = ""
   if (produto.image != null){
     rawImagePath = produto.image.replace(/\\/g, '/')
   }
-  const imagemURL = rawImagePath 
-  ? `http://localhost:4000/${rawImagePath}` 
-  : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+  const imagemURL = await  getImageURL(rawImagePath);
+
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = `
     <div class="card-produto d-flex mb-3" data-id="${produto.productId}" style="border-radius: 10px; overflow: hidden;">
