@@ -258,14 +258,22 @@ app.post('/finalizarCompra', async (req, res) => {
 
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
-    const { busca } = req.body;
-    console.log(busca)
+    var { busca } = req.body;
+    var category = req.body.category
     let condicao = "";
-    if (busca) {
-        const termo = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
+    if (busca && !category) {
+        const buscaText = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
         condicao = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%'  OR barcode = '${termo}'`;
     }
-
+    else if (busca && category){
+        const buscaText = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
+        const categoryText = category.replace(/'/g, "''"); // Escapa aspas simples para segurança
+        condicao  = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%'  OR barcode = '${termo}' AND category = '${categoryText}'`
+    }
+    else if(category){
+        const categoryText = category.replace(/'/g, "''"); // Escapa aspas simples para segurança
+        condicao = `WHERE category = '${categoryText}'`
+    }
     try {
         const results = await select("products", condicao);
         res.status(200).json({ mensagem: results });

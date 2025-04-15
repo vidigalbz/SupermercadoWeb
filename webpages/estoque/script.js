@@ -1,4 +1,24 @@
 const container = document.getElementById("produtos-container");
+const filterCategoria = document.getElementById("filtro-categoria");
+
+var categoriaValue = "Todos";
+
+filterCategoria.addEventListener("change", () => {
+  categoriaValue = filterCategoria.value;
+  console.log(categoriaValue);
+  const valorBusca = document.getElementById("pesquisa").value.trim();
+  fetch('/estoqueData', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category: categoriaValue })
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data.mensagem)
+      renderizarProdutos(data.mensagem);
+    })
+    .catch(err => console.error('Erro:', err));
+})
 
 var currentData = []
 
