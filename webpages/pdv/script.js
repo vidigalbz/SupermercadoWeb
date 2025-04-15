@@ -4,6 +4,7 @@ let totalPrice = 0;
 let totalQuantity = 0;
 let currentInvoice = null;
 let modalInstance = null;
+const codigoInput = document.getElementById("codigoProdutoInput");
 
 let buyState = false;
 
@@ -21,22 +22,32 @@ function init() {
     // Setup event listeners
     setupEventListeners();
     
+    // Focus on input
+    focusCodigoInput();
+    
     // Update totals
     updateTotals();
 }
 
+// Focus function
+function focusCodigoInput() {
+    if (codigoInput) {
+        codigoInput.focus();
+        codigoInput.select();
+    }
+}
+
 // Setup event listeners
 function setupEventListeners() {
-    const codigoInput = document.getElementById("codigoProdutoInput");
-    const searchInput = document.querySelector('.input-group input[placeholder="Pesquisar produto"]');
-    const checkoutModal = document.getElementById('modalConfirmarCompra');
-    
     codigoInput.addEventListener("keypress", handleEnterKey);
-    searchInput.addEventListener("input", handleSearch);
-    checkoutModal.addEventListener('show.bs.modal', prepareCheckoutModal);
+    document.querySelector('.input-group input[placeholder="Pesquisar produto"]').addEventListener("input", handleSearch);
+    document.getElementById('modalConfirmarCompra').addEventListener('show.bs.modal', prepareCheckoutModal);
     confirmCheckoutBtn.addEventListener("click", finalizarCompra);
-
-    // Initialize tooltips
+    
+    // Re-focus after modal closes
+    document.getElementById('modalConfirmarCompra').addEventListener('hidden.bs.modal', focusCodigoInput);
+    document.getElementById('modalCancelarCompra').addEventListener('hidden.bs.modal', focusCodigoInput);
+    
     initTooltips();
 }
 
@@ -113,7 +124,7 @@ function searchProducts(query) {
 }
 
 function AdicionarProdutoNovo() {
-    const code = document.getElementById("codigoProdutoInput").value.trim();
+    const code = codigoInput.value.trim();
     if (!code) {
         showAlert("Por favor, insira um código de produto", "Campo obrigatório", "warning");
         return;
@@ -131,14 +142,17 @@ function AdicionarProdutoNovo() {
             data.mensagem.forEach(produto => {
                 criarCardEstoque(produto);
             });
-            document.getElementById("codigoProdutoInput").value = "";
+            codigoInput.value = "";
+            focusCodigoInput(); // Re-focus after adding
         } else {
             showAlert("Produto não encontrado!", "Erro na busca", "error");
+            focusCodigoInput();
         }
     })
     .catch(err => {
         console.error('Erro ao carregar produtos:', err);
         showAlert("Erro ao buscar produto. Verifique o código e tente novamente.", "Erro", "error");
+        focusCodigoInput();
     });
 }
 
@@ -178,51 +192,62 @@ function criarCardEstoque(produto) {
     const container = document.getElementById("produtos-container");
     const tempDiv = document.createElement("div");
 
+    var rawImagePath = ""
+    if (produto.image != null){
+      rawImagePath = produto.image.replace(/\\/g, '/')
+    }
+    const imagemURL = rawImagePath 
+    ? `http://localhost:4000/${rawImagePath}` 
+    : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+
     tempDiv.innerHTML = `
-        <div id="card(${produto.barcode})" class="card card-produto">
-            <div class="row g-0 h-100">
-                <div class="col-md-4">
-                    <img src="${produto.imagem}" class="card-img" alt="${produto.name}"">
-                </div>
-                <div class="col-md-8">
-                    <div class="card-body">
-                        <h6 class="card-title">${produto.name}</h6>
-                        <p class="card-text">Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}</p>
-                        <p class="card-text">Qtd: ${productsOnScreen[barcode].quant}</p>
-                        <div class="card-actions">
-                            <button type="button" class="btn btn-sm btn-outline-secondary btn-popover m-1" 
-                                    data-bs-toggle="popover" 
-                                    data-bs-html="true"
-                                    data-bs-content="
-                                        <strong>Nome:</strong> ${produto.name}<br>
-                                        <strong>Cód. Barras:</strong> ${produto.barcode}<br>
-                                        <strong>Preço:</strong> R$ ${produto.price}<br>
-                                        <strong>Categoria:</strong> ${produto.category}<br>
-                                        <strong>Estoque:</strong> ${produto.stock} unidades<br>
-                                        <strong>Lote:</strong> ${produto.lot}<br>
-                                        <strong>Departamento:</strong> ${produto.department}<br>
-                                        <strong>Validade:</strong> ${produto.expirationDate}<br>
-                                        <strong>Fabricação:</strong> ${produto.manufactureDate}"
-                                    title="Detalhes">
-                                <i class="bi bi-info-square"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover 1 unidade" onclick="removerUnidade('${barcode}')">
-                                <i class="bi bi-dash-circle"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover do estoque" onclick="removerProduto('${barcode}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+      <div id="card(${produto.barcode})" class="card card-produto" style="border: 1px solid #dee2e6;">
+          <div class="row g-0 h-100">
+              <div class="col-md-4 p-0 overflow-hidden" style="height: 100%;">
+                  <img src="${imagemURL}" 
+                      class="h-100 w-100" 
+                      style="object-fit: cover; object-position: center;"
+                      alt="${produto.name}"
+                      onerror="this.src='https://via.placeholder.com/150?text=Produto'">
+              </div>
+              <div class="col-md-8 p-0">
+                  <div class="card-body h-100">
+                      <h6 class="card-title">${produto.name}</h6>
+                      <p class="card-text">Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}</p>
+                      <p class="card-text">Qtd: ${productsOnScreen[barcode].quant}</p>
+                      <div class="card-actions">
+                          <button type="button" class="btn btn-sm btn-outline-secondary btn-popover m-1" 
+                                  data-bs-toggle="popover" 
+                                  data-bs-html="true"
+                                  data-bs-content="
+                                      <strong>Nome:</strong> ${produto.name}<br>
+                                      <strong>Cód. Barras:</strong> ${produto.barcode}<br>
+                                      <strong>Preço:</strong> R$ ${produto.price}<br>
+                                      <strong>Categoria:</strong> ${produto.category}<br>
+                                      <strong>Estoque:</strong> ${produto.stock} unidades<br>
+                                      <strong>Lote:</strong> ${produto.lot}<br>
+                                      <strong>Departamento:</strong> ${produto.department}<br>
+                                      <strong>Validade:</strong> ${produto.expirationDate}<br>
+                                      <strong>Fabricação:</strong> ${produto.manufactureDate}"
+                                  title="Detalhes">
+                              <i class="bi bi-info-square"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover 1 unidade" onclick="removerUnidade('${barcode}')">
+                              <i class="bi bi-dash-circle"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover do estoque" onclick="removerProduto('${barcode}')">
+                              <i class="bi bi-trash"></i>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  `;
 
     const cardElement = tempDiv.firstElementChild;
     container.appendChild(cardElement);
 
-    // Initialize popover and tooltips
     const btnPopover = cardElement.querySelector('.btn-popover');
     new bootstrap.Popover(btnPopover, { trigger: 'focus' });
 
@@ -383,72 +408,75 @@ function finalizarCompra() {
 }
 
 function processPayment() {
-  // Remove the Confirmar button during processing
-  const confirmBtn = document.getElementById("confirmCheckoutBtn");
-  confirmBtn.style.display = 'none';
-  
-  // Show processing state
-  checkoutModalBody.innerHTML = `
-      <div class="text-center py-4">
-          <div class="spinner-border text-success mb-3" role="status">
-              <span class="visually-hidden">Processando...</span>
-          </div>
-          <h5>Processando pagamento...</h5>
-      </div>
-  `;
-  
-  setTimeout(() => {
-      showPaymentSuccess();
-  }, 2000);
+    // Hide confirm button during processing
+    confirmCheckoutBtn.style.display = 'none';
+    
+    checkoutModalBody.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-success mb-3" role="status">
+                <span class="visually-hidden">Processando...</span>
+            </div>
+            <h5>Processando pagamento...</h5>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        showPaymentSuccess();
+    }, 2000);
 }
 
 function showPaymentSuccess() {
-  // Get modal footer and clear it
-  const modalFooter = document.querySelector('#modalConfirmarCompra .modal-footer');
-  modalFooter.innerHTML = '';
-  
-  // Update modal body with success message
-  checkoutModalBody.innerHTML = `
-      <div class="alert alert-success text-center">
-          <i class="bi bi-check-circle-fill fs-1"></i>
-          <h4 class="mt-3">Compra concluída!</h4>
-          <p>Pagamento realizado com sucesso via ${getPaymentMethodName(currentInvoice.paymentMethod)}</p>
-          <p class="mb-0">Total: R$ ${currentInvoice.total.toFixed(2)}</p>
-      </div>
-  `;
+    // Get modal footer and clear it
+    const modalFooter = document.querySelector('#modalConfirmarCompra .modal-footer');
+    modalFooter.innerHTML = '';
+    
+    // Update modal body with success message
+    checkoutModalBody.innerHTML = `
+        <div class="alert alert-success text-center">
+            <i class="bi bi-check-circle-fill fs-1"></i>
+            <h4 class="mt-3">Compra concluída!</h4>
+            <p>Pagamento realizado com sucesso via ${getPaymentMethodName(currentInvoice.paymentMethod)}</p>
+            <p class="mb-0">Total: R$ ${currentInvoice.total.toFixed(2)}</p>
+        </div>
+    `;
 
-  // Add print button
-  const printBtn = document.createElement('button');
-  printBtn.className = 'btn btn-primary';
-  printBtn.innerHTML = '<i class="bi bi-printer-fill"></i> Imprimir Recibo';
-  printBtn.onclick = printReceipt;
-  modalFooter.appendChild(printBtn);
+    // Add print button
+    const printBtn = document.createElement('button');
+    printBtn.className = 'btn btn-primary';
+    printBtn.innerHTML = '<i class="bi bi-printer-fill"></i> Imprimir Recibo';
+    printBtn.onclick = printReceipt;
+    modalFooter.appendChild(printBtn);
 
-  // Add close button
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'btn btn-secondary ms-2';
-  closeBtn.innerHTML = '<i class="bi bi-x-circle-fill"></i> Fechar';
-  closeBtn.onclick = completeCheckout;
-  modalFooter.appendChild(closeBtn);
+    // Add close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn btn-secondary ms-2';
+    closeBtn.innerHTML = '<i class="bi bi-x-circle-fill"></i> Fechar';
+    closeBtn.onclick = completeCheckout;
+    modalFooter.appendChild(closeBtn);
 }
 
 function completeCheckout() {
-  resetCart();
-  const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarCompra'));
-  modal.hide();
-  
-  // Restore original footer buttons
-  const modalFooter = document.querySelector('#modalConfirmarCompra .modal-footer');
-  modalFooter.innerHTML = `
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
-      <button type="button" class="btn btn-success" id="confirmCheckoutBtn">
-          <i class="bi bi-cart-check-fill"></i> Confirmar
-      </button>
-  `;
-  
-  // Reattach event listener to Confirmar button
-  document.getElementById('confirmCheckoutBtn').addEventListener('click', finalizarCompra);
+    resetCart();
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarCompra'));
+    modal.hide();
+    
+    // Restore original footer buttons
+    const modalFooter = document.querySelector('#modalConfirmarCompra .modal-footer');
+    modalFooter.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+        <button type="button" class="btn btn-success" id="confirmCheckoutBtn">
+            <i class="bi bi-cart-check-fill"></i> Confirmar
+        </button>
+    `;
+    
+    // Reattach event listener and show button
+    document.getElementById('confirmCheckoutBtn').addEventListener('click', finalizarCompra);
+    document.getElementById('confirmCheckoutBtn').style.display = '';
+    
+    // Focus on input
+    focusCodigoInput();
 }
+
 function resetCart() {
     productsOnScreen = {};
     totalPrice = 0;
@@ -538,8 +566,11 @@ function confirmarCancelamento() {
     if (senha === "admin") {
         resetCart();
         showAlert("Compra cancelada com sucesso", "Cancelamento", "success");
+        
+        // Close cancel modal and focus
         const modal = bootstrap.Modal.getInstance(document.getElementById('modalCancelarCompra'));
         modal.hide();
+        focusCodigoInput();
     } else {
         document.getElementById("erroSenha").classList.remove("d-none");
         showAlert("Senha incorreta. Tente novamente.", "Erro", "error");
