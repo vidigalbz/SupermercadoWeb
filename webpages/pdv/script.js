@@ -257,9 +257,8 @@ function criarCardEstoque(produto) {
       .then(data => {
         console.log(data)
       })
-  }
+}
   
-
 function removerUnidade(barcode) {
     if (productsOnScreen[barcode]) {
         const product = productsOnScreen[barcode];
