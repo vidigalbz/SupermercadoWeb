@@ -98,7 +98,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.codigo,
             produto.imagem
         ])
-        await insert("products", [
+        insert("products", [
             "marketId", "name", "price", "category",
             "stock", "lot", "expirationDate", "manufactureDate",
             "barcode", "image"
@@ -193,6 +193,38 @@ app.post("/editarProduto", (req, res) => {
     res.json({ success: true, message: "Produto atualizado com sucesso!" });
 });
 
+app.post("/editarProduto", (req, res) => {
+    const {
+        productId,
+        name,
+        price,
+        category,
+        departament,
+        stock,
+        lot,
+        expirationDate,
+        manufactureDate,
+        barcode,
+        marketId
+    } = req.body;
+
+    const columns = [
+        "name", "price", "category", "departament", "stock",
+        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
+    ];
+
+    const values = [
+        name, price, category, departament, stock,
+        lot, expirationDate, manufactureDate, barcode, marketId
+    ];
+
+    const condition = `productId = ${productId}`;
+
+    update("products", columns, values, condition);
+
+    res.json({ success: true, message: "Produto atualizado com sucesso!" });
+});
+
 app.post("/cadastro", async (req, res) => {
     const {name, email, password} = req.body;
 
@@ -241,8 +273,7 @@ app.post('/login', async (req, res) => {
         res.status(200).json({ 
             status: "success", 
             name: user.name,
-            email: user.email,
-            userId: user.userId
+            email: user.email
         });
 
     } catch (err) {
@@ -324,20 +355,23 @@ app.post('/deletarSupermercado', async (req, res) => {
         res.status(500).json({ erro: "Erro ao deletar supermercado." });
     }
 });
+
+
 app.post('/supermercadoData', async (req, res) => {
-    const { userId } = req.body;
-    
-    if (!userId) {
-        return res.status(400).json({ status: 'error', message: 'ID do usuário não informado' });
+    const {busca} = req.body;
+    let condicao = "";
+    if (busca) {
+        const termo = busca.replace(/'/g, "''")
+        condicao = `Where ownerId == ${termo}` 
     }
-})
-    try {
-        const supermercados = await select("supermarkets", "WHERE ownerId = ?", [userId]);
-        res.json({ mensagem: supermercados });
+    try{
+    const results = await select("supermarkets", condicao);
+    res.status(200).json({mensagem: results});
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 'error', message: 'Erro ao buscar supermercados' });
-    };
+        res.status(500).json({erro: "Erro ao consultar supermercados."})
+    }
+})
 
 loadPages();
 
