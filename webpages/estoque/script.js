@@ -105,6 +105,7 @@ function carregarProdutos() {
     .then(res => res.json())
     .then(data => {
       currentData = data.mensagem;
+      console.log(data.mensagem)
       renderizarProdutos(data.mensagem);
       console.log(`${data.mensagem.image}`)
     })

@@ -324,7 +324,10 @@ app.post("/adicionarSupermercado", async (req, res) => {
             data: {
                 marketId,
                 pdvLink,
-                estoqueLink
+                estoqueLink,
+                nome, 
+                local, 
+                icon
             }
         });
 
@@ -337,73 +340,22 @@ app.post("/adicionarSupermercado", async (req, res) => {
     }
 });
 
-// Rota para o PDV de um supermercado específico
-app.get('/pdv/:marketId', async (req, res) => {
-    try {
-        const marketId = req.params.marketId;
-        console.log(`Acessando PDV para marketId: ${marketId}`);
-
-        // Consulta atualizada para marketId
-        const market = await select(
-            "supermarkets", 
-            "WHERE marketId = ?", 
-            [marketId]
-        );
-        
-        if (!market || market.length === 0) {
-            console.warn(`Supermercado com marketId ${marketId} não encontrado`);
-            return res.status(404).send("Supermercado não encontrado");
-        }
-        
-        console.log(`Supermercado encontrado:`, market[0]);
-        res.sendFile(path.join(webpages_dir, "pdv/index.html"));
-    } catch (err) {
-        console.error(`Erro ao acessar PDV:`, err);
-        res.status(500).send("Erro interno do servidor");
+app.post('/deletarSupermercado', async (req, res) => {
+    const { name } = req.body;
+    console.log(codigo)
+    if (!codigo) {
+        return res.status(400).json({ erro: "Nome do mercado não fornecido." });
     }
-});
 
-app.get('/estoque/:marketId', async (req, res) => {
     try {
-        const marketId = req.params.marketId;
-        console.log(`Acessando Estoque para marketId: ${marketId}`);
-
-        const market = await select(
-            "supermarkets", 
-            "WHERE marketId = ?", 
-            [marketId]
-        );
-        
-        if (!market || market.length === 0) {
-            return res.status(404).send("Supermercado não encontrado");
-        }
-        
-        res.sendFile(path.join(webpages_dir, "estoque/index.html"));
+        delet("supermarkets", `name = '${name}'`);
+        res.status(200).json({ mensagem: "Supermercado deletado com sucesso!" });
     } catch (err) {
         console.error(err);
-        res.status(500).send("Erro interno do servidor");
+        res.status(500).json({ erro: "Erro ao deletar supermercado." });
     }
 });
 
-// Rota para o Estoque de um supermercado específico
-app.get('/estoque/:supermarketId', async (req, res) => {
-    try {
-        const supermarketId = req.params.marketId;
-        
-        // Verificar se o supermercado existe
-        const supermarket = await select("supermarkets", "WHERE supermarketId = ?", [supermarketId]);
-        
-        if (supermarket.length === 0) {
-            return res.status(404).send("Supermercado não encontrado");
-        }
-        
-        res.sendFile(path.join(webpages_dir, "estoque/index.html"));
-        
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Erro ao acessar Estoque");
-    }
-});
 
 app.post('/supermercadoData', async (req, res) => {
     const {busca} = req.body;
@@ -420,7 +372,6 @@ app.post('/supermercadoData', async (req, res) => {
         res.status(500).json({erro: "Erro ao consultar supermercados."})
     }
 })
-
 
 loadPages();
 

@@ -1,12 +1,20 @@
+function showToast(message, color = 'danger') {
+  const toast = document.getElementById('liveToast');
+  const toastMessage = document.getElementById('toastMessage');
 
+  toast.className = `toast align-items-center text-white bg-${color} border-0`;
+  toastMessage.textContent = message;
+
+  const toastBootstrap = new bootstrap.Toast(toast);
+  toastBootstrap.show();
+}
 
 function confirmarExclusao() {
   const input = document.getElementById("confirmarExclusao");
-  const nome = "Supermercado A"; // Substituir pelo nome atual
+  const nome = input; // Substituir pelo nome atual
   if (input.value === nome) {
-    alert("Supermercado excluído!");
-    // lógica real de exclusão aqui
-  } else {
+    alert("Supermercado excluído!");}
+else {
     alert("Nome incorreto. Exclusão cancelada.");
   }
 }
@@ -60,7 +68,7 @@ function criarCardSupermercado(supermercado) {
   const card = document.createElement('div');
   card.className = 'col-md-4 col-lg-3';
   card.innerHTML = `
-    <div class="card card-super h-100">
+    <div data-id="${supermercado.marketId}" class="card card-super h-100">
       <div class="card-img-top text-center py-4 bg-primary text-white">
         <span class="fs-1">${supermercado.icone}</span>
       </div>
@@ -124,8 +132,9 @@ function criarCardSupermercado(supermercado) {
   }
   
   function renderizarSupermercados(supermercados) {
+    console.log(supermercados?.map(s => s.marketId) || "nao");
     const idsNovos = supermercados.map(s => s.marketId);
-    const cardsAtuais = Array.from(container.querySelectorzAll('.card-super'));
+    const cardsAtuais = Array.from(container.querySelectorAll('.card-super'));
   
     for (let card of cardsAtuais) {
       if (!idsNovos.includes(parseInt(card.dataset.id))) {
@@ -134,7 +143,7 @@ function criarCardSupermercado(supermercado) {
     }
   
     for (let supermercado of supermercados) {
-      criarCardSdupermercado(supermercado);
+      criarCardSupermercado(supermercado);
     }
   }
   
@@ -148,14 +157,13 @@ function criarCardSupermercado(supermercado) {
       .then(data => {
         currentData = data.mensagem;
         currentData.forEach(element => {
-          console.log(element)
-          criarCardSupermercado({nome: element.name,
+          criarCardSupermercado({
+            nome: element.name,
             local: element.local,
             gerente: element.onwerId,
             icone: element.icon
         })
-        });
-        console.log(`${data.mensagem.image}`)
+      });
     })
   }
   // CADASTRO
@@ -178,10 +186,19 @@ function criarCardSupermercado(supermercado) {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.status === "success"){
-        showToast("Supermercado Adicionado com sucesso", "success");
-        criarCardSupermercado(data.data); // Usa os dados da resposta
+      console.log(data)
+      if (data.success){
+        console.log("foi essa merda")
+        console.log(data.data);
+        criarCardSupermercado({
+          nome: data.data.nome,
+          local: data.data.local,
+          icone: data.data.icon,
+          linkPDV: data.data.pdvLink,
+          linkEstoque: data.data.estoqueLink
+        });
       } else {
+        console.log('nao')
         showToast(data.message || "Erro ao adicionar supermercado", "danger");
       }
     })
@@ -191,6 +208,4 @@ function criarCardSupermercado(supermercado) {
     });
   });
 
-
-
-carregarSupermercados()
+carregarSupermercados();
