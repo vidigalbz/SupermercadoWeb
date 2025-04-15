@@ -147,11 +147,13 @@ function criarCardSupermercado(supermercado) {
     }
   }
   
+  const user = JSON.parse(localStorage.getItem("user"));
+  console.log(user)
   function carregarSupermercados(){
     fetch('/supermercadoData', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
+      body: JSON.stringify({ userId: JSON.stringify(user.userId)})
     })
       .then(res => res.json())
       .then(data => {
@@ -166,12 +168,36 @@ function criarCardSupermercado(supermercado) {
       });
     })
   }
+  
+  function showToast(mensagem, tipo = "success") {
+    const toast = document.createElement("div");
+    toast.className = `toast align-items-center text-bg-${tipo} border-0 show position-fixed bottom-0 end-0 m-3`;
+    toast.setAttribute("role", "alert");
+    toast.setAttribute("aria-live", "assertive");
+    toast.setAttribute("aria-atomic", "true");
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">${mensagem}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    `;
+    document.body.appendChild(toast);
+  
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+  
+    // Remover da DOM após desaparecer
+    toast.addEventListener("hidden.bs.toast", () => {
+      toast.remove();
+    });
+  }
+  
   // CADASTRO
   document.getElementById("addMarket").addEventListener("click", function(e){
     e.preventDefault();
     const name = document.getElementById("nomeSupermercado").value;
     const local = document.getElementById("localizacao").value;
-    const gerente = document.getElementById("nomeGerente").value;
+    const gerente = user.userId;
     const icon = document.getElementById("icon").value;
     
     fetch('/adicionarSupermercado', {

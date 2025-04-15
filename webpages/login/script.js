@@ -80,11 +80,17 @@ document.getElementById("loginButton").addEventListener("click", async function 
     const result = await response.json();
 
     if (result.status === "success") {
+      localStorage.setItem("user", JSON.stringify({
+        name: result.name,
+        email: result.email,
+        userId: result.userId
+      }));
+    
       alert(`Bem-vindo, ${result.name}!`);
       window.location.href = '/supermercado';
     } else {
       showToast(result.message || "Email ou senha incorretos!", "danger");
-    }
+    }    
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     showToast("Erro na conexão com o servidor.", "danger");

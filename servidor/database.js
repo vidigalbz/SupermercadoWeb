@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS supermarkets (
     name TEXT NOT NULL,
     local TEXT NOT NULL,
     icon TEXT NOT NULL,
-    ownerId TEXT NOT NULL,
+    ownerId INTEGER NOT NULL,
     FOREIGN KEY (ownerId) REFERENCES users(userId)
 );
 
