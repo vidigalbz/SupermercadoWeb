@@ -62,7 +62,6 @@ async function generatorUrl(){
         }
     }
 }
-
 // Endpoint para adicionar produto (imagem é ignorada)
 app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     try {

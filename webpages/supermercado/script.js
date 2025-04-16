@@ -1,4 +1,6 @@
 const user = JSON.parse(localStorage.getItem("user"));
+const container = document.getElementById("supermercado-container")
+let currentData = []
 
 function showToast(message, color = 'danger') {
   const toast = document.getElementById('liveToast');
@@ -58,71 +60,77 @@ function alternarVisibilidade(botao) {
       }
     }
     
-    function criarCardSupermercado(supermercado) {
-      const card = document.createElement('div');
-      card.className = 'col-md-4 col-lg-3';
-      card.innerHTML = `
-      <div data-id="${supermercado.marketId}" class="card card-super h-100">
-      <div class="card-img-top text-center py-4 bg-primary text-white">
-      <span class="fs-1">${supermercado.icone}</span>
-      </div>
-      <div class="card-body">
-      <h5 class="card-title mb-3">${supermercado.nome}</h5>
-      <div class="d-flex justify-content-between mb-2">
-      <button class="btn btn-outline-info btn-sm" data-bs-toggle="popover" title="Detalhes do Supermercado"
-      data-bs-html="true"
-      data-bs-content="
-      <strong>Nome:</strong> ${supermercado.nome}<br>
-      <strong>Local:</strong> ${supermercado.local}
-      ">
-      <i class="bi bi-info-circle"></i>
-      </button>
-      <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditar">
-      <i class="bi bi-pencil-square"></i>
-      </button>
-      </div>
-      <label class="form-label">Link PDV:</label>
-      <div class="input-group mb-2">
-      <input type="password" class="form-control" value="${supermercado.linkPDV}" readonly>
-      <button class="btn btn-outline-secondary" onclick="copiarLink(this)" title="Copiar">
-      <i class="bi bi-clipboard"></i>
-      </button>
-      <button class="btn btn-outline-secondary" onclick="alternarVisibilidade(this)" title="Mostrar/Ocultar">
-      <i class="bi bi-eye-slash"></i>
-      </button>
-      </div>
-      <label class="form-label">Link Estoque:</label>
-      <div class="input-group">
-      <input type="password" class="form-control" value="${supermercado.linkEstoque}" readonly>
-      <button class="btn btn-outline-secondary" onclick="copiarLink(this)" title="Copiar">
-      <i class="bi bi-clipboard"></i>
-      </button>
-      <button class="btn btn-outline-secondary" onclick="alternarVisibilidade(this)" title="Mostrar/Ocultar">
-      <i class="bi bi-eye-slash"></i>
-      </button>
-      </div>
-      </div>
-      </div>
-      `;
-      
-      // Adiciona o card na área onde os cards ficam
-      document.querySelector('.card-container').appendChild(card);
-      
-      // Ativa popovers do Bootstrap nesse card
-      const popoverTriggerList = card.querySelectorAll('[data-bs-toggle="popover"]');
-      popoverTriggerList.forEach(el => new bootstrap.Popover(el));
-    }
+  function criarCardSupermercado(supermercado) {
+    const card = document.createElement('div');
+    card.className = 'col-md-4 col-lg-3';
+    card.innerHTML = `
+    <div  class="card-super h-100" data-id="${supermercado.marketId}">
+    <div class="card-img-top text-center py-4 bg-primary text-white">
+    <span class="fs-1">${supermercado.icone}</span>
+    </div>
+    <div class="card-body">
+    <h5 class="card-title mb-3">${supermercado.nome}</h5>
+    <div class="d-flex justify-content-between mb-2">
+    <button class="btn btn-outline-info btn-sm" data-bs-toggle="popover" title="Detalhes do Supermercado"
+    data-bs-html="true"
+    data-bs-content="
+    <strong>Nome:</strong> ${supermercado.nome}<br>
+    <strong>Local:</strong> ${supermercado.local}
+    ">
+    <i class="bi bi-info-circle"></i>
+    </button>
+    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditar">
+    <i class="bi bi-pencil-square"></i>
+    </button>
+    </div>
+    <label class="form-label">Link PDV:</label>
+    <div class="input-group mb-2">
+    <input type="password" class="form-control" value="${supermercado.linkPDV}" readonly>
+    <button class="btn btn-outline-secondary" onclick="copiarLink(this)" title="Copiar">
+    <i class="bi bi-clipboard"></i>
+    </button>
+    <button class="btn btn-outline-secondary" onclick="alternarVisibilidade(this)" title="Mostrar/Ocultar">
+    <i class="bi bi-eye-slash"></i>
+    </button>
+    </div>
+    <label class="form-label">Link Estoque:</label>
+    <div class="input-group">
+    <input type="password" class="form-control" value="${supermercado.linkEstoque}" readonly>
+    <button class="btn btn-outline-secondary" onclick="copiarLink(this)" title="Copiar">
+    <i class="bi bi-clipboard"></i>
+    </button>
+    <button class="btn btn-outline-secondary" onclick="alternarVisibilidade(this)" title="Mostrar/Ocultar">
+    <i class="bi bi-eye-slash"></i>
+    </button>
+    </div>
+    </div>
+    </div>
+    `;
+    
+    // Adiciona o card na área onde os cards ficam
+    document.querySelector('.card-container').appendChild(card);
+    
+    // Ativa popovers do Bootstrap nesse card
+    const popoverTriggerList = card.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach(el => new bootstrap.Popover(el));
+  }
   
   function deleteEmpty(index) {
     let card = document.getElementById(`empty-card-${index}`)
     card.remove();
   }
   function atualizarOuAdicionarCard(supermercado) {
+    console.log(currentData)
     const cardExistente = container.querySelector(`.card-super[data-id="${supermercado.marketId}"]`);
     if (cardExistente) {
       cardExistente.remove();
     }
-    criarCardSupermercado(supermercado);
+    criarCardSupermercado({
+      nome: supermercado.name,
+      local: supermercado.local,
+      ownerId: supermercado.ownerId,
+      icone: supermercado.icon}
+    );
   }
   
   function renderizarSupermercados(supermercados) {
@@ -135,9 +143,8 @@ function alternarVisibilidade(botao) {
         card.remove();
       }
     }
-    
     for (let supermercado of supermercados) {
-      criarCardSupermercado(supermercado);
+      atualizarOuAdicionarCard(supermercado);
     }
   }
   function carregarSupermercados(){
@@ -150,16 +157,10 @@ function alternarVisibilidade(botao) {
     .then(res => res.json())
     .then(data => {
       currentData = data.mensagem;
-        currentData.forEach(element => {
-          criarCardSupermercado({
-            nome: element.name,
-            local: element.local,
-            gerente: element.onwerId,
-            icone: element.icon
-          })
-        });
-      })
-    }
+      console.log(currentData)
+      renderizarSupermercados(currentData);
+    })
+  };
     // CADASTRO
 document.getElementById("addMarket").addEventListener("click", function(e){
   e.preventDefault();
@@ -180,13 +181,7 @@ document.getElementById("addMarket").addEventListener("click", function(e){
   .then(res => res.json())
   .then(data => {
     if (data.success){
-      criarCardSupermercado({
-        nome: data.data.nome,
-        local: data.data.local,
-        icone: data.data.icon,
-        linkPDV: data.data.pdvLink,
-        linkEstoque: data.data.estoqueLink
-      });
+      carregarSupermercados();
     } else {
       showToast(data.message || "Erro ao adicionar supermercado", "danger");
     }
