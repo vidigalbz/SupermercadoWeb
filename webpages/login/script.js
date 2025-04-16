@@ -90,3 +90,13 @@ document.getElementById("loginButton").addEventListener("click", async function 
     showToast("Erro na conexão com o servidor.", "danger");
   }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("cadastro") === "1") {
+    const signUpButton = document.getElementById("signUp");
+    if (signUpButton) {
+      signUpButton.click();
+    }
+  }
+});
