@@ -359,27 +359,27 @@
       </div>
 
       <div class="offcanvas-body">
-        <!-- Tabs -->
-        <ul class="nav nav-tabs" id="tabs-alerta" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-unidades-tab" data-bs-toggle="tab" data-bs-target="#tab-unidades" type="button" role="tab">
-              Nível de Estoque
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-validade-tab" data-bs-toggle="tab" data-bs-target="#tab-validade" type="button" role="tab">
-              Validade Próxima
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-reload-alerts-tab" data-bs-toggle="tab" data-bs-target="#reload-alerts" type="button" role="tab">
-              <i class="bi bi-arrow-clockwise"></i>
-            </button>
-          </li>
-        </ul>
+        <!-- Tabs e Botão de Recarregar -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <ul class="nav nav-tabs" id="tabs-alerta" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="tab-unidades-tab" data-bs-toggle="tab" data-bs-target="#tab-unidades" type="button" role="tab">
+                Nível de Estoque
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-validade-tab" data-bs-toggle="tab" data-bs-target="#tab-validade" type="button" role="tab">
+                Validade Próxima
+              </button>
+            </li>
+          </ul>
+          <button class="btn btn-outline-dark btn-sm" id="btn-reload-alerts" type="button" title="Recarregar alertas">
+            <i class="bi bi-arrow-clockwise" id="reload-icon"></i>
+          </button>
+        </div>
 
         <!-- Conteúdo -->
-        <div class="tab-content pt-3">
+        <div class="tab-content pt-2">
           <div class="tab-pane fade show active" id="tab-unidades" role="tabpanel">
             <div id="alertas-unidades" class="d-flex flex-column gap-2"></div>
           </div>

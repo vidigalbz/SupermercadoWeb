@@ -2,10 +2,6 @@ let categorias;
 let departamentos;
 let tipoAtual = "Departamento"; // ou "Categoria"
 
-const critico = 10
-const medio = 30
-const semnecessidade = 50
-
 function carregarSetoresGlobais() {
   fetch('/getSetor', {
     method: 'POST',
@@ -290,12 +286,12 @@ const LIMITES_VALIDADE = {
   aviso: 30          // Amarelo - vence em 16-30 dias
 };
 
-// Função para calcular dias até a validade (retorna negativo se vencido)
+// Função para calcular dias até a validade
 function diasParaVencer(dataValidade) {
   if (!dataValidade) return Infinity;
   
   const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0); // Ignorar horas para cálculo de dias
+  hoje.setHours(0, 0, 0, 0);
   
   const valDate = new Date(dataValidade);
   valDate.setHours(0, 0, 0, 0);
@@ -307,6 +303,11 @@ function diasParaVencer(dataValidade) {
 // Função principal para atualizar alertas
 async function atualizarAlertas() {
   try {
+    // Mostrar estado de carregamento
+    const reloadBtn = document.getElementById('btn-reload-alerts');
+    const reloadIcon = reloadBtn.querySelector('i');
+    reloadIcon.classList.add('rotate-animation');
+    
     // Buscar todos os produtos
     const response = await fetch('/estoqueData', {
       method: 'POST',
@@ -319,29 +320,23 @@ async function atualizarAlertas() {
     // Filtrar produtos por nível de estoque
     const alertasEstoque = {
       vermelho: produtos.filter(p => p.stock < LIMITES_ESTOQUE.critico),
-      laranja: produtos.filter(p => 
-        p.stock >= LIMITES_ESTOQUE.critico && 
-        p.stock < LIMITES_ESTOQUE.medio),
-      amarelo: produtos.filter(p => 
-        p.stock >= LIMITES_ESTOQUE.medio && 
-        p.stock < LIMITES_ESTOQUE.semnecessidade)
+      laranja: produtos.filter(p => p.stock >= LIMITES_ESTOQUE.critico && p.stock < LIMITES_ESTOQUE.medio),
+      amarelo: produtos.filter(p => p.stock >= LIMITES_ESTOQUE.medio && p.stock < LIMITES_ESTOQUE.semnecessidade)
     };
     
     // Filtrar produtos por validade
     const alertasValidade = {
       vermelho: produtos.filter(p => {
         const dias = diasParaVencer(p.expirationDate);
-        return dias < LIMITES_VALIDADE.vencido; // Já vencidos
+        return dias < LIMITES_VALIDADE.vencido;
       }),
       laranja: produtos.filter(p => {
         const dias = diasParaVencer(p.expirationDate);
-        return dias >= LIMITES_VALIDADE.vencido && 
-               dias <= LIMITES_VALIDADE.urgente; // Vence em 0-15 dias
+        return dias >= LIMITES_VALIDADE.vencido && dias <= LIMITES_VALIDADE.urgente;
       }),
       amarelo: produtos.filter(p => {
         const dias = diasParaVencer(p.expirationDate);
-        return dias > LIMITES_VALIDADE.urgente && 
-               dias <= LIMITES_VALIDADE.aviso; // Vence em 16-30 dias
+        return dias > LIMITES_VALIDADE.urgente && dias <= LIMITES_VALIDADE.aviso;
       })
     };
     
@@ -362,94 +357,55 @@ async function atualizarAlertas() {
     
   } catch (err) {
     console.error('Erro ao atualizar alertas:', err);
+    alert('Erro ao carregar alertas. Tente novamente.');
+  } finally {
+    // Remover animação independente de sucesso ou erro
+    const reloadIcon = document.querySelector('#btn-reload-alerts i');
+    setTimeout(() => {
+      reloadIcon.classList.remove('rotate-animation');
+    }, 500);
   }
 }
 
-// Atualiza a seção de alertas de estoque
+// Funções auxiliares para atualizar as seções de alertas
 function atualizarAlertasEstoque(alertasEstoque) {
   const container = document.getElementById('alertas-unidades');
   container.innerHTML = '';
   
-  // Adicionar alertas vermelhos (menos de 10 unidades)
   alertasEstoque.vermelho.forEach(produto => {
-    container.appendChild(
-      criarAlertaEstoque(
-        produto, 
-        'vermelho', 
-        `Crítico: menos de ${LIMITES_ESTOQUE.critico} unidades`
-      )
-    );
+    container.appendChild(criarAlertaEstoque(produto, 'vermelho', `Crítico: menos de ${LIMITES_ESTOQUE.critico} unidades`));
   });
   
-  // Adicionar alertas laranja (10-29 unidades)
   alertasEstoque.laranja.forEach(produto => {
-    container.appendChild(
-      criarAlertaEstoque(
-        produto, 
-        'laranja', 
-        `Atenção: ${LIMITES_ESTOQUE.critico}-${LIMITES_ESTOQUE.medio-1} unidades`
-      )
-    );
+    container.appendChild(criarAlertaEstoque(produto, 'laranja', `Atenção: ${LIMITES_ESTOQUE.critico}-${LIMITES_ESTOQUE.medio-1} unidades`));
   });
   
-  // Adicionar alertas amarelos (30-49 unidades)
   alertasEstoque.amarelo.forEach(produto => {
-    container.appendChild(
-      criarAlertaEstoque(
-        produto, 
-        'amarelo', 
-        `Observação: ${LIMITES_ESTOQUE.medio}-${LIMITES_ESTOQUE.semnecessidade-1} unidades`
-      )
-    );
+    container.appendChild(criarAlertaEstoque(produto, 'amarelo', `Observação: ${LIMITES_ESTOQUE.medio}-${LIMITES_ESTOQUE.semnecessidade-1} unidades`));
   });
 }
 
-// Atualiza a seção de alertas de validade
 function atualizarAlertasValidade(alertasValidade) {
   const container = document.getElementById('alertas-validade');
   container.innerHTML = '';
   
-  // Alertas vermelhos (já vencidos)
   alertasValidade.vermelho.forEach(produto => {
     const dias = diasParaVencer(produto.expirationDate);
-    container.appendChild(
-      criarAlertaValidade(
-        produto, 
-        dias, 
-        'vermelho', 
-        'Vencido!'
-      )
-    );
+    container.appendChild(criarAlertaValidade(produto, dias, 'vermelho', 'Vencido!'));
   });
   
-  // Alertas laranja (vence em 0-15 dias)
   alertasValidade.laranja.forEach(produto => {
     const dias = diasParaVencer(produto.expirationDate);
-    container.appendChild(
-      criarAlertaValidade(
-        produto, 
-        dias, 
-        'laranja', 
-        'Vence em breve'
-      )
-    );
+    container.appendChild(criarAlertaValidade(produto, dias, 'laranja', 'Vence em breve'));
   });
   
-  // Alertas amarelos (vence em 16-30 dias)
   alertasValidade.amarelo.forEach(produto => {
     const dias = diasParaVencer(produto.expirationDate);
-    container.appendChild(
-      criarAlertaValidade(
-        produto, 
-        dias, 
-        'amarelo', 
-        'Validade próxima'
-      )
-    );
+    container.appendChild(criarAlertaValidade(produto, dias, 'amarelo', 'Validade próxima'));
   });
 }
 
-// Cria um card de alerta para estoque baixo
+// Funções para criar os cards de alerta
 function criarAlertaEstoque(produto, tipo, titulo) {
   const alerta = document.createElement('div');
   alerta.className = `alert alert-${tipo}`;
@@ -468,12 +424,10 @@ function criarAlertaEstoque(produto, tipo, titulo) {
   return alerta;
 }
 
-// Cria um card de alerta para validade próxima
 function criarAlertaValidade(produto, dias, tipo, titulo) {
   const alerta = document.createElement('div');
   alerta.className = `alert alert-${tipo}`;
   
-  // Formata mensagem de dias
   let diasMsg;
   if (dias < 0) {
     diasMsg = `Vencido há ${Math.abs(dias)} dias`;
@@ -504,8 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Carregar alertas inicialmente
   atualizarAlertas();
   
-  // Atualizar a cada 5 minutos
-  setInterval(atualizarAlertas, 300000);
+  // Configurar o botão de recarregar
+  document.getElementById('btn-reload-alerts').addEventListener('click', atualizarAlertas);
   
   // Atualizar quando o painel de alertas for aberto
   document.getElementById('offcanvas-alertas').addEventListener('show.bs.offcanvas', atualizarAlertas);

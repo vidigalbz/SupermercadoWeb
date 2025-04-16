@@ -45,9 +45,28 @@ body {
   margin-top: 5px;
 }
 
-#tab-reload-alerts-tab{
+#btn-reload-alerts {
+  transition: 0.3s ease-in-out;
+  padding: 0.25rem 0.5rem;
   color: black;
-  font-size: 1.2rem;
-  background-color: rgb(188, 188, 188);
 }
-  
+
+#btn-reload-alerts:hover {
+  transform: scale(1.1);
+  background-color: #f5f5f7;
+}
+
+/* Ícone spinner (ampulheta girando) */
+.spinner-icon {
+  animation: rotate 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+#btn-reload-alerts i {
+  font-size: 1.2rem;
+}
