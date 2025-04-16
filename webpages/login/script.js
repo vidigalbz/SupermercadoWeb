@@ -71,15 +71,19 @@ document.getElementById("loginButton").addEventListener("click", async function 
   }
 
   try {
-    const response = await fetch(`${API}/login`, {
+    const response = await fetch(`/login`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, senha })
+      body: JSON.stringify({ email: email, senha: senha })
     });
 
     const result = await response.json();
-
-    if (result.status === "success") {
+    if (result.status == "success") {
+      localStorage.setItem("user", JSON.stringify({
+        name: result.name,
+        email: result.email,
+        userId: result.userId
+      }));
       alert(`Bem-vindo, ${result.name}!`);
       window.location.href = '/supermercado';
     } else {

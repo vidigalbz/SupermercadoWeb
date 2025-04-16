@@ -1,5 +1,4 @@
 const container = document.getElementById("produtos-container");
-
 var currentData = []
 
 function criarCardHTML(produto) {

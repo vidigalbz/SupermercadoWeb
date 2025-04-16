@@ -1,3 +1,5 @@
+const user = JSON.parse(localStorage.getItem("user"));
+
 function showToast(message, color = 'danger') {
   const toast = document.getElementById('liveToast');
   const toastMessage = document.getElementById('toastMessage');
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const contador = document.getElementById("contadorSupermercados");
   const total = document.querySelectorAll(".card-super").length;
+  console.log(total)
   contador.innerText = `${total} / 4`;
   const box = contador.parentElement;
 
@@ -146,16 +149,17 @@ function criarCardSupermercado(supermercado) {
       criarCardSupermercado(supermercado);
     }
   }
-  
   function carregarSupermercados(){
+  
     fetch('/supermercadoData', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
+      body: JSON.stringify({ busca: JSON.stringify(user.userId)})
     })
       .then(res => res.json())
       .then(data => {
         currentData = data.mensagem;
+        console.log(currentData)
         currentData.forEach(element => {
           criarCardSupermercado({
             nome: element.name,
@@ -171,7 +175,7 @@ function criarCardSupermercado(supermercado) {
     e.preventDefault();
     const name = document.getElementById("nomeSupermercado").value;
     const local = document.getElementById("localizacao").value;
-    const gerente = document.getElementById("nomeGerente").value;
+    const ownerId = user.userId;
     const icon = document.getElementById("icon").value;
     
     fetch('/adicionarSupermercado', {
@@ -180,16 +184,13 @@ function criarCardSupermercado(supermercado) {
       body: JSON.stringify({
         nome: name, 
         local: local, 
-        ownerId: gerente, // Corrigido o nome do campo
+        ownerId: ownerId, 
         icon: icon
       })
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data)
       if (data.success){
-        console.log("foi essa merda")
-        console.log(data.data);
         criarCardSupermercado({
           nome: data.data.nome,
           local: data.data.local,
@@ -198,7 +199,6 @@ function criarCardSupermercado(supermercado) {
           linkEstoque: data.data.estoqueLink
         });
       } else {
-        console.log('nao')
         showToast(data.message || "Erro ao adicionar supermercado", "danger");
       }
     })

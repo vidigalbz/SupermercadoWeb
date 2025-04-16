@@ -269,11 +269,11 @@ app.post('/login', async (req, res) => {
                 message: "Senha incorreta!" 
             });
         }
-
         res.status(200).json({ 
             status: "success", 
             name: user.name,
-            email: user.email
+            email: user.email,
+            userId: user.userId
         });
 
     } catch (err) {
@@ -362,8 +362,9 @@ app.post('/supermercadoData', async (req, res) => {
     let condicao = "";
     if (busca) {
         const termo = busca.replace(/'/g, "''")
-        condicao = `Where ownerId == ${termo}` 
+        condicao = `WHERE ownerId = ${termo}` 
     }
+    
     try{
     const results = await select("supermarkets", condicao);
     res.status(200).json({mensagem: results});
