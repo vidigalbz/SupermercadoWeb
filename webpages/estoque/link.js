@@ -1,27 +1,3 @@
-// Função para pegar o valor da pesquisa
-function obterPesquisa() {
-    const pesquisa = document.getElementById("pesquisa").value.trim();
-    return pesquisa;
-}
-  
-// Funções para pegar códigos de editar e excluir
-function obterCodigoEditar() {
-    return document.getElementById("codigo-editar").value.trim();
-}
-  
-function obterCodigoExcluir() {
-    return document.getElementById("codigo-excluir").value.trim();
-}
-  
-// Funções para pegar filtros
-function obterFiltroCategoria() {
-    return document.getElementById("filtro-categoria").value;
-}
-  
-function obterFiltroDepartamento() {
-    return document.getElementById("filtro-departamento").value;
-}
-  
 // Função para limpar todos os filtros
 function limparFiltros() {
     document.getElementById("filtro-categoria").value = "";
@@ -31,6 +7,7 @@ function limparFiltros() {
     // Chamada para atualizar a listagem se necessário
     // atualizarListaProdutos();
     console.log("Filtros limpos");
+    carregarProdutos();
 }
   
 function abrirModalEdicao() {
@@ -101,10 +78,7 @@ function confirmarExclusaoFinal() {
   excluirProduto();
 }
 
-
 // Botões de ação
 document.getElementById("btn-pesquisar").addEventListener("click", () => {
   search();
 });
-  
-document.getElementById("btn-limpar-filtros").addEventListener("click", limparFiltros);

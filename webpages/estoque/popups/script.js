@@ -2,27 +2,26 @@ let categorias;
 let departamentos;
 let tipoAtual = "Departamento"; // ou "Categoria"
 
-function buscarSetores() {
+function carregarSetoresGlobais() {
   fetch('/getSetor', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-      body: JSON.stringify({})
-    })
-    .then(response => response.json())
-    .then(data => {
-      categorias = data.cat;
-      departamentos = data.dept;
-    })
-    .catch(error => {
-      console.error("Erro ao buscar setores:", error);
-  });
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  })
+  .then(res => res.json())
+  .then(data => {
+    categorias = data.cat;
+    departamentos = data.dept;
+  })
+  .catch(err => console.error("Erro ao carregar setores:", err));
 }
 
 function preencherCombosAdicao() {
   const selectCategoria = document.getElementById("add-categoria");
   const selectDepartamento = document.getElementById("add-departamento");
+
+  selectCategoria.innerHTML = '<option value="">Selecione</option>';
+  selectDepartamento.innerHTML = '<option value="">Selecione</option>';
 
   categorias.forEach(cat => {
     const option = document.createElement("option");
@@ -43,7 +42,6 @@ function preencherCombosEdicao() {
   const selectCategoria = document.getElementById("editar-categoria");
   const selectDepartamento = document.getElementById("editar-departamento");
 
-  // Limpa opções antigas (caso reabra o modal várias vezes)
   selectCategoria.innerHTML = '<option value="">Selecione</option>';
   selectDepartamento.innerHTML = '<option value="">Selecione</option>';
 
@@ -111,7 +109,6 @@ function formatarNumero(valor) {
   return Number(valor).toLocaleString('pt-BR');
 }
 
-
 const produtoExemplo = {
     nome: "Arroz Tio João",
     barcode: "7891234567890",
@@ -170,45 +167,21 @@ function abrirModalEditarProduto(productId) {
   });
 }
 
-function preencherCombosCategoriasEDepartamentos() {
-    const selectSetor = document.getElementById("select-excluir-setor");
-    const selectDepartamento = document.getElementById("select-excluir-departamento");
-  
-    selectSetor.innerHTML = '<option value="">Selecione</option>';
-    setores.forEach(s => {
-      const option = document.createElement("option");
-      option.value = s;
-      option.textContent = s;
-      selectSetor.appendChild(option);
-    });
-  
-    selectDepartamento.innerHTML = '<option value="">Selecione</option>';
-    departamentos.forEach(d => {
-      const option = document.createElement("option");
-      option.value = d;
-      option.textContent = d;
-      selectDepartamento.appendChild(option);
-    });
-}
-
 function abrirModalDepCat() {
     // Reset toggle
     document.getElementById("toggleTipo").checked = false;
     tipoAtual = "Departamento";
     atualizarLabelTipo();
   
-    // Preencher combo
-    preencherCombo();
-  
     // Abrir modal
     const modal = new bootstrap.Modal(document.getElementById("modal-dep-cat"));
     modal.show();
+    preencherComboExcluirSetor();
 }
   
 function alternarTipo() {
   tipoAtual = document.getElementById("toggleTipo").checked ? "Categoria" : "Departamento";
   atualizarLabelTipo();
-  preencherCombo();
 }
 
 function atualizarLabelTipo() {
@@ -221,6 +194,7 @@ function preencherComboExcluirSetor() {
   select.innerHTML = '<option value="">Selecione</option>';
 
   const lista = tipoAtual === "Departamento" ? departamentos : categorias;
+
   lista.forEach(item => {
     const option = document.createElement("option");
     option.value = item;
@@ -228,20 +202,28 @@ function preencherComboExcluirSetor() {
     select.appendChild(option);
   });
 }
-  
-// Funções que você pode completar depois
+
 function adicionarDepartamentoCategoria() {
   const valor = document.getElementById("input-novo").value.trim();
   if (!valor) return;
 
-  if (tipoAtual === "Departamento") {
-    departamentos.push(valor);
-  } else {
-    categorias.push(valor);
-  }
+  const tipo = tipoAtual === "Departamento" ? "dept" : "cat";
 
-  preencherCombo();
-  document.getElementById("input-novo").value = "";
+  fetch('/addSetor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: valor, type: tipo })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.mensagem || "Adicionado com sucesso!");
+    document.getElementById("input-novo").value = "";
+    atualizarSelectSetores(); // Atualiza o select do modal
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro ao adicionar setor.");
+  });
 }
   
 function excluirDepartamentoCategoria() {
@@ -249,12 +231,22 @@ function excluirDepartamentoCategoria() {
   const valor = select.value;
   if (!valor) return;
 
-  const lista = tipoAtual === "Departamento" ? departamentos : categorias;
-  const index = lista.indexOf(valor);
-  if (index > -1) {
-    lista.splice(index, 1);
-    preencherCombo();
-  }
+  const tipo = tipoAtual === "Departamento" ? "dept" : "cat";
+
+  fetch('/deleteSetor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: valor, type: tipo })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.mensagem || "Excluído com sucesso!");
+    atualizarSelectSetores(); // Atualiza o select do modal
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro ao excluir setor.");
+  });
 }
 
 function alternarTipo() {
@@ -278,7 +270,7 @@ function alternarTipo() {
     labelSelect.innerText = "Departamento";
   }
 
-  preencherCombo();
+  preencherComboExcluirSetor();
 }
 
 function atualizarAlertas(unidadeAlertas, validadeAlertas) {
@@ -362,6 +354,28 @@ atualizarAlertas(
   ]
 );
 
+function preencherCombosCategoriasEDepartamentos() {
+  const selectSetor = document.getElementById("select-excluir-setor");
+  const selectDepartamento = document.getElementById("select-excluir-departamento");
+
+    selectSetor.innerHTML = '<option value="">Selecione</option>';
+    selectDepartamento.innerHTML = '<option value="">Selecione</option>';
+
+    categorias.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.textContent = cat;
+      selectSetor.appendChild(option);
+    });
+
+    departamentos.forEach(dep => {
+      const option = document.createElement("option");
+      option.value = dep;
+      option.textContent = dep;
+      selectDepartamento.appendChild(option);
+    });
+}
+
 function preencherComboGerenciadorDeEstoque() {
   const select_cat = document.getElementById("filtro-categoria");
   const select_dep = document.getElementById("filtro-departamento");
@@ -369,20 +383,34 @@ function preencherComboGerenciadorDeEstoque() {
   select_cat.innerHTML = '<option value="">Todos</option>';
   select_dep.innerHTML = '<option value="">Todos</option>';
 
-  categorias.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item;
-    option.textContent = item;
-    select_cat.appendChild(option);
-  });
+  fetch('/getSetor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  })
+  .then(res => res.json())
+  .then(data => {
+    const categorias = data.cat;
+    const departamentos = data.dept;
 
-  departamentos.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item;
-    option.textContent = item;
-    select_dep.appendChild(option);
+    categorias.forEach(nome => {
+      const option = document.createElement("option");
+      option.value = nome;
+      option.textContent = nome;
+      select_cat.appendChild(option);
+    });
+
+    departamentos.forEach(nome => {
+      const option = document.createElement("option");
+      option.value = nome;
+      option.textContent = nome;
+      select_dep.appendChild(option);
+    });
+  })
+  .catch(err => {
+    console.error("Erro ao carregar setores:", err);
   });
 }
 
-buscarSetores();
+carregarSetoresGlobais();
 preencherComboGerenciadorDeEstoque();

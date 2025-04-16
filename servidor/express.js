@@ -260,12 +260,12 @@ app.post('/estoqueData', async (req, res) => {
     let condicao = "";
     if (busca && !category) {
         const buscaText = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
-        condicao = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%'  OR barcode = '${termo}'`;
+        condicao = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%' OR barcode = '${termo}'`;
     }
     else if (busca && category){
         const buscaText = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
         const categoryText = category.replace(/'/g, "''"); // Escapa aspas simples para segurança
-        condicao  = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%'  OR barcode = '${termo}' AND category = '${categoryText}'`
+        condicao  = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%' OR barcode = '${termo}' AND category = '${categoryText}'`
     }
     else if(category){
         const categoryText = category.replace(/'/g, "''"); // Escapa aspas simples para segurança
@@ -297,6 +297,49 @@ app.post('/getSetor', async (req, res) => {
     }
 });
 
+app.post('/addSetor', (req, res) => {
+    const { name, type } = req.body;
+  
+    if (!name || !type) {
+      return res.status(400).json({ erro: "Nome e tipo são obrigatórios." });
+    }
+  
+    const nomeSanitizado = name.replace(/'/g, "''");
+    const tipoSanitizado = type === 'dept' ? 'dept' : 'cat';
+  
+    // ID do mercado pode ser dinâmico no futuro
+    const columns = ['name', 'type', 'marketId'];
+    const values = [nomeSanitizado, tipoSanitizado, 1];
+  
+    try {
+      insert('setors', columns, values);
+      res.status(200).json({ mensagem: "Setor adicionado com sucesso!" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ erro: "Erro ao adicionar setor." });
+    }
+});  
+  
+app.post('/deleteSetor', (req, res) => {
+    const { name, type } = req.body;
+  
+    if (!name || !type) {
+      return res.status(400).json({ erro: "Nome e tipo são obrigatórios." });
+    }
+  
+    const nomeSanitizado = name.replace(/'/g, "''");
+    const tipoSanitizado = type === 'dept' ? 'dept' : 'cat';
+  
+    const condicao = `name = '${nomeSanitizado}' AND type = '${tipoSanitizado}'`;
+  
+    try {
+      delet('setors', condicao);
+      res.status(200).json({ mensagem: "Setor excluído com sucesso!" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ erro: "Erro ao excluir setor." });
+    }
+});   
 
 app.post("/editarProduto", (req, res) => {
     const {
@@ -381,8 +424,6 @@ app.post("/cadastro", async (req, res) => {
 
 app.post('/login', async (req, res) => {
     let { email, senha } = req.body;
-
-
 
     email = email?.toLowerCase().trim();
     senha = senha?.trim();
