@@ -300,3 +300,29 @@ async function excluirProduto() {
 
 // Inicializa ao carregar a página
 carregarProdutos();
+
+async function gerarCodigo() {
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz';
+  let codigo = '';
+  
+  for (let i = 0; i < 8; i++) {
+      const indice = Math.floor(Math.random() * caracteres.length);
+      codigo += caracteres[indice];
+  }
+  
+  fetch('/getMarketId', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ codigo })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.mensagem != codigo) {
+        return codigo;
+      } else {
+        console.log('ja existe este market id');
+        gerarCodigo();
+      }
+    })
+    .catch(err => console.error('Erro ao carregar produtos:', err));
+}

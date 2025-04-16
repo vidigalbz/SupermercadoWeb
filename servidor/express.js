@@ -483,6 +483,12 @@ app.post('/addCarrinho', async (req, res) => {
     res.status(200).json({mensagem : carrinho})
 })
 
+app.post('/getMarketId', async (req, res) => {
+    const code = req.body;
+    console.log(code)
+    query(`SELECT marketd FROM superMarkets WHERE marketid == '${code}'`)
+})
+
 loadPages();
 
 app.listen(port, '0.0.0.0', () => {
