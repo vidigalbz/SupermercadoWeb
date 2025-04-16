@@ -357,8 +357,8 @@ app.post("/adicionarSupermercado", async (req, res) => {
 
 app.post('/deletarSupermercado', async (req, res) => {
     const { name } = req.body;
-    console.log(codigo)
-    if (!codigo) {
+    console.log(name)
+    if (!name) {
         return res.status(400).json({ erro: "Nome do mercado não fornecido." });
     }
 
@@ -379,7 +379,7 @@ app.post('/supermercadoData', async (req, res) => {
         const termo = busca.replace(/'/g, "''")
         condicao = `WHERE ownerId = ${termo}` 
     }
-    
+
     try{
     const results = await select("supermarkets", condicao);
     res.status(200).json({mensagem: results});
