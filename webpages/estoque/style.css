@@ -45,5 +45,9 @@ body {
   margin-top: 5px;
 }
 
-
+#tab-reload-alerts-tab{
+  color: black;
+  font-size: 1.2rem;
+  background-color: rgb(188, 188, 188);
+}
   
