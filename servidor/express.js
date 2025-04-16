@@ -47,6 +47,20 @@ async function loadPages() {
             }
         }
     });
+    generatorUrl()
+}
+
+async function generatorUrl(){
+    let ids = await select("accessKeys")
+    for (let i in ids){
+        if(ids[i].type == "estoque"){
+            console.log(`${ids[i].marketId}`)
+            app.get( `/estoque/${ids[i].marketId}`, (req, res) => {
+                const patheEstoque = path.join(webpages_dir, "estoque", "index.html")
+                res.sendFile(patheEstoque)
+            })
+        }
+    }
 }
 
 // Endpoint para adicionar produto (imagem é ignorada)
@@ -330,6 +344,7 @@ app.post("/adicionarSupermercado", async (req, res) => {
                 icon
             }
         });
+        generatorUrl();
 
     } catch (err) {
         console.error("Erro:", err);
