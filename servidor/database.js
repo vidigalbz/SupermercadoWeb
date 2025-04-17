@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS setors (
     itemId INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    marketId INTEGER NOT NULL,
+    marketId TEXT NOT NULL,
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );
 `)});
