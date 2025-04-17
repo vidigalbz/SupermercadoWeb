@@ -13,6 +13,22 @@ const labelQuant = document.getElementById("total-produtos");
 const checkoutModalBody = document.getElementById("checkoutModalBody");
 const confirmCheckoutBtn = document.getElementById("confirmCheckoutBtn");
 
+function getQueryParam(paramName) {
+    const queryString = window.location.search.substring(1);
+    const params = queryString.split('&');
+  
+    for (const param of params) {
+      const [key, value] = param.split('=');
+      if (key === paramName) {
+        return decodeURIComponent(value || '');
+      }
+    }
+    return null;
+  }
+  
+  const id = getQueryParam('id');
+  console.log(id);
+
 // Initialize the application
 function init() {
     // Initialize modal instance
@@ -62,7 +78,7 @@ async function recreateProductCard(productData) {
         const response = await fetch('/estoqueData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ busca: productData.barcode })
+            body: JSON.stringify({ busca: productData.barcode, marketId: id })
         });
         
         if (response.ok) {
@@ -244,7 +260,7 @@ function AdicionarProdutoNovo() {
     fetch('/estoqueData', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ busca: code })
+        body: JSON.stringify({ busca: code, marketId: id })
     })
     .then(res => res.json())
     .then(data => {
@@ -712,41 +728,40 @@ document.addEventListener('DOMContentLoaded', init);
 async function verificarUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-
+  
     if (!id) {
         window.location.href = "/error404/index.html";
         return;
     }
-
+  
     try {
         const response = await fetch('/getMarketId', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ marketId: id }) // Envia marketId no corpo
         });
-
+  
         if (!response.ok) {
             window.location.href = "/error404/index.html";
             return;
         }
-
+  
         const data = await response.json();
         console.log('Resposta do servidor:', data);
-
+  
         // Verifica se marketId existe na resposta
         if (!data.marketId) { // Campo corrigido para marketId
             window.location.href = "/error404/index.html";
             return;
         }
-
+  
         // ID válido, continua normalmente
         console.log("ID válido:", data.marketId);
-
+  
     } catch (error) {
         console.error("Erro na verificação:", error);
         window.location.href = "/error404/index.html";
     }
 }
   
- verificarUrl()
- 
+verificarUrl()
