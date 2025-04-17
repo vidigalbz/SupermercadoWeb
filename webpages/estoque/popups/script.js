@@ -311,7 +311,10 @@ async function atualizarAlertas() {
     // Buscar todos os produtos
     const response = await fetch('/estoqueData', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        marketId: id
+})
     });
     
     const data = await response.json();

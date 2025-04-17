@@ -4,6 +4,23 @@ const filterDepartamento = document.getElementById("filtro-departamento");
 
 var categoriaValue = "Todos";
 
+function getQueryParam(paramName) {
+  const queryString = window.location.search.substring(1);
+  const params = queryString.split('&');
+
+  for (const param of params) {
+    const [key, value] = param.split('=');
+    if (key === paramName) {
+      return decodeURIComponent(value || '');
+    }
+  }
+  return null;
+}
+
+const id = getQueryParam('id');
+console.log(id);
+
+
 filterCategoria.addEventListener("change", () => {
   categoriaValue = filterCategoria.value;
   console.log(categoriaValue);
@@ -11,7 +28,7 @@ filterCategoria.addEventListener("change", () => {
   fetch('/estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ category: categoriaValue })
+    body: JSON.stringify({ category: categoriaValue, marketId: id })
   })
     .then(res => res.json())
     .then(data => {
@@ -28,7 +45,7 @@ filterDepartamento.addEventListener("change", () => {
   fetch('/estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ category: categoriaValue })
+    body: JSON.stringify({ category: categoriaValue, marketId: id })
   })
     .then(res => res.json())
     .then(data => {
@@ -148,7 +165,7 @@ function carregarProdutos() {
   fetch('/estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({})
+    body: JSON.stringify({ marketId: id })
   })
     .then(res => res.json())
     .then(data => {
@@ -168,7 +185,9 @@ function search() {
   fetch('/estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ busca: valorBusca })
+    body: JSON.stringify({ busca: valorBusca,
+                           marketId: id
+     })
   })
     .then(res => res.json())
     .then(data => {

@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS accessKeys (
 );
 
 CREATE TABLE IF NOT EXISTS supermarkets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT
-    marketId TEXY UNIQUE NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    marketId TEXT UNIQUE NOT NULL,
     createdAt TEXT,
     name TEXT NOT NULL,
     local TEXT NOT NULL,
@@ -72,7 +72,8 @@ CREATE TABLE IF NOT EXISTS setors (
     marketId INTEGER NOT NULL,
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );
-`)});
+`);
+});
 
 function select(table, condition = "", params = []) {
     return new Promise((resolve, reject) => {

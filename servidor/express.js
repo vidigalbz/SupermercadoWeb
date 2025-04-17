@@ -255,22 +255,33 @@ app.post('/finalizarCompra', async (req, res) => {
 
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
-    var { busca } = req.body;
-    var category = req.body.category
-    let condicao = "";
-    if (busca && !category) {
-        const buscaText = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
-        condicao = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%' OR barcode = '${termo}'`;
+    const { busca, category, marketId } = req.body;
+    
+    if (!marketId) {
+        return res.status(400).json({ erro: "marketId é obrigatório" });
     }
-    else if (busca && category){
-        const buscaText = busca.replace(/'/g, "''"); // Escapa aspas simples para segurança
-        const categoryText = category.replace(/'/g, "''"); // Escapa aspas simples para segurança
-        condicao  = `WHERE name LIKE '%${termo}%' OR productId LIKE '%${termo}%' OR barcode = '${termo}' AND category = '${categoryText}'`
+
+    // Escapa valores para segurança
+    const marketIdSafe = marketId.replace(/'/g, "''");
+    let buscaSafe = busca ? busca.replace(/'/g, "''") : null;
+    let categorySafe = category ? category.replace(/'/g, "''") : null;
+
+    // Começa com a condição obrigatória do marketId
+    let conditions = [`marketId = '${marketIdSafe}'`];
+    
+    // Adiciona condições de busca se existirem
+    if (buscaSafe) {
+        conditions.push(`(name LIKE '%${buscaSafe}%' OR productId LIKE '%${buscaSafe}%' OR barcode = '${buscaSafe}')`);
     }
-    else if(category){
-        const categoryText = category.replace(/'/g, "''"); // Escapa aspas simples para segurança
-        condicao = `WHERE category = '${categoryText}'`
+    
+    // Adiciona condição de categoria se existir
+    if (categorySafe) {
+        conditions.push(`category = '${categorySafe}'`);
     }
+
+    // Junta todas as condições com AND
+    const condicao = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
     try {
         const results = await select("products", condicao);
         res.status(200).json({ mensagem: results });
