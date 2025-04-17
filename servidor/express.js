@@ -4,7 +4,7 @@ const fs = require("fs");
 const multer = require("multer");
 const cookieParser = require('cookie-parser');
 
-const { select, insert, update, delet, query} = require("./database.js");
+const { select, insert, update, delet, query, selectTable} = require("./database.js");
 
 const app = express();
 const port = 4000;
@@ -15,6 +15,7 @@ var pages = [];
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Necessário para ler JSON no req.body
 
 // Configuração do multer (mas sem salvar arquivos por enquanto)
 const storage = multer.diskStorage({
@@ -185,9 +186,9 @@ app.post('/finalizarCompra', async (req, res) => {
 
         // 1. Create sale record
         const saleDate = new Date().toISOString();
-        await insert('sales', [
-            'marketId', 
-            'total', 
+        insert('sales', [
+            'marketId',
+            'total',
             'paymentMethod',
             'saleDate'
         ], [
@@ -215,7 +216,7 @@ app.post('/finalizarCompra', async (req, res) => {
             }
 
             // Insert sale item
-            await insert('sale_items', [
+            insert('sale_items', [
                 'saleId',
                 'productId',
                 'quantity',
@@ -234,7 +235,7 @@ app.post('/finalizarCompra', async (req, res) => {
             if (product.length > 0) {
                 const currentStock = product[0].stock;
                 const newStock = currentStock - item.quantity;
-                await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+                update('products', ['stock'], [newStock], `productId = ${item.productId}`);
             } else {
                 console.warn(`Product not found: ${item.productId}`);
             }
@@ -384,38 +385,6 @@ app.post("/editarProduto", (req, res) => {
     res.json({ success: true, message: "Produto atualizado com sucesso!" });
 });
 
-app.post("/editarProduto", (req, res) => {
-    const {
-        productId,
-        name,
-        price,
-        category,
-        departament,
-        stock,
-        lot,
-        expirationDate,
-        manufactureDate,
-        barcode,
-        marketId
-    } = req.body;
-
-    const columns = [
-        "name", "price", "category", "departament", "stock",
-        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
-    ];
-
-    const values = [
-        name, price, category, departament, stock,
-        lot, expirationDate, manufactureDate, barcode, marketId
-    ];
-
-    const condition = `productId = ${productId}`;
-
-    update("products", columns, values, condition);
-
-    res.json({ success: true, message: "Produto atualizado com sucesso!" });
-});
-
 app.post("/cadastro", async (req, res) => {
     const {name, email, password} = req.body;
 
@@ -495,10 +464,34 @@ app.post('/addCarrinho', async (req, res) => {
 })
 
 app.post('/getMarketId', async (req, res) => {
-    const code = req.body;
-    console.log(code)
-    query(`SELECT marketd FROM superMarkets WHERE marketid == '${code}'`)
-})
+    const { marketId } = req.body; // Extrai marketId do corpo da requisição
+
+    if (!marketId) {
+        return res.status(400).json({ error: 'ID não fornecido' }); // Usa res para enviar resposta
+    }
+
+    try {
+        // Executa a consulta usando marketId como parâmetro
+        const result = await selectTable(
+            "supermarkets",
+            "WHERE marketId = ?",
+            "marketId", // Coluna a ser selecionada
+            [marketId]   // Parâmetro correto
+        );
+
+        console.log('Resultado da consulta:', result);
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'ID não encontrado' });
+        }
+
+        // Retorna o marketId usando o mesmo nome do campo
+        return res.status(200).json({ marketId: result[0].marketId });
+    } catch (err) {
+        console.error('Erro no banco de dados:', err);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
 
 loadPages();
 

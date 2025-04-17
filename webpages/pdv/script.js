@@ -708,3 +708,45 @@ function confirmarCancelamento() {
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', init);
+
+async function verificarUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    if (!id) {
+        window.location.href = "/error404/index.html";
+        return;
+    }
+
+    try {
+        const response = await fetch('/getMarketId', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ marketId: id }) // Envia marketId no corpo
+        });
+
+        if (!response.ok) {
+            window.location.href = "/error404/index.html";
+            return;
+        }
+
+        const data = await response.json();
+        console.log('Resposta do servidor:', data);
+
+        // Verifica se marketId existe na resposta
+        if (!data.marketId) { // Campo corrigido para marketId
+            window.location.href = "/error404/index.html";
+            return;
+        }
+
+        // ID válido, continua normalmente
+        console.log("ID válido:", data.marketId);
+
+    } catch (error) {
+        console.error("Erro na verificação:", error);
+        window.location.href = "/error404/index.html";
+    }
+}
+  
+ verificarUrl()
+ 

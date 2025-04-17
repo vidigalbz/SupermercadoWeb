@@ -20,7 +20,6 @@ function getQueryParam(paramName) {
 const id = getQueryParam('id');
 console.log(id);
 
-
 filterCategoria.addEventListener("change", () => {
   categoriaValue = filterCategoria.value;
   console.log(categoriaValue);
@@ -320,28 +319,43 @@ async function excluirProduto() {
 // Inicializa ao carregar a página
 carregarProdutos();
 
-async function gerarCodigo() {
-  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz';
-  let codigo = '';
-  
-  for (let i = 0; i < 8; i++) {
-      const indice = Math.floor(Math.random() * caracteres.length);
-      codigo += caracteres[indice];
+async function verificarUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get('id');
+
+  if (!id) {
+      window.location.href = "/error404/index.html";
+      return;
   }
-  
-  fetch('/getMarketId', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ codigo })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.mensagem != codigo) {
-        return codigo;
-      } else {
-        console.log('ja existe este market id');
-        gerarCodigo();
+
+  try {
+      const response = await fetch('/getMarketId', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ marketId: id }) // Envia marketId no corpo
+      });
+
+      if (!response.ok) {
+          window.location.href = "/error404/index.html";
+          return;
       }
-    })
-    .catch(err => console.error('Erro ao carregar produtos:', err));
+
+      const data = await response.json();
+      console.log('Resposta do servidor:', data);
+
+      // Verifica se marketId existe na resposta
+      if (!data.marketId) { // Campo corrigido para marketId
+          window.location.href = "/error404/index.html";
+          return;
+      }
+
+      // ID válido, continua normalmente
+      console.log("ID válido:", data.marketId);
+
+  } catch (error) {
+      console.error("Erro na verificação:", error);
+      window.location.href = "/error404/index.html";
+  }
 }
+
+verificarUrl()

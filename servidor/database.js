@@ -124,11 +124,26 @@ function query(query){
     })
 }
 
+function selectTable(table, condition = "", column = "*", params = []) {
+    return new Promise((resolve, reject) => {
+        const query = `SELECT ${column} FROM ${table} ${condition}`;
+        
+        db.all(query, params, (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+}
+
 module.exports = {
     insert,
     select,
     update,
     delet,
     query,
+    selectTable,
     db
 }
