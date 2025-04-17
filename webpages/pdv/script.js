@@ -13,6 +13,22 @@ const labelQuant = document.getElementById("total-produtos");
 const checkoutModalBody = document.getElementById("checkoutModalBody");
 const confirmCheckoutBtn = document.getElementById("confirmCheckoutBtn");
 
+function getQueryParam(paramName) {
+    const queryString = window.location.search.substring(1);
+    const params = queryString.split('&');
+  
+    for (const param of params) {
+      const [key, value] = param.split('=');
+      if (key === paramName) {
+        return decodeURIComponent(value || '');
+      }
+    }
+    return null;
+  }
+  
+  const id = getQueryParam('id');
+  console.log(id);
+
 // Initialize the application
 function init() {
     // Initialize modal instance
@@ -62,7 +78,7 @@ async function recreateProductCard(productData) {
         const response = await fetch('/estoqueData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ busca: productData.barcode })
+            body: JSON.stringify({ busca: productData.barcode, marketId: id })
         });
         
         if (response.ok) {
@@ -244,7 +260,7 @@ function AdicionarProdutoNovo() {
     fetch('/estoqueData', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ busca: code })
+        body: JSON.stringify({ busca: code, marketId: id })
     })
     .then(res => res.json())
     .then(data => {
