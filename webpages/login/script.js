@@ -80,8 +80,15 @@ document.getElementById("loginButton").addEventListener("click", async function 
     const result = await response.json();
 
     if (result.status === "success") {
-      alert(`Bem-vindo, ${result.name}!`);
-      window.location.href = '/supermercado';
+      localStorage.setItem('userName', result.name || 'Usuário');
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userRole', result.role || 'Gerente do sistema');
+      
+      showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
+      
+      setTimeout(() => {
+        window.location.href = '/supermercado';
+      }, 1500);
     } else {
       showToast(result.message || "Email ou senha incorretos!", "danger");
     }
