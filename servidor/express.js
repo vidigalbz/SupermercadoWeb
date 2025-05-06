@@ -478,9 +478,133 @@ app.post('/login', async (req, res) => {
 
 // Rota para cadastrar supermercado + gerar links
 app.post("/adicionarSupermercado", async (req, res) => {
-    const {nome, local, onwerId, icon} = req.body
+    const { nome, local, ownerId, icon } = req.body;
 
-    insert("supermarkets", ["name", "local", "ownerId", "icon"], [nome, local, onwerId, icon])
+    try {
+        // 1. Insere o supermercado (usando sua função original)
+        insert("supermarkets", 
+            ["name", "local", "ownerId", "icon", "createdAt"],
+            [nome, local, ownerId, icon, new Date().toISOString()]
+        );
+
+        // 2. Obtém o ID do último registro inserido
+        const market = await new Promise((resolve, reject) => {
+            db.get(
+                "SELECT marketId FROM supermarkets ORDER BY marketId DESC LIMIT 1",
+                (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                }
+            );
+        });
+
+        if (!market) throw new Error("Falha ao obter ID do supermercado");
+        const marketId = market.marketId;
+
+        // 3. Gera e armazena os links
+        const baseUrl = `http://localhost:${port}`;
+        const pdvLink = `${baseUrl}/pdv/${marketId}`;
+        const estoqueLink = `${baseUrl}/estoque/${marketId}`;
+
+        await insertLink(pdvLink, marketId, "pdv");
+        await insertLink(estoqueLink, marketId, "estoque");
+
+        // 4. Retorna a resposta
+        res.status(201).json({
+            success: true,
+            data: {
+                marketId,
+                pdvLink,
+                estoqueLink,
+                nome, 
+                local, 
+                icon
+            }
+        });
+        
+
+    } catch (err) {
+        console.error("Erro:", err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message 
+        });
+    }
+});
+
+app.post('/deletarSupermercado', async (req, res) => {
+    const { name } = req.body;
+    console.log(name)
+    if (!name) {
+        return res.status(400).json({ erro: "Nome do mercado não fornecido." });
+    }
+
+    try {
+        delet("supermarkets", `name = '${name}'`);
+        res.status(200).json({ mensagem: "Supermercado deletado com sucesso!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao deletar supermercado." });
+    }
+});
+
+
+app.post('/supermercadoData', async (req, res) => {
+    const {busca} = req.body;
+    let condicao = "";
+    if (busca) {
+        const termo = busca.replace(/'/g, "''")
+        condicao = `WHERE ownerId = ${termo}` 
+    }
+
+    try{
+    const results = await select("supermarkets", condicao);
+    res.status(200).json({mensagem: results});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({erro: "Erro ao consultar supermercados."})
+    }
+});
+
+app.post('/updateSupermercado', async (req, res) => {
+    if (req.body){
+        const {
+            id,
+            nome,
+            local,
+            icon,  
+        } = req.body 
+        const columns = ["name", "local", "icon"]
+
+        const values = [nome, local, icon]
+        const condition = `marketId = ${id}`
+
+        update("supermarkets", columns, values, condition)
+
+        res.json({ success: true, message: "Supermercado atualizado com Sucesso!" });
+    }
+    
+})
+
+
+//Adicionar Cookie para o Carrinho de Compras
+app.post('/addCarrinho', async (req, res) => {
+    const carrinho = req.body;
+
+    if (!carrinho){
+        res.status(400).send('Dados não recebidos')
+    }
+    res.cookie('carrinho', carrinho, {
+        maxAge : 900000,
+        httpOnly: true,
+    });
+    res.status(200).json({mensagem : carrinho})
+})
+
+app.post('/getMarketId', async (req, res) => {
+    const code = req.body;
+    console.log(code)
+    query(`SELECT marketd FROM superMarkets WHERE marketid == '${code}'`)
 })
 
 loadPages();
@@ -488,3 +612,4 @@ loadPages();
 app.listen(port, '0.0.0.0', () => {
     console.log(`Servidor iniciado na porta http://localhost:${port}`);
 });
+
