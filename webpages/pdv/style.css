@@ -1,0 +1,179 @@
+/* Estilos gerais */
+body {
+  padding-top: 60px;
+  padding-bottom: 60px;
+  background-color: #f5f5f5;
+}
+
+/* Navbar */
+.navbar {
+  background: linear-gradient(to left, #ff6f00, #ffa040);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Cards de produtos */
+.card {
+  transition: transform 0.2s;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  height: 100%;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card.no-hover:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* 產品卡片布局 */
+.card-produto .row {
+  height: 100%;
+}
+
+.card-produto .col-md-4 {
+  border-right: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.card-produto .card-img {
+  max-height: 120px;
+  width: auto;
+  object-fit: contain;
+}
+
+.card-produto .card-body {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-produto .card-title {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-produto .card-text {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 0.3rem;
+}
+
+.card-produto .card-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 產品容器布局 */
+.grid-produtos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Modal 樣式 */
+.modal-content {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  background: linear-gradient(to right, #ff6f00, #ffa040);
+  color: white;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0 !important;
+}
+
+.modal-body {
+  padding: 20px;
+  font-size: 1.1rem;
+}
+
+.modal-footer {
+  border-top: none;
+  justify-content: center;
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+}
+
+/* 不同類型的Modal樣式 */
+.modal-warning .modal-header {
+  background: linear-gradient(to right, #ffc107, #ffab00);
+}
+
+.modal-error .modal-header {
+  background: linear-gradient(to right, #dc3545, #c82333);
+}
+
+.modal-success .modal-header {
+  background: linear-gradient(to right, #28a745, #218838);
+}
+
+/* Checkout Modal Styles */
+#checkoutModalBody {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkout-summary {
+  width: 100%;
+}
+
+.checkout-summary table {
+  margin-bottom: 1rem;
+}
+
+.checkout-summary th {
+  white-space: nowrap;
+}
+
+#checkoutItemsList tr:last-child {
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Empty cart animation */
+.bi-cart-x-fill {
+  animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .navbar .container {
+    flex-direction: column;
+  }
+  
+  .grid-produtos {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-produto .col-md-4 {
+    border-right: none;
+    border-bottom: 1px solid #dee2e6;
+    height: 150px;
+  }
+}

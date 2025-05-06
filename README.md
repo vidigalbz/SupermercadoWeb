@@ -60,6 +60,8 @@ git clone https://github.com/vidigalbz/SupermercadoWeb.git
 cd supermercadoWeb
 npm install express
 npm install multer
+npm instal sqlite3
+npm i instal cookie-parser
 ```
 # Inicie o servidor
 ```bash

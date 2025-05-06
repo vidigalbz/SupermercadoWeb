@@ -95,21 +95,67 @@
   font-weight: 500;
 }
 
-.alerta-card {
-  padding: 12px;
-  border-radius: 10px;
-  color: white;
+/* Estilos para os alertas */
+.alert {
+  margin-bottom: 0.75rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid;
+  padding: 0.75rem 1rem;
 }
 
-.alerta-vermelho {
-  background-color: #c0392b;
+.alert-vermelho {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
 }
 
-.alerta-laranja {
-  background-color: #e67e22;
+.alert-laranja {
+  background-color: #fff3cd;
+  border-color: #fd7e14;
+  color: #856404;
 }
 
-.alerta-amarelo {
-  background-color: #f1c40f;
-  color: black;
+.alert-amarelo {
+  background-color: #fff8e1;
+  border-color: #ffc107;
+  color: #664d03;
+}
+
+.urgencia {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.85em;
+}
+
+.badge {
+  font-size: 0.8em;
+  padding: 0.35em 0.65em;
+}
+
+/* Destaques específicos */
+.alert-vermelho .urgencia {
+  color: #dc3545;
+}
+
+.alert-laranja .urgencia {
+  color: #fd7e14;
+}
+
+.alert-amarelo .urgencia {
+  color: #ffc107;
+}
+
+/* Layout do offcanvas */
+.offcanvas-body {
+  padding-top: 0;
+}
+
+.tab-content {
+  padding-top: 1rem;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+.nav-tabs {
+  margin-bottom: 0;
 }

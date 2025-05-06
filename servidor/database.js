@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS accessKeys (
 );
 
 CREATE TABLE IF NOT EXISTS supermarkets (
-    marketId INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    marketId TEXT UNIQUE NOT NULL,
     createdAt TEXT,
     name TEXT NOT NULL,
     local TEXT NOT NULL,
@@ -43,7 +44,36 @@ CREATE TABLE IF NOT EXISTS products (
     barcode TEXT NOT NULL,
     image TEXT,
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
-);`)});
+);
+CREATE TABLE IF NOT EXISTS sales (
+    saleId INTEGER PRIMARY KEY AUTOINCREMENT,
+    marketId INTEGER NOT NULL,
+    total REAL NOT NULL,
+    paymentMethod TEXT NOT NULL,
+    saleDate TEXT NOT NULL,
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
+);
+
+CREATE TABLE IF NOT EXISTS sale_items (
+    itemId INTEGER PRIMARY KEY AUTOINCREMENT,
+    saleId INTEGER NOT NULL,
+    productId INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    unitPrice REAL NOT NULL,
+    subtotal REAL NOT NULL,
+    FOREIGN KEY (saleId) REFERENCES sales(saleId),
+    FOREIGN KEY (productId) REFERENCES products(productId)
+);
+
+CREATE TABLE IF NOT EXISTS setors (
+    itemId INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    marketId TEXT NOT NULL,
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
+);
+`);
+});
 
 function select(table, condition = "", params = []) {
     return new Promise((resolve, reject) => {
@@ -70,7 +100,6 @@ function insert(table, columns, values) {
     });
 }
 
-
 function update(table, columns, values, condition = ""){
     multiColumns = columns.map(col => `${col} = ?`).join(', ')
     var query = `UPDATE ${table} SET ${multiColumns} ${condition ? "WHERE " + condition : ""}`
@@ -86,7 +115,6 @@ function update(table, columns, values, condition = ""){
 function delet(table, condition){
     db.run(`DELETE FROM ${table} WHERE ${condition}`)
 }
-
 
 function query(query){
     db.run(query, (err) => {

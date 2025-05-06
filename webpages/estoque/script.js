@@ -1,14 +1,79 @@
 const container = document.getElementById("produtos-container");
+const filterCategoria = document.getElementById("filtro-categoria");
+const filterDepartamento = document.getElementById("filtro-departamento");
+
+var categoriaValue = "Todos";
+
+function getQueryParam(paramName) {
+  const queryString = window.location.search.substring(1);
+  const params = queryString.split('&');
+
+  for (const param of params) {
+    const [key, value] = param.split('=');
+    if (key === paramName) {
+      return decodeURIComponent(value || '');
+    }
+  }
+  return null;
+}
+
+const id = getQueryParam('id');
+console.log(id);
+
+
+filterCategoria.addEventListener("change", () => {
+  categoriaValue = filterCategoria.value;
+  console.log(categoriaValue);
+  const valorBusca = document.getElementById("pesquisa").value.trim();
+  fetch('/estoqueData', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category: categoriaValue, marketId: id })
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data.mensagem)
+      renderizarProdutos(data.mensagem);
+    })
+    .catch(err => console.error('Erro:', err));
+})
+
+filterDepartamento.addEventListener("change", () => {
+  categoriaValue = filterCategoria.value;
+  console.log(categoriaValue);
+  const valorBusca = document.getElementById("pesquisa").value.trim();
+  fetch('/estoqueData', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category: categoriaValue, marketId: id })
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data.mensagem)
+      renderizarProdutos(data.mensagem);
+    })
+    .catch(err => console.error('Erro:', err));
+})
+
 var currentData = []
 
-function criarCardHTML(produto) {
+async function getImageURL(rawImagePath) {
+  const response = await fetch('/api/ip');
+  const data = await response.json();
+  const ip = data.ip;
+  
+  return rawImagePath 
+    ? `http://${ip}:4000/${rawImagePath}` 
+    : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+}
+
+async function criarCardHTML(produto) {
   var rawImagePath = ""
   if (produto.image != null){
     rawImagePath = produto.image.replace(/\\/g, '/')
   }
-  const imagemURL = rawImagePath 
-  ? `http://localhost:4000/${rawImagePath}` 
-  : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+  const imagemURL = await  getImageURL(rawImagePath);
+
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = `
     <div class="card-produto d-flex mb-3" data-id="${produto.productId}" style="border-radius: 10px; overflow: hidden;">
@@ -20,7 +85,7 @@ function criarCardHTML(produto) {
           <button type="button" class="btn btn-light btn-sm btn-copiar"
                   data-bs-toggle="tooltip"
                   data-bs-placement="top"
-                  title="Copiar código de barras">
+                  title="Copiar código de Sistema">
             <i class="bi bi-clipboard"></i>
           </button>
           <button type="button" class="btn btn-light btn-sm btn-popover"
@@ -30,6 +95,7 @@ function criarCardHTML(produto) {
                   data-bs-content="
                     <strong>Nome:</strong> ${produto.name}<br>
                     <strong>Código de Barras:</strong> ${produto.barcode}<br>
+                    <strong>Código de Sistema:</strong> ${produto.productId}<br>
                     <strong>Preço:</strong> R$ ${produto.price.toFixed(2)}<br>
                     <strong>Categoria:</strong> ${produto.category}<br>
                     <strong>Estoque:</strong> ${produto.stock} unidades<br>
@@ -56,7 +122,7 @@ function criarCardHTML(produto) {
   });
 
   btnCopiar.addEventListener('click', () => {
-    navigator.clipboard.writeText(produto.barcode).then(() => {
+    navigator.clipboard.writeText(produto.productId).then(() => {
       btnCopiar.innerHTML = '<i class="bi bi-check-lg"></i>';
       btnCopiar.setAttribute('title', 'Copiado!');
       const tooltip = bootstrap.Tooltip.getInstance(btnCopiar);
@@ -65,8 +131,8 @@ function criarCardHTML(produto) {
 
       setTimeout(() => {
         btnCopiar.innerHTML = '<i class="bi bi-clipboard"></i>';
-        btnCopiar.setAttribute('title', 'Copiar código de barras');
-        tooltip.setContent({ '.tooltip-inner': 'Copiar código de barras' });
+        btnCopiar.setAttribute('title', 'Copiar código de Sistema');
+        tooltip.setContent({ '.tooltip-inner': 'Copiar código de Sistema' });
       }, 2000);
     });
   });
@@ -130,7 +196,7 @@ function carregarProdutos() {
   fetch('/estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({})
+    body: JSON.stringify({ marketId: id })
   })
     .then(res => res.json())
     .then(data => {
@@ -152,7 +218,9 @@ function search() {
   fetch('/estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ busca: valorBusca })
+    body: JSON.stringify({ busca: valorBusca,
+                           marketId: id
+     })
   })
     .then(res => res.json())
     .then(data => {
@@ -284,3 +352,29 @@ async function excluirProduto() {
 
 // Inicializa ao carregar a página
 carregarProdutos();
+
+async function gerarCodigo() {
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz';
+  let codigo = '';
+  
+  for (let i = 0; i < 8; i++) {
+      const indice = Math.floor(Math.random() * caracteres.length);
+      codigo += caracteres[indice];
+  }
+  
+  fetch('/getMarketId', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ codigo })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.mensagem != codigo) {
+        return codigo;
+      } else {
+        console.log('ja existe este market id');
+        gerarCodigo();
+      }
+    })
+    .catch(err => console.error('Erro ao carregar produtos:', err));
+}

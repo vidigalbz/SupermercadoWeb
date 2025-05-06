@@ -1,10 +1,27 @@
-const categorias = ["Alimentos", "Bebidas", "Higiene", "Limpeza"];
-const departamentos = ["Mercearia", "Gelados", "Farmácia", "Hortifruti"];
+let categorias;
+let departamentos;
 let tipoAtual = "Departamento"; // ou "Categoria"
+
+function carregarSetoresGlobais() {
+  fetch('/getSetor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  })
+  .then(res => res.json())
+  .then(data => {
+    categorias = data.cat;
+    departamentos = data.dept;
+  })
+  .catch(err => console.error("Erro ao carregar setores:", err));
+}
 
 function preencherCombosAdicao() {
   const selectCategoria = document.getElementById("add-categoria");
   const selectDepartamento = document.getElementById("add-departamento");
+
+  selectCategoria.innerHTML = '<option value="">Selecione</option>';
+  selectDepartamento.innerHTML = '<option value="">Selecione</option>';
 
   categorias.forEach(cat => {
     const option = document.createElement("option");
@@ -25,7 +42,6 @@ function preencherCombosEdicao() {
   const selectCategoria = document.getElementById("editar-categoria");
   const selectDepartamento = document.getElementById("editar-departamento");
 
-  // Limpa opções antigas (caso reabra o modal várias vezes)
   selectCategoria.innerHTML = '<option value="">Selecione</option>';
   selectDepartamento.innerHTML = '<option value="">Selecione</option>';
 
@@ -93,7 +109,6 @@ function formatarNumero(valor) {
   return Number(valor).toLocaleString('pt-BR');
 }
 
-
 const produtoExemplo = {
     nome: "Arroz Tio João",
     barcode: "7891234567890",
@@ -152,45 +167,21 @@ function abrirModalEditarProduto(productId) {
   });
 }
 
-function preencherCombosCategoriasEDepartamentos() {
-    const selectSetor = document.getElementById("select-excluir-setor");
-    const selectDepartamento = document.getElementById("select-excluir-departamento");
-  
-    selectSetor.innerHTML = '<option value="">Selecione</option>';
-    setores.forEach(s => {
-      const option = document.createElement("option");
-      option.value = s;
-      option.textContent = s;
-      selectSetor.appendChild(option);
-    });
-  
-    selectDepartamento.innerHTML = '<option value="">Selecione</option>';
-    departamentos.forEach(d => {
-      const option = document.createElement("option");
-      option.value = d;
-      option.textContent = d;
-      selectDepartamento.appendChild(option);
-    });
-}
-
 function abrirModalDepCat() {
     // Reset toggle
     document.getElementById("toggleTipo").checked = false;
     tipoAtual = "Departamento";
     atualizarLabelTipo();
   
-    // Preencher combo
-    preencherCombo();
-  
     // Abrir modal
     const modal = new bootstrap.Modal(document.getElementById("modal-dep-cat"));
     modal.show();
+    preencherComboExcluirSetor();
 }
   
 function alternarTipo() {
   tipoAtual = document.getElementById("toggleTipo").checked ? "Categoria" : "Departamento";
   atualizarLabelTipo();
-  preencherCombo();
 }
 
 function atualizarLabelTipo() {
@@ -203,6 +194,7 @@ function preencherComboExcluirSetor() {
   select.innerHTML = '<option value="">Selecione</option>';
 
   const lista = tipoAtual === "Departamento" ? departamentos : categorias;
+
   lista.forEach(item => {
     const option = document.createElement("option");
     option.value = item;
@@ -210,20 +202,28 @@ function preencherComboExcluirSetor() {
     select.appendChild(option);
   });
 }
-  
-// Funções que você pode completar depois
+
 function adicionarDepartamentoCategoria() {
   const valor = document.getElementById("input-novo").value.trim();
   if (!valor) return;
 
-  if (tipoAtual === "Departamento") {
-    departamentos.push(valor);
-  } else {
-    categorias.push(valor);
-  }
+  const tipo = tipoAtual === "Departamento" ? "dept" : "cat";
 
-  preencherCombo();
-  document.getElementById("input-novo").value = "";
+  fetch('/addSetor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: valor, type: tipo })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.mensagem || "Adicionado com sucesso!");
+    document.getElementById("input-novo").value = "";
+    atualizarSelectSetores(); // Atualiza o select do modal
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro ao adicionar setor.");
+  });
 }
   
 function excluirDepartamentoCategoria() {
@@ -231,12 +231,22 @@ function excluirDepartamentoCategoria() {
   const valor = select.value;
   if (!valor) return;
 
-  const lista = tipoAtual === "Departamento" ? departamentos : categorias;
-  const index = lista.indexOf(valor);
-  if (index > -1) {
-    lista.splice(index, 1);
-    preencherCombo();
-  }
+  const tipo = tipoAtual === "Departamento" ? "dept" : "cat";
+
+  fetch('/deleteSetor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: valor, type: tipo })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.mensagem || "Excluído com sucesso!");
+    atualizarSelectSetores(); // Atualiza o select do modal
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro ao excluir setor.");
+  });
 }
 
 function alternarTipo() {
@@ -260,89 +270,241 @@ function alternarTipo() {
     labelSelect.innerText = "Departamento";
   }
 
-  preencherCombo();
+  preencherComboExcluirSetor();
 }
 
-function atualizarAlertas(unidadeAlertas, validadeAlertas) {
-  const containerUnidades = document.getElementById("alertas-unidades");
-  const containerValidade = document.getElementById("alertas-validade");
-  const total = unidadeAlertas.length + validadeAlertas.length;
+// Configurações de limites
+const LIMITES_ESTOQUE = {
+  critico: 10,       // Vermelho - menos de 10 unidades
+  medio: 30,         // Laranja - entre 10 e 29 unidades
+  semnecessidade: 50 // Amarelo - entre 30 e 49 unidades
+};
 
-  containerUnidades.innerHTML = "";
-  containerValidade.innerHTML = "";
+const LIMITES_VALIDADE = {
+  vencido: 0,        // Vermelho - já vencido (dias < 0)
+  urgente: 15,       // Laranja - vence em 0-15 dias
+  aviso: 30          // Amarelo - vence em 16-30 dias
+};
 
-  unidadeAlertas.forEach(prod => {
-    containerUnidades.innerHTML += criarCardAlerta(prod);
-  });
-
-  validadeAlertas.forEach(prod => {
-    containerValidade.innerHTML += criarCardAlerta(prod);
-  });
-
-  document.getElementById("quantidade-alertas").textContent = total;
+// Função para calcular dias até a validade
+function diasParaVencer(dataValidade) {
+  if (!dataValidade) return Infinity;
+  
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  const valDate = new Date(dataValidade);
+  valDate.setHours(0, 0, 0, 0);
+  
+  const diffTime = valDate - hoje;
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-function criarCardAlerta(produto) {
-  let classe = "alerta-amarelo";
-  if (produto.urgencia === "alta") classe = "alerta-vermelho";
-  else if (produto.urgencia === "media") classe = "alerta-laranja";
+// Função principal para atualizar alertas
+async function atualizarAlertas() {
+  try {
+    // Mostrar estado de carregamento
+    const reloadBtn = document.getElementById('btn-reload-alerts');
+    const reloadIcon = reloadBtn.querySelector('i');
+    reloadIcon.classList.add('rotate-animation');
+    
+    // Buscar todos os produtos
+    const response = await fetch('/estoqueData', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        marketId: id
+})
+    });
+    
+    const data = await response.json();
+    const produtos = data.mensagem;
+    
+    // Filtrar produtos por nível de estoque
+    const alertasEstoque = {
+      vermelho: produtos.filter(p => p.stock < LIMITES_ESTOQUE.critico),
+      laranja: produtos.filter(p => p.stock >= LIMITES_ESTOQUE.critico && p.stock < LIMITES_ESTOQUE.medio),
+      amarelo: produtos.filter(p => p.stock >= LIMITES_ESTOQUE.medio && p.stock < LIMITES_ESTOQUE.semnecessidade)
+    };
+    
+    // Filtrar produtos por validade
+    const alertasValidade = {
+      vermelho: produtos.filter(p => {
+        const dias = diasParaVencer(p.expirationDate);
+        return dias < LIMITES_VALIDADE.vencido;
+      }),
+      laranja: produtos.filter(p => {
+        const dias = diasParaVencer(p.expirationDate);
+        return dias >= LIMITES_VALIDADE.vencido && dias <= LIMITES_VALIDADE.urgente;
+      }),
+      amarelo: produtos.filter(p => {
+        const dias = diasParaVencer(p.expirationDate);
+        return dias > LIMITES_VALIDADE.urgente && dias <= LIMITES_VALIDADE.aviso;
+      })
+    };
+    
+    // Atualizar a exibição
+    atualizarAlertasEstoque(alertasEstoque);
+    atualizarAlertasValidade(alertasValidade);
+    
+    // Atualizar contador total
+    const totalAlertas = 
+      alertasEstoque.vermelho.length + 
+      alertasEstoque.laranja.length + 
+      alertasEstoque.amarelo.length + 
+      alertasValidade.vermelho.length +
+      alertasValidade.laranja.length +
+      alertasValidade.amarelo.length;
+    
+    document.getElementById('quantidade-alertas').textContent = totalAlertas;
+    
+  } catch (err) {
+    console.error('Erro ao atualizar alertas:', err);
+    alert('Erro ao carregar alertas. Tente novamente.');
+  } finally {
+    // Remover animação independente de sucesso ou erro
+    const reloadIcon = document.querySelector('#btn-reload-alerts i');
+    setTimeout(() => {
+      reloadIcon.classList.remove('rotate-animation');
+    }, 500);
+  }
+}
 
-  return `
-    <div class="alerta-card ${classe}">
-      <strong>${produto.nome}</strong><br>
-      <small><b>Cód:</b> ${produto.codigo} | <b>Qtd:</b> ${produto.quantidade} | <b>Validade:</b> ${produto.validade}</small>
+// Funções auxiliares para atualizar as seções de alertas
+function atualizarAlertasEstoque(alertasEstoque) {
+  const container = document.getElementById('alertas-unidades');
+  container.innerHTML = '';
+  
+  alertasEstoque.vermelho.forEach(produto => {
+    container.appendChild(criarAlertaEstoque(produto, 'vermelho', `Crítico: menos de ${LIMITES_ESTOQUE.critico} unidades`));
+  });
+  
+  alertasEstoque.laranja.forEach(produto => {
+    container.appendChild(criarAlertaEstoque(produto, 'laranja', `Atenção: ${LIMITES_ESTOQUE.critico}-${LIMITES_ESTOQUE.medio-1} unidades`));
+  });
+  
+  alertasEstoque.amarelo.forEach(produto => {
+    container.appendChild(criarAlertaEstoque(produto, 'amarelo', `Observação: ${LIMITES_ESTOQUE.medio}-${LIMITES_ESTOQUE.semnecessidade-1} unidades`));
+  });
+}
+
+function atualizarAlertasValidade(alertasValidade) {
+  const container = document.getElementById('alertas-validade');
+  container.innerHTML = '';
+  
+  alertasValidade.vermelho.forEach(produto => {
+    const dias = diasParaVencer(produto.expirationDate);
+    container.appendChild(criarAlertaValidade(produto, dias, 'vermelho', 'Vencido!'));
+  });
+  
+  alertasValidade.laranja.forEach(produto => {
+    const dias = diasParaVencer(produto.expirationDate);
+    container.appendChild(criarAlertaValidade(produto, dias, 'laranja', 'Vence em breve'));
+  });
+  
+  alertasValidade.amarelo.forEach(produto => {
+    const dias = diasParaVencer(produto.expirationDate);
+    container.appendChild(criarAlertaValidade(produto, dias, 'amarelo', 'Validade próxima'));
+  });
+}
+
+// Funções para criar os cards de alerta
+function criarAlertaEstoque(produto, tipo, titulo) {
+  const alerta = document.createElement('div');
+  alerta.className = `alert alert-${tipo}`;
+  alerta.innerHTML = `
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <strong>${produto.name}</strong><br>
+        <small>Cód: ${produto.barcode || 'N/A'}</small>
+      </div>
+      <span class="badge bg-${tipo}">${produto.stock} unid.</span>
+    </div>
+    <div class="mt-2">
+      <span class="urgencia">${titulo}</span>
     </div>
   `;
+  return alerta;
 }
 
-atualizarAlertas(
-  [
-    {
-      nome: "Arroz",
-      codigo: "P001",
-      quantidade: 2,
-      validade: "2025-04-20",
-      urgencia: "alta" // 🔴 vermelho
-    },
-    {
-      nome: "Feijão",
-      codigo: "P002",
-      quantidade: 5,
-      validade: "2025-04-25",
-      urgencia: "media" // 🟠 laranja
-    },
-    {
-      nome: "Macarrão",
-      codigo: "P003",
-      quantidade: 9,
-      validade: "2025-05-01",
-      urgencia: "baixa" // 🟡 amarelo
-    }
-  ],
-  [
-    {
-      nome: "Leite",
-      codigo: "P004",
-      quantidade: 10,
-      validade: "2025-04-08",
-      urgencia: "alta" // 🔴 vermelho
-    },
-    {
-      nome: "Iogurte",
-      codigo: "P005",
-      quantidade: 15,
-      validade: "2025-04-12",
-      urgencia: "media" // 🟠 laranja
-    },
-    {
-      nome: "Requeijão",
-      codigo: "P006",
-      quantidade: 20,
-      validade: "2025-04-18",
-      urgencia: "baixa" // 🟡 amarelo
-    }
-  ]
-);
+function criarAlertaValidade(produto, dias, tipo, titulo) {
+  const alerta = document.createElement('div');
+  alerta.className = `alert alert-${tipo}`;
+  
+  let diasMsg;
+  if (dias < 0) {
+    diasMsg = `Vencido há ${Math.abs(dias)} dias`;
+  } else if (dias === 0) {
+    diasMsg = 'Vence hoje!';
+  } else {
+    diasMsg = `Vence em ${dias} dias`;
+  }
+  
+  alerta.innerHTML = `
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <strong>${produto.name}</strong><br>
+        <small>Cód: ${produto.barcode || 'N/A'}</small>
+      </div>
+      <span class="badge bg-${tipo}">${produto.stock} unid.</span>
+    </div>
+    <div class="mt-2">
+      <span class="urgencia">${titulo}</span><br>
+      <small>${diasMsg} (${produto.expirationDate || 'N/A'})</small>
+    </div>
+  `;
+  return alerta;
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+  // Carregar alertas inicialmente
+  atualizarAlertas();
+  
+  // Configurar o botão de recarregar
+  document.getElementById('btn-reload-alerts').addEventListener('click', atualizarAlertas);
+  
+  // Atualizar quando o painel de alertas for aberto
+  document.getElementById('offcanvas-alertas').addEventListener('show.bs.offcanvas', atualizarAlertas);
+});
+
+// Atualizar também quando os produtos são carregados
+function carregarProdutos() {
+  fetch('/estoqueData', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  })
+    .then(res => res.json())
+    .then(data => {
+      currentData = data.mensagem;
+      renderizarProdutos(data.mensagem);
+      atualizarAlertas();
+    })
+    .catch(err => console.error('Erro ao carregar produtos:', err));
+}
+
+function preencherCombosCategoriasEDepartamentos() {
+  const selectSetor = document.getElementById("select-excluir-setor");
+  const selectDepartamento = document.getElementById("select-excluir-departamento");
+
+    selectSetor.innerHTML = '<option value="">Selecione</option>';
+    selectDepartamento.innerHTML = '<option value="">Selecione</option>';
+
+    categorias.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.textContent = cat;
+      selectSetor.appendChild(option);
+    });
+
+    departamentos.forEach(dep => {
+      const option = document.createElement("option");
+      option.value = dep;
+      option.textContent = dep;
+      selectDepartamento.appendChild(option);
+    });
+}
 
 function preencherComboGerenciadorDeEstoque() {
   const select_cat = document.getElementById("filtro-categoria");
@@ -351,19 +513,34 @@ function preencherComboGerenciadorDeEstoque() {
   select_cat.innerHTML = '<option value="">Todos</option>';
   select_dep.innerHTML = '<option value="">Todos</option>';
 
-  categorias.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item;
-    option.textContent = item;
-    select_cat.appendChild(option);
-  });
+  fetch('/getSetor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  })
+  .then(res => res.json())
+  .then(data => {
+    const categorias = data.cat;
+    const departamentos = data.dept;
 
-  departamentos.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item;
-    option.textContent = item;
-    select_dep.appendChild(option);
+    categorias.forEach(nome => {
+      const option = document.createElement("option");
+      option.value = nome;
+      option.textContent = nome;
+      select_cat.appendChild(option);
+    });
+
+    departamentos.forEach(nome => {
+      const option = document.createElement("option");
+      option.value = nome;
+      option.textContent = nome;
+      select_dep.appendChild(option);
+    });
+  })
+  .catch(err => {
+    console.error("Erro ao carregar setores:", err);
   });
 }
 
-window.onload = preencherComboGerenciadorDeEstoque();
+carregarSetoresGlobais();
+preencherComboGerenciadorDeEstoque();

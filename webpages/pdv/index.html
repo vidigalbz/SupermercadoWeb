@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SuperMercado Didático - Pdv</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container d-flex justify-content-between">
+      <a class="navbar-brand d-flex align-items-center">
+        <h2 class="mb-0">🛒</h2>
+        <span class="ms-2 fw-bold">Super Mercado Didático</span>
+      </a>
+      <button class="btn btn-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-alertas">Caixa</button>
+    </div>
+  </nav>
+
+  <!-- Offcanvas do caixa -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-alertas">
+    <div class="offcanvas-header bg-warning">
+      <h5 class="offcanvas-title">Informações do Caixa</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body bg-warning" style="--bs-bg-opacity: .5;">
+      <p>Aqui vão os detalhes do caixa...</p>
+    </div>
+  </div>
+
+  <!-- Conteúdo principal -->
+  <div class="container py-4">
+    <!-- Pesquisa -->
+    <div class="card shadow-sm mb-4 no-hover">
+      <div class="card-body">
+        <div class="row gy-3">
+          <!-- Pesquisa -->
+          <div class="col-12">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Pesquisar produto">
+              <button class="btn btn-outline-secondary">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Código + Botão Adicionar + Avançado -->
+          <div class="col-12 col-md-6 d-flex gap-2">
+            <div class="input-group input-group-sm flex-grow-1">
+              <input type="text" class="form-control" id="codigoProdutoInput" placeholder="Código do produto">
+              <button class="btn btn-success" onclick="AdicionarProdutoNovo()">Adicionar</button>
+            </div>
+          </div>
+          
+          <!-- Informações de preço -->
+          <div class="col-6 col-md-3">
+            <div class="bg-light rounded p-2 small fw-semibold d-flex justify-content-between">
+              <span>📦 Total:</span>
+              <span id="total-produtos">0</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="bg-light rounded p-2 small fw-semibold d-flex justify-content-between">
+              <span>💲 Total:</span>
+              <span id="preco-total">0.00</span>
+            </div>
+          </div>
+          
+          <!-- Botões empilhados -->
+          <div class="col-6 col-md-3">
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalCancelarCompra">
+              Cancelar
+            </button>
+          </div>
+          <div class="col-6 col-md-3">
+            <button class="btn btn-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#modalConfirmarCompra">
+              <i class="bi bi-cart-check-fill"></i> Finalizar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Produtos -->
+    <div class="grid-produtos" id="produtos-container">
+      <!-- Produtos serão adicionados dinamicamente aqui -->
+    </div>
+  </div>
+
+  <!-- Modal: Adição Avançada -->
+  <div class="modal fade" id="modalAdicaoAvancada" tabindex="-1" aria-labelledby="modalAdicaoAvancadaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAdicaoAvancadaLabel">Adicionar Produto - Modo Avançado</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formProdutoAvancado">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nome do Produto</label>
+                <input type="text" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Código de Barras</label>
+                <input type="text" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Preço</label>
+                <input type="number" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Quantidade</label>
+                <input type="number" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Lote</label>
+                <input type="text" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Departamento</label>
+                <input type="text" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Categoria</label>
+                <input type="text" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Validade</label>
+                <input type="date" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Data de Fabricação</label>
+                <input type="date" class="form-control">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Imagem (URL)</label>
+                <input type="text" class="form-control">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" form="formProdutoAvancado">Adicionar Produto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Confirmar Compra -->
+  <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-labelledby="modalConfirmarCompraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="modalConfirmarCompraLabel">Finalizar Compra</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" id="checkoutModalBody">
+          <div class="text-center py-4">
+            <div class="spinner-border text-success" role="status" id="checkoutSpinner">
+              <span class="visually-hidden">Carregando...</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+          <button type="button" class="btn btn-success" id="confirmCheckoutBtn">
+            <i class="bi bi-cart-check-fill"></i> Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Cancelar Compra -->
+  <div class="modal fade" id="modalCancelarCompra" tabindex="-1" aria-labelledby="modalCancelarCompraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="modalCancelarCompraLabel">Cancelar Compra</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Para cancelar a compra, digite a senha do administrador:</p>
+          <input type="password" class="form-control mb-3" id="senhaCancelamento" placeholder="Senha de confirmação">
+          <div class="text-danger d-none" id="erroSenha">Senha incorreta. Tente novamente.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+          <button type="button" class="btn btn-danger" onclick="confirmarCancelamento()">Confirmar Cancelamento</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Aviso Global -->
+  <div class="modal fade" id="globalAlertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="globalAlertModalLabel">Aviso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="globalAlertModalBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template para mensagem de carrinho vazio (hidden) -->
+  <div id="emptyCartTemplate" class="d-none">
+    <div class="alert alert-warning text-center">
+      <i class="bi bi-cart-x-fill fs-1"></i>
+      <h4 class="mt-3">Carrinho Vazio</h4>
+      <p class="mb-0">Adicione produtos antes de finalizar a compra</p>
+    </div>
+  </div>
+
+  <!-- Template para resumo da compra (hidden) -->
+  <div id="checkoutSummaryTemplate" class="d-none">
+    <div class="checkout-summary">
+      <h5 class="mb-3">Resumo da Compra</h5>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Qtd</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="checkoutItemsList">
+            <!-- Itens serão adicionados dinamicamente -->
+          </tbody>
+          <tfoot>
+            <tr class="table-active">
+              <th colspan="2">Total</th>
+              <th id="checkoutTotalPrice">R$ 0,00</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="mt-3">
+        <label for="paymentMethod" class="form-label">Método de Pagamento</label>
+        <select class="form-select" id="paymentMethod">
+          <option value="cash">Dinheiro</option>
+          <option value="credit">Cartão de Crédito</option>
+          <option value="debit">Cartão de Débito</option>
+          <option value="pix">PIX</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
