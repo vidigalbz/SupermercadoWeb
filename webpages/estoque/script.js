@@ -72,6 +72,37 @@ function criarCardHTML(produto) {
   });
 }
 
+function mostrarNotificacao(titulo, mensagem, tipo = 'info') {
+  const toastEl = document.getElementById('liveToast');
+  const toastTitle = document.getElementById('toast-title');
+  const toastMessage = document.getElementById('toast-message');
+  
+  // Configura cores baseadas no tipo
+  const tipos = {
+    success: { bg: 'bg-success text-white', icon: '✔️' },
+    error: { bg: 'bg-danger text-white', icon: '❌' },
+    warning: { bg: 'bg-warning text-dark', icon: '⚠️' },
+    info: { bg: 'bg-info text-dark', icon: 'ℹ️' }
+  };
+  
+  const config = tipos[tipo] || tipos.info;
+  
+  // Atualiza o toast
+  toastTitle.textContent = `${config.icon} ${titulo}`;
+  toastMessage.textContent = mensagem;
+  
+  // Remove classes anteriores e adiciona as novas
+  toastEl.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'text-white', 'text-dark');
+  toastEl.classList.add(config.bg.split(' ')[0], config.bg.split(' ')[1]);
+  
+  // Mostra o toast
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+  
+  // Esconde automaticamente após 5 segundos
+  setTimeout(() => toast.hide(), 5000);
+}
+
 function atualizarOuAdicionarCard(produto) {
   const cardExistente = container.querySelector(`.card-produto[data-id="${produto.productId}"]`);
   if (cardExistente) {
@@ -144,7 +175,7 @@ async function adicionarProduto() {
   const imagemInput = document.getElementById("produto-imagem");
 
   if (!nome || !codigo || isNaN(preco) || isNaN(estoque) || !marketId) {
-    alert("Por favor, preencha todos os campos obrigatórios.");
+    mostrarNotificacao('Atenção', 'Por favor, preencha todos os campos obrigatórios.', 'warning');
     return false;
   }
 
@@ -174,16 +205,16 @@ async function adicionarProduto() {
     const resultado = await res.json();
 
     if (res.ok) {
-      alert("Produto adicionado com sucesso!");
+      mostrarNotificacao('Sucesso', 'Produto adicionado com sucesso!', 'success');
       document.getElementById("form-adicionar-item").reset();
       bootstrap.Modal.getInstance(document.getElementById("modalAdicionarItem")).hide();
       carregarProdutos();
       return true;
     } else {
-      alert("Erro ao adicionar produto: " + (resultado.erro || "Erro desconhecido."));
+      mostrarNotificacao('Erro', `Erro ao adicionar produto: ${resultado.erro || "Erro desconhecido."}`, 'error');
     }
   } catch (err) {
-    alert("Erro na requisição: " + err.message);
+    mostrarNotificacao('Erro', `Erro na requisição: ${err.message}`, 'error');
   }
 }
 
@@ -212,21 +243,21 @@ async function confirmarEdicao() {
     const resultado = await response.json();
 
     if (response.ok) {
-      alert("Produto editado com sucesso!");
+      mostrarNotificacao('Sucesso', 'Produto editado com sucesso!', 'success');
       bootstrap.Modal.getInstance(document.getElementById('modalEditarProduto')).hide();
       carregarProdutos();
     } else {
-      alert("Erro ao editar produto: " + (resultado.erro || "Erro desconhecido."));
+      mostrarNotificacao('Erro', `Erro ao editar produto: ${resultado.erro || "Erro desconhecido."}`, 'error');
     }
   } catch (error) {
-    alert("Erro ao tentar editar: " + error.message);
+    mostrarNotificacao('Erro', `Erro ao tentar editar: ${error.message}`, 'error');
   }
 }
 
 async function excluirProduto() {
   const id = parseInt(document.getElementById("codigo-excluir").value);
   if (isNaN(id)) {
-    alert("ID inválido.");
+    mostrarNotificacao('Atenção', 'ID inválido.', 'warning');
     return;
   }
 
@@ -240,14 +271,14 @@ async function excluirProduto() {
     const resultado = await res.json();
 
     if (res.ok) {
-      alert("Produto excluído com sucesso!");
+      mostrarNotificacao('Sucesso', 'Produto excluído com sucesso!', 'success');
       carregarProdutos();
       return true;
     } else {
-      alert("Erro ao excluir produto: " + (resultado.erro || "Erro desconhecido."));
+      mostrarNotificacao('Erro', `Erro ao excluir produto: ${resultado.erro || "Erro desconhecido."}`, 'error');
     }
   } catch (err) {
-    alert("Erro na requisição: " + err.message);
+    mostrarNotificacao('Erro', `Erro na requisição: ${err.message}`, 'error');
   }
 }
 

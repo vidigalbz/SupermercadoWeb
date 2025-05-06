@@ -36,7 +36,7 @@ function limparFiltros() {
 function abrirModalEdicao() {
   const codigo = document.getElementById("codigo-editar").value.trim();
   if (codigo === "") {
-    const modal = new bootstrap.Modal(document.getElementById("modalCodigoObrigatorio"));
+    mostrarNotificacao('Atenção', 'Por favor, insira o código do produto antes de continuar.', 'warning');
     modal.show();
     return;
   }
@@ -47,12 +47,10 @@ function abrirModalEdicao() {
 function abrirModalExclusao() {
   const codigo = document.getElementById("codigo-excluir").value.trim();
   if (codigo === "") {
-    const modal = new bootstrap.Modal(document.getElementById("modalCodigoObrigatorio"));
-    modal.show();
+    mostrarNotificacao('Ação necessária', 'Por favor, insira o código do produto que deseja excluir.', 'warning');
     return;
   }
-
-  abrirModalExclusaoProduto()
+  abrirModalExclusaoProduto();
 }
   
 function abrirModalDepCat() {

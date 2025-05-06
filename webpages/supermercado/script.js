@@ -2,16 +2,59 @@ const user = JSON.parse(localStorage.getItem("user"));
 const container = document.getElementById("supermercado-container")
 let currentData = []
 
-function showToast(message, color = 'danger') {
-  const toast = document.getElementById('liveToast');
+function showToast(message, type = 'info') {
+  const toastEl = document.getElementById('liveToast');
+  const toastTitle = document.getElementById('toastTitle');
   const toastMessage = document.getElementById('toastMessage');
-
-  toast.className = `toast align-items-center text-white bg-${color} border-0`;
+  
+  // Configura cores e ícones baseados no tipo
+  const tipos = {
+    success: { 
+      bg: 'bg-success text-white', 
+      icon: '✔️',
+      title: 'Sucesso'
+    },
+    error: { 
+      bg: 'bg-danger text-white', 
+      icon: '❌',
+      title: 'Erro'
+    },
+    warning: { 
+      bg: 'bg-warning text-dark', 
+      icon: '⚠️',
+      title: 'Aviso'
+    },
+    info: { 
+      bg: 'bg-info text-dark', 
+      icon: 'ℹ️',
+      title: 'Informação'
+    }
+  };
+  
+  const config = tipos[type] || tipos.info;
+  
+  // Atualiza o toast
+  toastTitle.innerHTML = `${config.icon} ${config.title}`;
   toastMessage.textContent = message;
-
-  const toastBootstrap = new bootstrap.Toast(toast);
-  toastBootstrap.show();
+  
+  // Remove classes anteriores e adiciona as novas
+  toastEl.className = `toast align-items-center text-white ${config.bg} border-0`;
+  
+  // Mostra o toast
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+  
+  // Esconde automaticamente após 5 segundos
+  setTimeout(() => toast.hide(), 5000);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Inicializa todos os toasts
+  const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  toastElList.map(function(toastEl) {
+    return new bootstrap.Toast(toastEl);
+  });
+});
 
 document.addEventListener('DOMContentLoaded', function() {
   const userName = localStorage.getItem('userName');
@@ -192,12 +235,12 @@ document.getElementById("addMarket").addEventListener("click", function(e){
     if (data.success){
       carregarSupermercados();
     } else {
-      showToast(data.message || "Erro ao adicionar supermercado", "danger");
+      showToast("Erro ao adicionar supermercado", "error");
     }
   })
   .catch(err => {
     console.error(err);
-    showToast("Erro ao conectar com servidor!", "danger");
+    showToast("Erro ao conectar com o servidor!", "error");
   });
 });
   
@@ -217,15 +260,15 @@ document.getElementById("addMarket").addEventListener("click", function(e){
         console.log(result)
         
         if (res.ok) {
-        alert("Supermercado excluído!");
+          showToast("Erro ao conectar com servidor!", "error");
         carregarSupermercados();
         }
         else{
-          console.log("Erro ao excluir produto " + (result.erro || "Erro desconhecido"))
+          showToast(`Erro ao excluir produto: ${result.erro || "Erro desconhecido"}`, "error");
         }
       }
       catch (err){
-        console.log("Erro na requisição " + err.message)
+        showToast(`Erro na requisição: ${err.message}`, "error");
       }
     }}
   });

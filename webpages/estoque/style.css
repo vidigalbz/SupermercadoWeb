@@ -46,5 +46,29 @@ body {
   margin-top: 5px;
 }
 
+/* Estilos para o Toast */
+.toast {
+  min-width: 300px;
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
 
-  
+.toast-header {
+  border-bottom: none;
+}
+
+.toast-success {
+  background-color: #d1e7dd;
+}
+
+.toast-error {
+  background-color: #f8d7da;
+}
+
+.toast-warning {
+  background-color: #fff3cd;
+}
+
+.toast-info {
+  background-color: #cfe2ff;
+}

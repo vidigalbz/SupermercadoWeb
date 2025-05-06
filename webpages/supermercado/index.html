@@ -57,6 +57,33 @@
       font-size: 2rem;
       color: #6c757d;
     }
+
+    /* Estilos para o Toast */
+    .toast {
+      min-width: 300px;
+      border: none;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .toast-success {
+      background-color: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .toast-error {
+      background-color: #f8d7da;
+      color: #842029;
+    }
+
+    .toast-warning {
+      background-color: #fff3cd;
+      color: #664d03;
+    }
+
+    .toast-info {
+      background-color: #cfe2ff;
+      color: #084298;
+    }
   </style>
 </head>
 <body>
@@ -205,6 +232,18 @@
           </form>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Toast de Notificação -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1200">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto" id="toastTitle">Notificação</strong>
+        <small>Agora</small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      </div>
+      <div class="toast-body" id="toastMessage"></div>
     </div>
   </div>
 
