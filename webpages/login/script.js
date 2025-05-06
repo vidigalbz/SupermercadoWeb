@@ -71,21 +71,24 @@ document.getElementById("loginButton").addEventListener("click", async function 
   }
 
   try {
-    const response = await fetch(`/login`, {
+    const response = await fetch(`${API}/login`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, senha: senha })
+      body: JSON.stringify({ email, senha })
     });
 
     const result = await response.json();
-    if (result.status == "success") {
-      localStorage.setItem("user", JSON.stringify({
-        name: result.name,
-        email: result.email,
-        userId: result.userId
-      }));
-      alert(`Bem-vindo, ${result.name}!`);
-      window.location.href = '/supermercado';
+
+    if (result.status === "success") {
+      localStorage.setItem('userName', result.name || 'Usuário');
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userRole', result.role || 'Gerente do sistema');
+      
+      showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
+      
+      setTimeout(() => {
+        window.location.href = '/supermercado';
+      }, 1500);
     } else {
       showToast(result.message || "Email ou senha incorretos!", "danger");
     }

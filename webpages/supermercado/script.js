@@ -13,6 +13,15 @@ function showToast(message, color = 'danger') {
   toastBootstrap.show();
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+  const userName = localStorage.getItem('userName');
+  const userEmail = localStorage.getItem('userEmail');
+  const userRole = localStorage.getItem('userRole');
+
+  if (userName) document.getElementById('userName').textContent = userName;
+  if (userEmail) document.getElementById('userEmail').textContent = userEmail;
+  if (userRole) document.getElementById('userRole').textContent = userRole;
+});
 
 document.addEventListener('DOMContentLoaded', function () {
   const popovers = document.querySelectorAll('[data-bs-toggle="popover"]');
