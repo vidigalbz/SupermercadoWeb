@@ -41,34 +41,14 @@ async function loadPages() {
         for (let i = 0; i < pages.length; i++) {
             const temp_path = `${webpages_dir}/${pages[i]}/index.html`;
             if (fs.existsSync(temp_path) && pages[i] != "main") {
-                if(pages[i] == "estoque"){app.get('/estoque/'), (req, res) => {res.sendFile(`${webpages_dir}/Error404/index.html`)}}
-                else if (pages[i] == "pdv"){app.get('/pdv/'), (req, res) => {res.sendFile(`${webpages_dir}/Error404/index.html`)}}
-                else {app.get(`/${pages[i]}`, (req, res) => res.sendFile(temp_path));}
+                app.get(`/${pages[i]}`, (req, res) => res.sendFile(temp_path));
             } else if (pages[i] == "main") {
                 app.get("/", (req, res) => res.sendFile(temp_path));
             }
         }
     });
-    generatorUrl()
 }
 
-async function generatorUrl(){
-    app.get("/estoque/", (req, res) => {})
-    let ids = await select("accessKeys")
-    let validIdEstoque = ids.filter(item => item.type === "estoque").map(item => item.marketId)
-    let validIdPdv = ids.filter(item => item.type === "pdv").map(item => item.marketId)
-    app.get( '/estoque/:marketId', (req, res) => {
-        const {marketId} = req.params;
-        if (validIdEstoque.includes(marketId)){res.sendFile(`${webpages_dir}/estoque/index.html`)}
-        else {res.sendFile(`${webpages_dir}/Error404/index.html`)}
-    })
-    app.get('/pdv/:marketId', (req, res) => {
-        const {marketId} = req.params;
-        if(validIdPdv.includes(marketId)){res.sendFile(`${webpages_dir}/pdv/index.html`)}
-        else{res.sendFile(`${webpages_dir}/Error404/index.html`)}
-    })
-    
-}
 // Endpoint para adicionar produto (imagem é ignorada)
 app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     try {
@@ -350,7 +330,7 @@ app.post("/adicionarSupermercado", async (req, res) => {
                 icon
             }
         });
-        generatorUrl();
+        
 
     } catch (err) {
         console.error("Erro:", err);
@@ -394,6 +374,27 @@ app.post('/supermercadoData', async (req, res) => {
         res.status(500).json({erro: "Erro ao consultar supermercados."})
     }
 });
+
+app.post('/updateSupermercado', async (req, res) => {
+    if (req.body){
+        const {
+            id,
+            nome,
+            local,
+            icon,  
+        } = req.body 
+        const columns = ["name", "local", "icon"]
+
+        const values = [nome, local, icon]
+        const condition = `marketId = ${id}`
+
+        update("supermarkets", columns, values, condition)
+
+        res.json({ success: true, message: "Supermercado atualizado com Sucesso!" });
+    }
+    
+})
+
 
 loadPages();
 

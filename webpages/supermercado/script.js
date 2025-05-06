@@ -1,6 +1,13 @@
 const user = JSON.parse(localStorage.getItem("user"));
 const container = document.getElementById("supermercado-container")
 let currentData = []
+const urlLocal = "http://localhost:4000"
+
+
+var inputSuper = document.getElementById("SupermercadoUpdate") // Pegando os input da tela de Update
+var inputLocal = document.getElementById("LocalUpdate")
+var inputIcon = document.getElementById("IconUpdate")
+var idMarket;
 
 function showToast(message, type = 'info') {
   const toastEl = document.getElementById('liveToast');
@@ -77,8 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   
   const contador = document.getElementById("contadorSupermercados");
+  if(!contador){
+    console.log('Erro no count')
+    return
+  }
   const total = document.querySelectorAll(".card-super").length;
-  console.log(total)
   contador.innerText = `${total} / 4`;
   const box = contador.parentElement;
   
@@ -114,6 +124,8 @@ function alternarVisibilidade(botao) {
     
   function criarCardSupermercado(supermercado) {
     const card = document.createElement('div');
+
+
     card.className = 'col-md-4 col-lg-3';
     card.innerHTML = `
     <div  class="card-super h-100" data-id="${supermercado.marketId}">
@@ -131,7 +143,14 @@ function alternarVisibilidade(botao) {
     ">
     <i class="bi bi-info-circle"></i>
     </button>
-    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditar">
+    <button class="btn btn-warning btn-sm" 
+      data-bs-toggle="modal" 
+      data-bs-target="#modalEditar"
+      data-id="${supermercado.id}"
+      data-local="${supermercado.local}"
+      data-icone="${supermercado.icone}"
+      data-nome="${supermercado.nome}"
+      >
     <i class="bi bi-pencil-square"></i>
     </button>
     </div>
@@ -172,24 +191,25 @@ function alternarVisibilidade(botao) {
     card.remove();
   }
   function atualizarOuAdicionarCard(supermercado) {
-    console.log(currentData)
     const cardExistente = container.querySelector(`.card-super[data-id="${supermercado.marketId}"]`);
     if (cardExistente) {
       cardExistente.remove();
     }
     criarCardSupermercado({
+      id: supermercado.marketId,
       nome: supermercado.name,
       local: supermercado.local,
       ownerId: supermercado.ownerId,
-      icone: supermercado.icon}
+      icone: supermercado.icon,
+      linkPDV:  `${urlLocal}/pdv/?id=${supermercado.marketId}`,
+      linkEstoque: `${urlLocal}/estoque/?id=${supermercado.marketId}`
+    }
     );
   }
   
   function renderizarSupermercados(supermercados) {
-    console.log(supermercados?.map(s => s.marketId) || "nao");
     const idsNovos = supermercados.map(s => s.marketId);
     const cardsAtuais = Array.from(container.querySelectorAll('.card-super'));
-    
     for (let card of cardsAtuais) {
       if (!idsNovos.includes(parseInt(card.dataset.id))) {
         card.remove();
@@ -209,10 +229,46 @@ function alternarVisibilidade(botao) {
     .then(res => res.json())
     .then(data => {
       currentData = data.mensagem;
-      console.log(currentData)
+
       renderizarSupermercados(currentData);
     })
   };
+
+  document.addEventListener('DOMContentLoaded', function(){ //Carregar os Modal de Acordo com os dados
+    const modalEditar = document.getElementById("modalEditar")
+
+    modalEditar.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+
+      idMarket = button.getAttribute('data-id')
+      const nome = button.getAttribute('data-nome')
+      const local = button.getAttribute('data-local')
+      const icone = button.getAttribute('data-icone')
+
+      inputSuper.value = nome;
+      inputLocal.value = local;
+      inputIcon.value = icone;
+    })
+  })
+  document.getElementById("SalvarUpdate").addEventListener("click", async function(e) {
+    e.preventDefault();
+
+   await fetch('/updateSupermercado', {
+      method: "POST",
+      headers: {'Content-Type': 'application/json'}, 
+      body: JSON.stringify({
+        id: idMarket,  
+        nome: inputSuper.value,
+        local: inputLocal.value,
+        icon: inputIcon.value,
+      })
+    }).then(res => res.json()).then(data => {
+      if (data.success) {
+        bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+        carregarSupermercados()
+      }
+    })
+  })  
     // CADASTRO
 document.getElementById("addMarket").addEventListener("click", function(e){
   e.preventDefault();
