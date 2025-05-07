@@ -128,7 +128,7 @@ function alternarVisibilidade(botao) {
 
     card.className = 'col-md-4 col-lg-3';
     card.innerHTML = `
-    <div  class="card-super h-100" data-id="${supermercado.marketId}">
+    <div  class="card card-super h-100" data-id="${supermercado.marketId}">
     <div class="card-img-top text-center py-4 bg-primary text-white">
     <span class="fs-1">${supermercado.icone}</span>
     </div>

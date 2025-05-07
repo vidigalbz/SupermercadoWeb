@@ -124,7 +124,7 @@ function query(query){
     })
 }
 
-function insertLink(key, marketId, type) {
+async function insertLink(key, marketId, type) {
     return new Promise((resolve, reject) => {
         db.run(
             `INSERT INTO accessKeys (key, marketId, type) VALUES (?, ?, ?)`,
