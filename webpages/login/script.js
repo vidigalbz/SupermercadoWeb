@@ -87,7 +87,7 @@ document.getElementById("loginButton").addEventListener("click", async function 
       showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
       
       setTimeout(() => {
-        window.location.href = '/supermercado';
+        window.location.href = '/supermercado/?userID=';
       }, 1500);
     } else {
       showToast(result.message || "Email ou senha incorretos!", "danger");

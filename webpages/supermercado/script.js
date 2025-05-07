@@ -1,8 +1,21 @@
-const user = JSON.parse(localStorage.getItem("user"));
 const container = document.getElementById("supermercado-container")
 let currentData = []
 const urlLocal = "http://localhost:4000"
 
+function getQueryParam(paramName) {
+  const queryString = window.location.search.substring(1);
+  const params = queryString.split('&');
+
+  for (const param of params) {
+    const [key, value] = param.split('=');
+    if (key === paramName) {
+      return decodeURIComponent(value || '');
+    }
+  }
+  return null;
+}
+
+const id = getQueryParam('userID');
 
 var inputSuper = document.getElementById("SupermercadoUpdate") // Pegando os input da tela de Update
 var inputLocal = document.getElementById("LocalUpdate")
@@ -213,7 +226,7 @@ function alternarVisibilidade(botao) {
     fetch('/supermercadoData', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ busca: JSON.stringify(user.userId)})
+      body: JSON.stringify({ busca: JSON.stringify(id)})
     })
     .then(res => res.json())
     .then(data => {
@@ -267,7 +280,7 @@ document.getElementById("addMarket").addEventListener("click", function(e){
   if (total < 4 ){
   const name = document.getElementById("nomeSupermercado").value;
   const local = document.getElementById("localizacao").value;
-  const ownerId = user.userId;
+  const ownerId = id;
   const icon = document.getElementById("icon").value;
   
   fetch('/adicionarSupermercado', {
