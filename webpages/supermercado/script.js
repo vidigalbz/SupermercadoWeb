@@ -9,6 +9,9 @@ var inputLocal = document.getElementById("LocalUpdate")
 var inputIcon = document.getElementById("IconUpdate")
 var idMarket;
 
+var total;
+const contador = document.getElementById("contadorSupermercados");
+
 function showToast(message, type = 'info') {
   const toastEl = document.getElementById('liveToast');
   const toastTitle = document.getElementById('toastTitle');
@@ -82,21 +85,6 @@ document.addEventListener('DOMContentLoaded', function () {
       content: content
     });
   });
-  
-  const contador = document.getElementById("contadorSupermercados");
-  if(!contador){
-    console.log('Erro no count')
-    return
-  }
-  const total = document.querySelectorAll(".card-super").length;
-  contador.innerText = `${total} / 4`;
-  const box = contador.parentElement;
-  
-  if (total === 5) {
-    box.classList.add("maximo");
-  } else if (total >= 3) {
-    box.classList.add("alerta");
-  }
 });
 
 function copiarLink(btn) {
@@ -184,6 +172,7 @@ function alternarVisibilidade(botao) {
     // Ativa popovers do Bootstrap nesse card
     const popoverTriggerList = card.querySelectorAll('[data-bs-toggle="popover"]');
     popoverTriggerList.forEach(el => new bootstrap.Popover(el));
+    count()
   }
   
   function deleteEmpty(index) {
@@ -272,6 +261,10 @@ function alternarVisibilidade(botao) {
     // CADASTRO
 document.getElementById("addMarket").addEventListener("click", function(e){
   e.preventDefault();
+  const box = contador.parentElement;
+  count();
+  console.log(total)
+  if (total < 4 ){
   const name = document.getElementById("nomeSupermercado").value;
   const local = document.getElementById("localizacao").value;
   const ownerId = user.userId;
@@ -298,6 +291,13 @@ document.getElementById("addMarket").addEventListener("click", function(e){
     console.error(err);
     showToast("Erro ao conectar com o servidor!", "error");
   });
+  }
+  else if (total === 5) {
+    box.classList.add("maximo");
+  }
+  if (total >= 3) {
+    box.classList.add("alerta");
+  }
 });
   
   document.getElementById("excluirMercado").addEventListener("click", async function(e){
@@ -328,4 +328,13 @@ document.getElementById("addMarket").addEventListener("click", function(e){
       }
     }}
   });
+function count(){
+    if(!contador){
+      console.log('Erro no count')
+      return
+    }
+    total = document.querySelectorAll(".card-super").length;
+    contador.innerText = `${total} / 4`;
+    
+}
 carregarSupermercados();
