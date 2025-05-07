@@ -32,6 +32,7 @@ const upload = multer({storage: storage});
 app.use('/servidor/uploads', express.static(path.resolve(__dirname, './uploads')));  
 
 const os = require('os');
+const { table } = require("console");
 
 function getRealWirelessIP() {
   const interfaces = os.networkInterfaces();
@@ -462,6 +463,7 @@ app.post('/login', async (req, res) => {
         }
         res.status(200).json({ 
             status: "success", 
+            id: user.userId ,
             name: user.name,
             email: user.email,
             userId: user.userId
@@ -605,6 +607,33 @@ app.post('/getMarketId', async (req, res) => {
     const code = req.body;
     console.log(code)
     query(`SELECT marketd FROM superMarkets WHERE marketid == '${code}'`)
+})
+
+app.post("verificUser", async (req, res) => {
+    const {busca, column} = req.body
+
+})
+
+app.post("/verific", async (req, res) => { //Verficação se existe o SuperMercado
+    const {busca, column, tableSelect} = req.body
+    let condicao = "";
+    if (busca && column) {
+        const termo = busca.replace(/'/g, "''")
+        condicao = `WHERE ${column.replace(/'/g, "''")} = ${termo}` 
+    }
+    try{
+    const results = await select(tableSelect, condicao);
+
+    res.status(200).json({mensagem: results});
+    }
+    catch(e){
+        console.log(e)
+    }
+})
+
+app.get("/Error404", (req, res) => {
+    const pathError =  `${webpages_dir}/erro404/index.html`
+    res.sendFile(pathError)
 })
 
 loadPages();

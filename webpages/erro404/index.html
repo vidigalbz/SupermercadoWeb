@@ -124,12 +124,17 @@
     </div>
 
     <p class="instruction">
-      Oops! Parece que o superMercado não foi encontrado no sistema.<br>
+      Oops! Parece que o SuperMercado não foi encontrado no sistema.<br>
       Verifique o link recebido.
     </p>
     <div class="d-grid gap-2 col-6 mx-auto">
-        <button class="btn btn-warning" type="button">Voltar para HomePage</button>
+        <button class="btn btn-warning" type="button" onclick="backLogin()">Voltar para HomePage</button>
     </div>
   </div>
+  <script>
+    function backLogin() {
+      window.location.href = '/login/'
+    }
+  </script>
 </body>
 </html>

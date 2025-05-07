@@ -26,7 +26,21 @@ function getQueryParam(paramName) {
     return null;
   }
   
+  async function verificSuper(){
+    fetch("/verific", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({busca: id })
+    }).then( res => res.json())
+    .then( data => {
+      if (Object.keys(data.mensagem).length === 0){
+        window.location.href = '/Error404'
+      }
+    }
+    )
+}
   const id = getQueryParam('id');
+  verificSuper()
   console.log(id);
 
 // Initialize the application

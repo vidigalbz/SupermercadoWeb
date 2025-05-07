@@ -16,8 +16,22 @@ function getQueryParam(paramName) {
   }
   return null;
 }
+async function verificSuper(){
+    fetch("/verific", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
+    }).then( res => res.json())
+    .then( data => {
+      if (Object.keys(data.mensagem).length === 0){
+        window.location.href = '/Error404'
+      }
+    }
+    )
+}
 
 const id = getQueryParam('id');
+verificSuper()
 console.log(id);
 
 
@@ -32,7 +46,6 @@ filterCategoria.addEventListener("change", () => {
   })
     .then(res => res.json())
     .then(data => {
-      console.log(data.mensagem)
       renderizarProdutos(data.mensagem);
     })
     .catch(err => console.error('Erro:', err));

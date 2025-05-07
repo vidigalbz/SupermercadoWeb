@@ -14,8 +14,22 @@ function getQueryParam(paramName) {
   }
   return null;
 }
+async function verificUser(){
+  fetch("/verific", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({busca: id, column: "userId", tableSelect :"users"})
+  }).then( res => res.json())
+  .then( data => {
+    if (Object.keys(data.mensagem).length === 0){
+      window.location.href = '/Error404'
+    }
+  }
+  )
+}
 
 const id = getQueryParam('userID');
+verificUser()
 
 var inputSuper = document.getElementById("SupermercadoUpdate") // Pegando os input da tela de Update
 var inputLocal = document.getElementById("LocalUpdate")
