@@ -159,3 +159,64 @@
 .nav-tabs {
   margin-bottom: 0;
 }
+
+/* TOAST NOTIFICATIONS - FIXED POSITION (SEMPRE VISÍVEL) */
+.toast-wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999; /* Garante que fique acima de TUDO */
+  max-height: 100vh;
+  overflow-y: auto; /* Permite scroll se muitos toasts */
+  display: flex;
+  flex-direction: column-reverse; /* Novos toasts aparecem em cima */
+  gap: 10px;
+}
+
+.toast {
+  min-width: 300px;
+  max-width: 350px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Efeito ao aparecer */
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Cores por tipo */
+.toast-success .toast-header {
+  background-color: #28a745;
+  color: white;
+}
+
+.toast-error .toast-header {
+  background-color: #dc3545;
+  color: white;
+}
+
+.toast-warning .toast-header {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.toast-info .toast-header {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.toast-body {
+  background-color: white;
+  color: #212529;
+  padding: 12px;
+}
+
+/* Botão de fechar mais visível */
+.toast-header .btn-close {
+  filter: invert(1);
+  opacity: 0.8;
+}

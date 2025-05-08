@@ -215,7 +215,7 @@ function showAlert(message, title = 'Aviso', type = 'info') {
     const modalBody = document.getElementById('globalAlertModalBody');
     
     modal.classList.remove('modal-warning', 'modal-error', 'modal-success');
-    
+
     switch(type.toLowerCase()) {
         case 'warning':
             modal.classList.add('modal-warning');
@@ -227,10 +227,12 @@ function showAlert(message, title = 'Aviso', type = 'info') {
             modal.classList.add('modal-success');
             break;
     }
-    
+
     modalLabel.textContent = title;
     modalBody.textContent = message;
-    modalInstance.show();
+
+    const instance = bootstrap.Modal.getOrCreateInstance(modal);
+    instance.show();
 }
 
 function updateTotals() {
@@ -285,7 +287,7 @@ function AdicionarProdutoNovo() {
             codigoInput.value = "";
             focusCodigoInput();
         } else {
-            showAlert("Produto não encontrado!", "Erro na busca", "error");
+            showAlert("Produto não encontrado.", "Erro", "error");
             focusCodigoInput();
         }
     })
