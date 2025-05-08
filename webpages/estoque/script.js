@@ -31,6 +31,7 @@ async function verificSuper(){
 }
 
 const id = getQueryParam('id');
+document.getElementById("produto-marketId").value = id;
 verificSuper()
 console.log(id);
 
