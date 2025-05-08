@@ -49,10 +49,12 @@ document.getElementById("registerButton").addEventListener("click", function (e)
   .then(res => res.json())
   .then(data => {
     if (data.status === "success") {
-      showToast("Cadastro realizado com sucesso!", "success");
+      showToast("Erro ao cadastrar", "danger");
       container.classList.remove("right-panel-active"); // Volta para login
     } else {
-      showToast(data.message || "Erro ao cadastrar.", "danger");
+      // Exibir a mensagem de erro recebida do servidor
+      showToast(data.message || "Cadastro realizado com sucesso!", "success");
+      container.classList.remove("right-panel-active")
     }
   })
   .catch(() => showToast("Erro ao conectar com o servidor!", "danger"));
