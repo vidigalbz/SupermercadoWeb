@@ -82,13 +82,17 @@ async function loadPages() {
 // Endpoint para adicionar produto (imagem é ignorada)
 app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     try {
-        const imagem = req.file
-        if (!imagem) {
-            return res.status(400).json({error: 'Nenhuma imagem enviada'})
+        let imagempath;
+        if (req.file){
+            let imagem = req.file;
+            imagempath = imagem.path
         }
         else{
-            console.log(imagem.path)
+            const {imagem} = req.body
+            imagempath = imagem
         }
+
+        console.log(imagempath)
         const {
             nome,
             codigo,
@@ -100,8 +104,12 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             marketId,
             fabricacao,
             validade,
-
         } = req.body;
+
+        // Verifique se todos os campos necessários estão presentes
+        if (!nome || !codigo || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade) {
+            return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." });
+        }
 
         const produto = {
             nome,
@@ -114,8 +122,9 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             marketId,
             fabricacao,
             validade,
-            imagem: imagem.path
+            imagem: imagempath
         };
+
         console.log([
             produto.marketId,
             produto.nome,
@@ -127,7 +136,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.fabricacao,
             produto.codigo,
             produto.imagem
-        ])
+        ]);
+
         insert("products", [
             "marketId", "name", "price", "category",
             "stock", "lot", "expirationDate", "manufactureDate",
@@ -152,6 +162,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         res.status(500).json({ erro: "Erro ao adicionar produto." });
     }
 });
+
 
 // Endpoint para deletar produto pelo código
 app.post('/deletarProduto', async (req, res) => {

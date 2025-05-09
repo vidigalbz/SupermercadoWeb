@@ -177,3 +177,23 @@ body {
     height: 150px;
   }
 }
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 0;
+  opacity: 0;
+  transition: width 0.3s ease, opacity 0.3s ease;
+  margin-right: 8px;
+  pointer-events: none;
+}
+
+.search-container.active .search-input {
+  width: 200px;
+  opacity: 1;
+  pointer-events: auto;
+}

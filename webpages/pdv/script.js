@@ -13,6 +13,15 @@ const labelQuant = document.getElementById("total-produtos");
 const checkoutModalBody = document.getElementById("checkoutModalBody");
 const confirmCheckoutBtn = document.getElementById("confirmCheckoutBtn");
 
+function toggleSearch() {
+    const container = document.querySelector('.search-container');
+    container.classList.toggle('active');
+    const input = container.querySelector('.search-input');
+    if (container.classList.contains('active')) {
+        input.focus();
+    }
+}
+
 function getQueryParam(paramName) {
     const queryString = window.location.search.substring(1);
     const params = queryString.split('&');
@@ -164,7 +173,7 @@ async function recreateProductCard(productData) {
 
 // Helper function to get image URL
 function getImageUrl(imagePath) {
-    if (!imagePath) return 'https://via.placeholder.com/150?text=Sem+Imagem';
+    if (!imagePath) return 'https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';
     // Normalize path and ensure it points to the correct server URL
     const normalizedPath = imagePath.replace(/\\/g, '/').replace(/^\/?/, '');
     return `http://localhost:4000/${normalizedPath}`;

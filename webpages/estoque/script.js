@@ -78,7 +78,7 @@ async function getImageURL(rawImagePath) {
   
   return rawImagePath 
     ? `http://${ip}:4000/${rawImagePath}` 
-    : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+    : 'https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';
 }
 
 async function criarCardHTML(produto) {
@@ -86,6 +86,7 @@ async function criarCardHTML(produto) {
   if (produto.image != null){
     rawImagePath = produto.image.replace(/\\/g, '/')
   }
+
   const imagemURL = await  getImageURL(rawImagePath);
 
   const tempDiv = document.createElement("div");
@@ -273,9 +274,14 @@ async function adicionarProduto() {
   formData.append("fabricacao", fabricacao);
   formData.append("validade", validade);
 
-  const imagemPath = imagemInput.files[0]
-  if (imagemPath){
-    formData.append("imagem", imagemPath)
+  console.log(categoria)
+
+  // Verifique se a imagem foi selecionada antes de anexar
+  if (imagemInput.files.length > 0) {
+    formData.append("imagem", imagemInput.files[0]);
+  }
+  else{
+    formData.append("imagem", '')
   }
 
   try {
@@ -290,7 +296,7 @@ async function adicionarProduto() {
       mostrarNotificacao('Sucesso', 'Produto adicionado com sucesso!', 'success');
       document.getElementById("form-adicionar-item").reset();
       bootstrap.Modal.getInstance(document.getElementById("modalAdicionarItem")).hide();
-      carregarProdutos();
+      location.reload();
       return true;
     } else {
       mostrarNotificacao('Erro', `Erro ao adicionar produto: ${resultado.erro || "Erro desconhecido."}`, 'error');
