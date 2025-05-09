@@ -4,6 +4,10 @@ const filterDepartamento = document.getElementById("filtro-departamento");
 
 var categoriaValue = "Todos";
 
+function reloadPage() {
+  location.reload()
+}
+
 function getQueryParam(paramName) {
   const queryString = window.location.search.substring(1);
   const params = queryString.split('&');
@@ -304,6 +308,42 @@ async function adicionarProduto() {
   } catch (err) {
     mostrarNotificacao('Erro', `Erro na requisição: ${err.message}`, 'error');
   }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    const todayFormatted = `${year}-${month}-${day}`;
+    
+    document.getElementById('produto-fabricacao').max = todayFormatted;
+    document.getElementById('produto-validade').min = todayFormatted;
+    document.getElementById('editar-fabricacao').max = todayFormatted;
+    document.getElementById('editar-validade').min = todayFormatted;
+});
+
+function validarFormularioAdicao() {
+    const fabricacao = document.getElementById('produto-fabricacao').value;
+    const validade = document.getElementById('produto-validade').value;
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (fabricacao && fabricacao > today) {
+        alert("A data de fabricação não pode ser depois de hoje!");
+        return false;
+    }
+    
+    if (validade && validade < today) {
+        alert("A data de validade não pode ser antes de hoje!");
+        return false;
+    }
+    
+    if (fabricacao && validade && fabricacao > validade) {
+        alert("A data de fabricação não pode ser depois da data de validade!");
+        return false;
+    }
+    
+    return true;
 }
 
 async function confirmarEdicao() {

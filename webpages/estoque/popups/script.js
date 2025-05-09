@@ -169,44 +169,44 @@ const produtoExemplo = {
     imagem: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/800px-Placeholder_view_vector.svg.png"
 };
   
-function abrirModalEditarProduto(productId) {
-  preencherCombosEdicao();
+  function abrirModalEditarProduto(productId) {
+    preencherCombosEdicao();
 
-  if (!productId) {
-    productId = document.getElementById("codigo-editar").value;
+    if (!productId) {
+      productId = document.getElementById("codigo-editar").value;
+    }
+
+    const produto = currentData.find(p => String(p.productId) === String(productId));
+    console.log("Produto encontrado para edição:", produto);
+
+    if (!produto) {
+      showAlert("Produto não encontrado.", "Erro", "error");
+      return;
+    }
+
+    document.getElementById('codigo-editar').value = produto.productId || '';
+    document.getElementById('editar-nome').value = produto.name || '';
+    document.getElementById('editar-barcode').value = produto.barcode || '';
+    document.getElementById('editar-preco').value = produto.price || '';
+    document.getElementById('editar-categoria').value = produto.category || '';
+    document.getElementById('editar-estoque').value = produto.stock || '';
+    document.getElementById('editar-lote').value = produto.lot || '';
+    document.getElementById('editar-departamento').value = produto.departament || '';
+    document.getElementById('editar-marketId').value = produto.marketId || '';
+    document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
+    document.getElementById('editar-validade').value = produto.expirationDate || '';
+
+    const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
+    modal.show();
+
+    const btnConfirmar = document.getElementById('btn-confirmar-edicao');
+    const novoBtn = btnConfirmar.cloneNode(true);
+    btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
+
+    novoBtn.addEventListener('click', async () => {
+      modal.hide();
+    });
   }
-
-  const produto = currentData.find(p => String(p.productId) === String(productId));
-  console.log("Produto encontrado para edição:", produto);
-
-  if (!produto) {
-    showAlert("Produto não encontrado.", "Erro", "error");
-    return;
-  }
-
-  document.getElementById('codigo-editar').value = produto.productId || '';
-  document.getElementById('editar-nome').value = produto.name || '';
-  document.getElementById('editar-barcode').value = produto.barcode || '';
-  document.getElementById('editar-preco').value = produto.price || '';
-  document.getElementById('editar-categoria').value = produto.category || '';
-  document.getElementById('editar-estoque').value = produto.stock || '';
-  document.getElementById('editar-lote').value = produto.lot || '';
-  document.getElementById('editar-departamento').value = produto.departament || '';
-  document.getElementById('editar-marketId').value = produto.marketId || '';
-  document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
-  document.getElementById('editar-validade').value = produto.expirationDate || '';
-
-  const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
-  modal.show();
-
-  const btnConfirmar = document.getElementById('btn-confirmar-edicao');
-  const novoBtn = btnConfirmar.cloneNode(true);
-  btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
-
-  novoBtn.addEventListener('click', async () => {
-    modal.hide();
-  });
-}
 
 function abrirModalDepCat() {
     // Reset toggle
@@ -261,12 +261,14 @@ function adicionarDepartamentoCategoria() {
   .then(res => res.json())
   .then(data => {
     showAlert(data.mensagem || "Adicionado com sucesso!", "Sucesso", "success");
+    location.reload()
     document.getElementById("input-novo").value = "";
     atualizarSelectSetores();
   })
   .catch(err => {
     console.error(err);
     showAlert(data.mensagem || "Adicionado com sucesso!", "Sucesso", "success");
+    location.reload()
   });
 }
 
@@ -290,6 +292,7 @@ function excluirDepartamentoCategoria() {
   .then(data => {
     showAlert(data.mensagem || "Excluído com sucesso!", "Sucesso", "success");
     atualizarSelectSetores();
+    location.reload()
   })
   .catch(err => {
     console.error(err);
