@@ -247,8 +247,10 @@ app.post('/finalizarCompra', async (req, res) => {
             const product = await select('products', 'WHERE productId = ?', [item.productId]);
             if (product.length > 0) {
                 const currentStock = product[0].stock;
-                const newStock = currentStock - item.quantity;
-                await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+                if (currentStock > 0){
+                    const newStock = currentStock - item.quantity;
+                    await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+                }
             } else {
                 console.warn(`Product not found: ${item.productId}`);
             }
@@ -634,7 +636,6 @@ app.post("/verific", async (req, res) => { //Verficação se existe o SuperMerca
     }
     try{
     const results = await select(tableSelect, condicao);
-
     res.status(200).json({mensagem: results});
     }
     catch(e){

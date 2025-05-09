@@ -1,6 +1,7 @@
 const container = document.getElementById("supermercado-container")
 let currentData = []
 const urlLocal = "http://localhost:4000"
+var dataUser;
 
 function getQueryParam(paramName) {
   const queryString = window.location.search.substring(1);
@@ -23,6 +24,11 @@ async function verificUser(){
   .then( data => {
     if (Object.keys(data.mensagem).length === 0){
       window.location.href = '/Error404'
+    }
+    else {
+        document.getElementById('userName').textContent = data.mensagem[0].name;
+        document.getElementById('userEmail').textContent = data.mensagem[0  ].email;
+        document.getElementById('userRole').textContent = "Gerente";
     }
   }
   )
@@ -91,16 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
   toastElList.map(function(toastEl) {
     return new bootstrap.Toast(toastEl);
   });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-  const userName = localStorage.getItem('userName');
-  const userEmail = localStorage.getItem('userEmail');
-  const userRole = localStorage.getItem('userRole');
-
-  if (userName) document.getElementById('userName').textContent = userName;
-  if (userEmail) document.getElementById('userEmail').textContent = userEmail;
-  if (userRole) document.getElementById('userRole').textContent = userRole;
 });
 
 document.addEventListener('DOMContentLoaded', function () {
