@@ -130,6 +130,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.nome,
             produto.preco,
             produto.categoria,
+            produto.departamento,
             produto.estoque,
             produto.lote,
             produto.validade,
@@ -139,7 +140,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         ]);
 
         insert("products", [
-            "marketId", "name", "price", "category",
+            "marketId", "name", "price", "category","departament",
             "stock", "lot", "expirationDate", "manufactureDate",
             "barcode", "image"
         ], [
@@ -147,6 +148,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.nome,
             produto.preco,
             produto.categoria,
+            produto.departamento,
             produto.estoque,
             produto.lote,
             produto.validade,
