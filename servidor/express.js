@@ -626,7 +626,7 @@ app.post('/updateSupermercado', async (req, res) => {
         const columns = ["name", "local", "icon"]
 
         const values = [nome, local, icon]
-        const condition = `marketId = ${id}`
+        const condition = `marketId = "${id}"`
 
         update("supermarkets", columns, values, condition)
 
@@ -672,6 +672,8 @@ app.post("/verific", async (req, res) => { //Verficação se existe o SuperMerca
         console.log(e)
     }
 })
+
+
 
 app.get("/Error404", (req, res) => {
     const pathError =  `${webpages_dir}/erro404/index.html`
