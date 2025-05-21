@@ -5,9 +5,8 @@ let totalQuantity = 0;
 let currentInvoice = null;
 let modalInstance = null;
 const codigoInput = document.getElementById("codigoProdutoInput");
-let currentMarketId = 1; // Default market ID - should be set based on logged-in market
+let currentMarketId = 1;
 
-// DOM elements
 const labelPrice = document.getElementById("preco-total");
 const labelQuant = document.getElementById("total-produtos");
 const checkoutModalBody = document.getElementById("checkoutModalBody");
@@ -15,11 +14,46 @@ const confirmCheckoutBtn = document.getElementById("confirmCheckoutBtn");
 
 function toggleSearch() {
     const container = document.querySelector('.search-container');
+    const input = document.getElementById('pesquisaInput');
+    
+    if (container.classList.contains('active')) {
+        input.value = '';
+        filtrarProdutos('');
+    }
+    
     container.classList.toggle('active');
-    const input = container.querySelector('.search-input');
+    
     if (container.classList.contains('active')) {
         input.focus();
     }
+}
+
+document.getElementById('pesquisaInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const valorBusca = this.value.trim();
+        if (valorBusca !== '') {
+            searchProducts(valorBusca);
+        }
+    }
+});
+
+function filtrarProdutos(termoBusca) {
+    const container = document.getElementById("produtos-container");
+    const cards = container.querySelectorAll('.card-produto');
+    const termo = termoBusca.trim().toLowerCase();
+    
+    cards.forEach(card => {
+        const productName = card.querySelector('.card-title').textContent.toLowerCase();
+        const barcode = card.id.replace('card(', '').replace(')', '');
+        
+        if (termo === '' || 
+            productName.includes(termo) || 
+            barcode.includes(termo)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
 }
 
 function getQueryParam(paramName) {
@@ -196,7 +230,6 @@ function setupEventListeners() {
     // Re-focus after modal closes
     document.getElementById('modalConfirmarCompra').addEventListener('hidden.bs.modal', focusCodigoInput);
     document.getElementById('modalCancelarCompra').addEventListener('hidden.bs.modal', focusCodigoInput);
-  //  document.querySelector('.input-group input[placeholder="Pesquisar produto"]').addEventListener("input", handleSearch);
     
     initTooltips();
 }
