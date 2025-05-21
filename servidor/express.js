@@ -502,7 +502,10 @@ app.post('/login', async (req, res) => {
 // Rota para cadastrar supermercado + gerar links
 app.post("/adicionarSupermercado", async (req, res) => {
     const { nome, local, ownerId, icon } = req.body;
-
+    var search = await select("supermarkets", `Where name = ?`, [nome])
+    console.log(search)
+    if (search.length > 0) return res.status(400).json({erro : "Supermercado já existente"});
+   
     try {
         // 1. Insere o supermercado (usando sua função original)
         insert("supermarkets", 
@@ -556,14 +559,14 @@ app.post("/adicionarSupermercado", async (req, res) => {
 });
 
 app.post('/deletarSupermercado', async (req, res) => {
-    const { name } = req.body;
-    console.log(name)
-    if (!name) {
+    const { id } = req.body;
+    console.log(id)
+    if (!id) {
         return res.status(400).json({ erro: "Nome do mercado não fornecido." });
     }
 
     try {
-        delet("supermarkets", `name = '${name}'`);
+        delet("supermarkets", `marketId = '${id}'`);
         res.status(200).json({ mensagem: "Supermercado deletado com sucesso!" });
     } catch (err) {
         console.error(err);
@@ -630,10 +633,6 @@ app.post('/getMarketId', async (req, res) => {
     query(`SELECT marketd FROM superMarkets WHERE marketid == '${code}'`)
 })
 
-app.post("verificUser", async (req, res) => {
-    const {busca, column} = req.body
-
-})
 
 app.post("/verific", async (req, res) => { //Verficação se existe o SuperMercado
     const {busca, column, tableSelect} = req.body

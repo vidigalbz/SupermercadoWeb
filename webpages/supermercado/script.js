@@ -305,7 +305,10 @@ document.getElementById("addMarket").addEventListener("click", function(e){
   .then(data => {
     if (data.success){
       carregarSupermercados();
-    } else {
+    } else if (data.erro){
+      showToast(data.erro, "error")
+    } 
+    else {
       showToast("Erro ao adicionar supermercado", "error");
     }
   })
@@ -314,7 +317,8 @@ document.getElementById("addMarket").addEventListener("click", function(e){
     showToast("Erro ao conectar com o servidor!", "error");
   });
   }
-  else if (total === 5) {
+  else if (total >= 4) {
+    showToast("Alcançou o Limite de supermercado", "error")
     box.classList.add("maximo");
   }
   if (total >= 3) {
@@ -331,15 +335,15 @@ document.getElementById("addMarket").addEventListener("click", function(e){
         const res = await fetch("/deletarSupermercado", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: nome})
+          body: JSON.stringify({ id: idMarket})
         })
         
         const result = await res.json();
         console.log(result)
         
         if (res.ok) {
-          showToast("Erro ao conectar com servidor!", "error");
-        carregarSupermercados();
+          showToast(result, "success");
+          carregarSupermercados();
         }
         else{
           showToast(`Erro ao excluir produto: ${result.erro || "Erro desconhecido"}`, "error");
