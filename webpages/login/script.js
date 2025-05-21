@@ -51,7 +51,11 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     if (data.status === "success") {
       showToast("Erro ao cadastrar", "danger");
       container.classList.remove("right-panel-active"); // Volta para login
-    } else {
+    } else if (data.erro == "ja existe conta com este email"){
+      showToast("Este email ja esta cadastrado", "danger");
+      container.classList.remove("right-panel-active");
+    }
+      else {
       // Exibir a mensagem de erro recebida do servidor
       showToast(data.message || "Cadastro realizado com sucesso!", "success");
       container.classList.remove("right-panel-active")

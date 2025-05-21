@@ -441,6 +441,12 @@ app.post("/cadastro", async (req, res) => {
         return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
     }
 
+    const existAcount = await select("users", "WHERE email = ?", email)
+    
+    if (existAcount.length != 0 ) {
+        return res.status(300).json({erro: "ja existe conta com este email"})
+    }
+
     try {
         insert("users", ["name", "email", "password"], [name, email, password]);
         res.status(200).json({ mensagem: "Usuario cadastrado com sucesso"});
@@ -655,4 +661,3 @@ loadPages();
 app.listen(port, '0.0.0.0', () => {
     console.log(`Servidor iniciado na porta http://localhost:${port}`);
 });
-
