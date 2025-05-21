@@ -626,7 +626,7 @@ app.post('/updateSupermercado', async (req, res) => {
         const columns = ["name", "local", "icon"]
 
         const values = [nome, local, icon]
-        const condition = `marketId = ${id}`
+        const condition = `marketId = "${id}"`
 
         update("supermarkets", columns, values, condition)
 

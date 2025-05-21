@@ -1,6 +1,6 @@
 const container = document.getElementById("supermercado-container")
 let currentData = []
-const urlLocal = "http://localhost:4000"
+const urlLocal = "http://172.16.30.79:4000"
 var dataUser;
 
 function getQueryParam(paramName) {
@@ -342,7 +342,7 @@ document.getElementById("addMarket").addEventListener("click", function(e){
         console.log(result)
         
         if (res.ok) {
-          showToast(result, "success");
+          showToast(result.mensagem, "success");
           carregarSupermercados();
         }
         else{
