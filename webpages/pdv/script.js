@@ -190,13 +190,13 @@ function focusCodigoInput() {
 // Setup event listeners
 function setupEventListeners() {
     codigoInput.addEventListener("keypress", handleEnterKey);
-    document.querySelector('.input-group input[placeholder="Pesquisar produto"]').addEventListener("input", handleSearch);
     document.getElementById('modalConfirmarCompra').addEventListener('show.bs.modal', prepareCheckoutModal);
     confirmCheckoutBtn.addEventListener("click", finalizarCompra);
     
     // Re-focus after modal closes
     document.getElementById('modalConfirmarCompra').addEventListener('hidden.bs.modal', focusCodigoInput);
     document.getElementById('modalCancelarCompra').addEventListener('hidden.bs.modal', focusCodigoInput);
+  //  document.querySelector('.input-group input[placeholder="Pesquisar produto"]').addEventListener("input", handleSearch);
     
     initTooltips();
 }
