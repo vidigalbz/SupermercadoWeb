@@ -20,7 +20,8 @@ function getQueryParam(paramName) {
   }
   return null;
 }
-async function verificSuper(){
+
+function verificSuper(){
     fetch("/verific", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -29,9 +30,13 @@ async function verificSuper(){
     .then( data => {
       if (Object.keys(data.mensagem).length === 0){
         window.location.href = '/Error404'
+      } else {
+        // Atualiza o nome do supermercado
+        const supermarketName = data.mensagem[0].name;
+        document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
       }
-    }
-    )
+    })
+    .catch(err => console.error('Erro ao verificar supermercado:', err));
 }
 
 const id = getQueryParam('id');

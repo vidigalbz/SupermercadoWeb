@@ -51,6 +51,10 @@ body {
   object-fit: contain;
 }
 
+#supermarket-name {
+  color: #009cb0;
+}
+
 .card-produto .card-body {
   padding: 15px;
   display: flex;

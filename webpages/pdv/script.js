@@ -69,18 +69,22 @@ function getQueryParam(paramName) {
     return null;
   }
   
-  async function verificSuper(){
-    fetch("/verific", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
-    }).then( res => res.json())
-    .then( data => {
-      if (Object.keys(data.mensagem).length === 0){
-        window.location.href = '/Error404'
-      }
+async function verificSuper(){
+  fetch("/verific", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
+  }).then( res => res.json())
+  .then( data => {
+    if (Object.keys(data.mensagem).length === 0){
+      window.location.href = '/Error404'
+    } else {
+      // Update supermarket name
+      const supermarketName = data.mensagem[0].name;
+      document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
     }
-    )
+  })
+  .catch(err => console.error('Error verifying supermarket:', err));
 }
   const id = getQueryParam('id');
   verificSuper()
