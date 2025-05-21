@@ -1,7 +1,21 @@
 const container = document.getElementById("supermercado-container")
 let currentData = []
-const urlLocal = "http://172.16.30.79:4000"
+const urlNow = window.location.href;
+const urlLocal = getUrl(); // ← será preenchido corretamente
 var dataUser;
+
+function getUrl() {
+  try{
+    const protocolo = window.location.protocol;
+    const host = window.location.host;           
+    const baseUrl = protocolo + '//' + host;      
+
+    return baseUrl
+  }
+  catch(e){
+    console.log(e)
+  }
+}
 
 function getQueryParam(paramName) {
   const queryString = window.location.search.substring(1);

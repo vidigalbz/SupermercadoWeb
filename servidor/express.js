@@ -673,6 +673,8 @@ app.post("/verific", async (req, res) => { //Verficação se existe o SuperMerca
     }
 })
 
+
+
 app.get("/Error404", (req, res) => {
     const pathError =  `${webpages_dir}/erro404/index.html`
     res.sendFile(pathError)
