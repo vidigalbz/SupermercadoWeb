@@ -4,17 +4,9 @@ const db = new sqlite3.Database('./database.sqlite')
 
 db.serialize(() => {
     db.exec(`
-CREATE TABLE IF NOT EXISTS accessKeys (
-    key TEXT PRIMARY KEY,
-    expiresIn TEXT,
-    marketId TEXT,
-    type TEXT,
-    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
-);
-
 CREATE TABLE IF NOT EXISTS supermarkets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    marketId TEXT UNIQUE NOT NULL,
+    marketId TEXT UNIQUE,
     createdAt TEXT,
     name TEXT NOT NULL,
     local TEXT NOT NULL,

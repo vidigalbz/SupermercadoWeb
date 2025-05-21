@@ -4,7 +4,7 @@ const fs = require("fs");
 const multer = require("multer");
 const cookieParser = require('cookie-parser');
 
-const { select, insert, update, delet, query, insertLink} = require("./database.js");
+const { select, insert, update, delet, query} = require("./database.js");
 
 const app = express();
 const port = 4000;
@@ -442,7 +442,7 @@ app.post("/cadastro", async (req, res) => {
     }
 
     const existAcount = await select("users", "WHERE email = ?", email)
-    
+
     if (existAcount.length != 0 ) {
         return res.status(300).json({erro: "ja existe conta com este email"})
     }
@@ -499,6 +499,36 @@ app.post('/login', async (req, res) => {
     }
 });
 
+const generateMarketId = async () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let marketId;
+
+    const generateRandomId = () => {
+        return Array.from({ length: 6 }, () =>
+            chars[Math.floor(Math.random() * chars.length)]
+        ).join("");
+    };
+
+    let isUnique = false;
+    while (!isUnique) {
+        marketId = generateRandomId();
+
+        // Verifica se já existe no banco de dados
+        const existing = await new Promise((resolve, reject) => {
+            db.get("SELECT marketId FROM supermarkets WHERE marketId = ?", [marketId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        if (!existing) {
+            isUnique = true;
+        }
+    }
+
+    return marketId;
+};
+
 // Rota para cadastrar supermercado + gerar links
 app.post("/adicionarSupermercado", async (req, res) => {
     const { nome, local, ownerId, icon } = req.body;
@@ -507,56 +537,49 @@ app.post("/adicionarSupermercado", async (req, res) => {
     if (search.length > 0) return res.status(400).json({erro : "Supermercado já existente"});
    
     try {
-        // 1. Insere o supermercado (usando sua função original)
-        insert("supermarkets", 
-            ["name", "local", "ownerId", "icon", "createdAt"],
-            [nome, local, ownerId, icon, new Date().toISOString()]
-        );
+        // 1. Gera um marketId único
+        const marketId = await generateMarketId();
 
-        // 2. Obtém o ID do último registro inserido
-        const market = await new Promise((resolve, reject) => {
-            db.get(
-                "SELECT marketId FROM supermarkets ORDER BY marketId DESC LIMIT 1",
-                (err, row) => {
+        // 2. Insere o supermercado
+        await new Promise((resolve, reject) => {
+            db.run(
+                `INSERT INTO supermarkets (marketId, name, local, ownerId, icon, createdAt) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [marketId, nome, local, ownerId, icon, new Date().toISOString()],
+                function (err) {
                     if (err) reject(err);
-                    else resolve(row);
+                    else resolve();
                 }
             );
         });
 
-        if (!market) throw new Error("Falha ao obter ID do supermercado");
-        const marketId = market.marketId;
-
-        // 3. Gera e armazena os links
+        // 3. Gera os links
         const baseUrl = `http://localhost:${port}`;
         const pdvLink = `${baseUrl}/pdv/${marketId}`;
         const estoqueLink = `${baseUrl}/estoque/${marketId}`;
 
-        await insertLink(pdvLink, marketId, "pdv");
-        await insertLink(estoqueLink, marketId, "estoque");
-
-        // 4. Retorna a resposta
+        // 4. Retorna resposta
         res.status(201).json({
             success: true,
             data: {
                 marketId,
                 pdvLink,
                 estoqueLink,
-                nome, 
-                local, 
+                nome,
+                local,
                 icon
             }
         });
-        
 
     } catch (err) {
         console.error("Erro:", err);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            error: err.message 
+            error: err.message
         });
     }
 });
+
 
 app.post('/deletarSupermercado', async (req, res) => {
     const { id } = req.body;
