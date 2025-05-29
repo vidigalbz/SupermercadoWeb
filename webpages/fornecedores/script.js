@@ -8,9 +8,9 @@ async function adicionarFornecedor() {
     const contato = document.getElementById('contato').value;
     const tipo_de_produto = document.getElementById('tipo_de_produto').value;
 
-    const res = await fetch('/addFornecedor', {
+    await fetch('/addFornecedor', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             cnpj: cnpj,
             razao_social: razao_social,
@@ -19,5 +19,7 @@ async function adicionarFornecedor() {
             contato: contato,
             tipo_de_produto: tipo_de_produto
         })
+    }).then(res => res.json()).then(data => {
+        
     })
 }
