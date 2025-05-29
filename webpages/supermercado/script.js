@@ -41,7 +41,6 @@ async function verificUser(){
     }
     else {
         document.getElementById('userName').textContent = data.mensagem[0].name;
-        document.getElementById('userEmail').textContent = data.mensagem[0  ].email;
         document.getElementById('userRole').textContent = "Gerente";
     }
   }

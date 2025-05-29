@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperMercado Didático - Login / Cadastro</title>   
+  <title>SuperMercado Didático - Login / Cadastro</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/login/style.css">
+  <script src="https://smtpjs.com/v3/smtp.js"></script>
 </head>
 <body>
   <div class="container-auth" id="container">
+    
     <!-- Tela de Cadastro -->
     <div class="form-container sign-up-container">
       <form class="w-100 px-4">
@@ -17,26 +19,37 @@
         <hr class="mb-3">
         <h1 class="mb-4">Criar Conta</h1>
         <hr class="mb-3">
+        
         <input type="text" class="form-control mb-3" id="nomeCadastro" placeholder="Nome" />
-        <input type="email" class="form-control mb-3" id="emailCadastro" placeholder="Email" />
+
         <input type="password" class="form-control mb-3" id="senhaCadastro" placeholder="Senha" />
         <input type="password" class="form-control mb-3" id="confirmedsenhaCadastro" placeholder="Confirmar Senha" />
+
+        <!-- Toggle switch -->
+        <div class="d-flex flex-column align-items-center my-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="roleSwitch">
+            <label class="form-check-label ms-2" for="roleSwitch" id="roleLabel">Funcionário</label>
+            <input type="hidden" name="tipoUsuario" id="tipoUsuario" value="funcionario">
+          </div>
+        </div>
+
         <button class="btn btn-custom mt-3 w-100" id="registerButton">Cadastrar</button>
       </form>
     </div>
 
     <!-- Tela de Login -->
     <div class="form-container sign-in-container">
-        <form class="w-100 px-4">
-          <h2>Supermercado Didático Digital</h2>
-          <hr class="mb-3">
-          <h1 class="mb-4">Login</h1>
-          <hr class="mb-3">
-          <input type="email" class="form-control mb-3" id="emailLogin" placeholder="Email" />
-          <input type="password" class="form-control mb-3" id="senhaLogin" placeholder="Senha" />
-          <button class="btn btn-login mt-3 w-100" id="loginButton">Entrar</button>
-        </form>
-      </div>
+      <form class="w-100 px-4">
+        <h2>Supermercado Didático Digital</h2>
+        <hr class="mb-3">
+        <h1 class="mb-4">Login</h1>
+        <hr class="mb-3">
+        <input type="text" class="form-control mb-3" id="nameLogin" placeholder="Usuário" />
+        <input type="password" class="form-control mb-3" id="senhaLogin" placeholder="Senha" />
+        <button class="btn btn-login mt-3 w-100" id="loginButton">Entrar</button>
+      </form>
+    </div>
 
     <!-- Painel com o botão de troca -->
     <div class="overlay-container">
@@ -66,7 +79,6 @@
       </div>
     </div>
   </div>
-
 
   <!-- Bootstrap JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
