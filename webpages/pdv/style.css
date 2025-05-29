@@ -51,6 +51,10 @@ body {
   object-fit: contain;
 }
 
+#supermarket-name {
+  color: #009cb0;
+}
+
 .card-produto .card-body {
   padding: 15px;
   display: flex;
@@ -176,4 +180,24 @@ body {
     border-bottom: 1px solid #dee2e6;
     height: 150px;
   }
+}
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 0;
+  opacity: 0;
+  transition: width 0.3s ease, opacity 0.3s ease;
+  margin-right: 8px;
+  pointer-events: none;
+}
+
+.search-container.active .search-input {
+  width: 200px;
+  opacity: 1;
+  pointer-events: auto;
 }

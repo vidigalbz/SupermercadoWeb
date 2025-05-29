@@ -37,16 +37,7 @@
     <div class="card shadow-sm mb-4 no-hover">
       <div class="card-body">
         <div class="row gy-3">
-          <!-- Pesquisa -->
-          <div class="col-12">
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Pesquisar produto">
-              <button class="btn btn-outline-secondary">
-                <i class="bi bi-search"></i>
-              </button>
-            </div>
-          </div>
-          
+          <h3 class="ms-2 fw-bold" id="supermarket-name">Super Mercado: </h3>
           <!-- Código + Botão Adicionar + Avançado -->
           <div class="col-12 col-md-6 d-flex gap-2">
             <div class="input-group input-group-sm flex-grow-1">
@@ -68,17 +59,28 @@
               <span id="preco-total">0.00</span>
             </div>
           </div>
+
           
-          <!-- Botões empilhados -->
-          <div class="col-6 col-md-3">
-            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalCancelarCompra">
+          <!-- Botões -->
+          <div class="col-6 col-md-2">
+            <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#modalCancelarCompra">
               Cancelar
             </button>
           </div>
-          <div class="col-6 col-md-3">
-            <button class="btn btn-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#modalConfirmarCompra">
+          <div class="col-6 col-md-2">
+            <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#modalConfirmarCompra">
               <i class="bi bi-cart-check-fill"></i> Finalizar
             </button>
+          </div>
+          
+          <!-- Pesquisa -->
+          <div class="col-auto ms-auto">
+            <div class="search-container position-relative">
+              <input type="text" class="form-control search-input" id="pesquisaInput" placeholder="Pesquisar produto adicionado pelo código de barras" oninput="filtrarProdutos(this.value)">
+              <button class="btn btn-outline-secondary search-btn" onclick="toggleSearch()">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>

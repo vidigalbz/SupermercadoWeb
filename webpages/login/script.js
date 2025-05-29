@@ -49,10 +49,16 @@ document.getElementById("registerButton").addEventListener("click", function (e)
   .then(res => res.json())
   .then(data => {
     if (data.status === "success") {
-      showToast("Cadastro realizado com sucesso!", "success");
+      showToast("Erro ao cadastrar", "danger");
       container.classList.remove("right-panel-active"); // Volta para login
-    } else {
-      showToast(data.message || "Erro ao cadastrar.", "danger");
+    } else if (data.erro == "ja existe conta com este email"){
+      showToast("Este email ja esta cadastrado", "danger");
+      container.classList.remove("right-panel-active");
+    }
+      else {
+      // Exibir a mensagem de erro recebida do servidor
+      showToast(data.message || "Cadastro realizado com sucesso!", "success");
+      container.classList.remove("right-panel-active")
     }
   })
   .catch(() => showToast("Erro ao conectar com o servidor!", "danger"));
@@ -71,7 +77,7 @@ document.getElementById("loginButton").addEventListener("click", async function 
   }
 
   try {
-    const response = await fetch(`${API}/login`, {
+    const response = await fetch(`/login`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, senha })
@@ -80,8 +86,11 @@ document.getElementById("loginButton").addEventListener("click", async function 
     const result = await response.json();
 
     if (result.status === "success") {
-      alert(`Bem-vindo, ${result.name}!`);
-      window.location.href = '/supermercado';
+      showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
+      
+      setTimeout(() => {
+        window.location.href = `/supermercado/?userID=${result.id}`;
+      }, 1500);
     } else {
       showToast(result.message || "Email ou senha incorretos!", "danger");
     }

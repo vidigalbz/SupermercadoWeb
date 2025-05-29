@@ -4,6 +4,10 @@ const filterDepartamento = document.getElementById("filtro-departamento");
 
 var categoriaValue = "Todos";
 
+function reloadPage() {
+  location.reload()
+}
+
 function getQueryParam(paramName) {
   const queryString = window.location.search.substring(1);
   const params = queryString.split('&');
@@ -17,7 +21,27 @@ function getQueryParam(paramName) {
   return null;
 }
 
+function verificSuper(){
+    fetch("/verific", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
+    }).then( res => res.json())
+    .then( data => {
+      if (Object.keys(data.mensagem).length === 0){
+        window.location.href = '/Error404'
+      } else {
+        // Atualiza o nome do supermercado
+        const supermarketName = data.mensagem[0].name;
+        document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
+      }
+    })
+    .catch(err => console.error('Erro ao verificar supermercado:', err));
+}
+
 const id = getQueryParam('id');
+document.getElementById("produto-marketId").value = id;
+verificSuper()
 console.log(id);
 
 
@@ -32,7 +56,6 @@ filterCategoria.addEventListener("change", () => {
   })
     .then(res => res.json())
     .then(data => {
-      console.log(data.mensagem)
       renderizarProdutos(data.mensagem);
     })
     .catch(err => console.error('Erro:', err));
@@ -64,7 +87,7 @@ async function getImageURL(rawImagePath) {
   
   return rawImagePath 
     ? `http://${ip}:4000/${rawImagePath}` 
-    : 'https://via.placeholder.com/120x120?text=Sem+Imagem';
+    : 'https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';
 }
 
 async function criarCardHTML(produto) {
@@ -72,6 +95,7 @@ async function criarCardHTML(produto) {
   if (produto.image != null){
     rawImagePath = produto.image.replace(/\\/g, '/')
   }
+
   const imagemURL = await  getImageURL(rawImagePath);
 
   const tempDiv = document.createElement("div");
@@ -138,6 +162,37 @@ async function criarCardHTML(produto) {
   });
 }
 
+function mostrarNotificacao(titulo, mensagem, tipo = 'info') {
+  const toastEl = document.getElementById('liveToast');
+  const toastTitle = document.getElementById('toast-title');
+  const toastMessage = document.getElementById('toast-message');
+  
+  // Configura cores baseadas no tipo
+  const tipos = {
+    success: { bg: 'bg-success text-white', icon: '✔️' },
+    error: { bg: 'bg-danger text-white', icon: '❌' },
+    warning: { bg: 'bg-warning text-dark', icon: '⚠️' },
+    info: { bg: 'bg-info text-dark', icon: 'ℹ️' }
+  };
+  
+  const config = tipos[tipo] || tipos.info;
+  
+  // Atualiza o toast
+  toastTitle.textContent = `${config.icon} ${titulo}`;
+  toastMessage.textContent = mensagem;
+  
+  // Remove classes anteriores e adiciona as novas
+  toastEl.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'text-white', 'text-dark');
+  toastEl.classList.add(config.bg.split(' ')[0], config.bg.split(' ')[1]);
+  
+  // Mostra o toast
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+  
+  // Esconde automaticamente após 5 segundos
+  setTimeout(() => toast.hide(), 5000);
+}
+
 function atualizarOuAdicionarCard(produto) {
   const cardExistente = container.querySelector(`.card-produto[data-id="${produto.productId}"]`);
   if (cardExistente) {
@@ -170,6 +225,7 @@ function carregarProdutos() {
     .then(res => res.json())
     .then(data => {
       currentData = data.mensagem;
+      console.log(data.mensagem)
       renderizarProdutos(data.mensagem);
       console.log(`${data.mensagem.image}`)
     })
@@ -179,6 +235,7 @@ function carregarProdutos() {
 document.getElementById("btn-recarrega-estoque").addEventListener("click", () => {
   carregarProdutos();
 });
+
 
 function search() {
   const valorBusca = document.getElementById("pesquisa").value.trim();
@@ -210,7 +267,7 @@ async function adicionarProduto() {
   const imagemInput = document.getElementById("produto-imagem");
 
   if (!nome || !codigo || isNaN(preco) || isNaN(estoque) || !marketId) {
-    alert("Por favor, preencha todos os campos obrigatórios.");
+    mostrarNotificacao('Atenção', 'Por favor, preencha todos os campos obrigatórios.', 'warning');
     return false;
   }
 
@@ -226,9 +283,14 @@ async function adicionarProduto() {
   formData.append("fabricacao", fabricacao);
   formData.append("validade", validade);
 
-  const imagemPath = imagemInput.files[0]
-  if (imagemPath){
-    formData.append("imagem", imagemPath)
+  console.log(categoria)
+
+  // Verifique se a imagem foi selecionada antes de anexar
+  if (imagemInput.files.length > 0) {
+    formData.append("imagem", imagemInput.files[0]);
+  }
+  else{
+    formData.append("imagem", '')
   }
 
   try {
@@ -240,17 +302,53 @@ async function adicionarProduto() {
     const resultado = await res.json();
 
     if (res.ok) {
-      alert("Produto adicionado com sucesso!");
+      mostrarNotificacao('Sucesso', 'Produto adicionado com sucesso!', 'success');
       document.getElementById("form-adicionar-item").reset();
       bootstrap.Modal.getInstance(document.getElementById("modalAdicionarItem")).hide();
-      carregarProdutos();
+      location.reload();
       return true;
     } else {
-      alert("Erro ao adicionar produto: " + (resultado.erro || "Erro desconhecido."));
+      mostrarNotificacao('Erro', `Erro ao adicionar produto: ${resultado.erro || "Erro desconhecido."}`, 'error');
     }
   } catch (err) {
-    alert("Erro na requisição: " + err.message);
+    mostrarNotificacao('Erro', `Erro na requisição: ${err.message}`, 'error');
   }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    const todayFormatted = `${year}-${month}-${day}`;
+    
+    document.getElementById('produto-fabricacao').max = todayFormatted;
+    document.getElementById('produto-validade').min = todayFormatted;
+    document.getElementById('editar-fabricacao').max = todayFormatted;
+    document.getElementById('editar-validade').min = todayFormatted;
+});
+
+function validarFormularioAdicao() {
+    const fabricacao = document.getElementById('produto-fabricacao').value;
+    const validade = document.getElementById('produto-validade').value;
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (fabricacao && fabricacao > today) {
+        alert("A data de fabricação não pode ser depois de hoje!");
+        return false;
+    }
+    
+    if (validade && validade < today) {
+        alert("A data de validade não pode ser antes de hoje!");
+        return false;
+    }
+    
+    if (fabricacao && validade && fabricacao > validade) {
+        alert("A data de fabricação não pode ser depois da data de validade!");
+        return false;
+    }
+    
+    return true;
 }
 
 async function confirmarEdicao() {
@@ -278,21 +376,21 @@ async function confirmarEdicao() {
     const resultado = await response.json();
 
     if (response.ok) {
-      alert("Produto editado com sucesso!");
+      mostrarNotificacao('Sucesso', 'Produto editado com sucesso!', 'success');
       bootstrap.Modal.getInstance(document.getElementById('modalEditarProduto')).hide();
       carregarProdutos();
     } else {
-      alert("Erro ao editar produto: " + (resultado.erro || "Erro desconhecido."));
+      mostrarNotificacao('Erro', `Erro ao editar produto: ${resultado.erro || "Erro desconhecido."}`, 'error');
     }
   } catch (error) {
-    alert("Erro ao tentar editar: " + error.message);
+    mostrarNotificacao('Erro', `Erro ao tentar editar: ${error.message}`, 'error');
   }
 }
 
 async function excluirProduto() {
   const id = parseInt(document.getElementById("codigo-excluir").value);
   if (isNaN(id)) {
-    alert("ID inválido.");
+    mostrarNotificacao('Atenção', 'ID inválido.', 'warning');
     return;
   }
 
@@ -306,14 +404,14 @@ async function excluirProduto() {
     const resultado = await res.json();
 
     if (res.ok) {
-      alert("Produto excluído com sucesso!");
+      mostrarNotificacao('Sucesso', 'Produto excluído com sucesso!', 'success');
       carregarProdutos();
       return true;
     } else {
-      alert("Erro ao excluir produto: " + (resultado.erro || "Erro desconhecido."));
+      mostrarNotificacao('Erro', `Erro ao excluir produto: ${resultado.erro || "Erro desconhecido."}`, 'error');
     }
   } catch (err) {
-    alert("Erro na requisição: " + err.message);
+    mostrarNotificacao('Erro', `Erro na requisição: ${err.message}`, 'error');
   }
 }
 

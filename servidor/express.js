@@ -9,6 +9,8 @@ const { select, insert, update, delet, query} = require("./database.js");
 const app = express();
 const port = 4000;
 
+const { db } = require('./database.js'); // Importa o db do seu arquivo database.js
+
 const webpages_dir = path.join(__dirname, "../webpages");
 var pages = [];
 
@@ -30,6 +32,7 @@ const upload = multer({storage: storage});
 app.use('/servidor/uploads', express.static(path.resolve(__dirname, './uploads')));  
 
 const os = require('os');
+const { table } = require("console");
 
 function getRealWirelessIP() {
   const interfaces = os.networkInterfaces();
@@ -79,13 +82,17 @@ async function loadPages() {
 // Endpoint para adicionar produto (imagem é ignorada)
 app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     try {
-        const imagem = req.file
-        if (!imagem) {
-            return res.status(400).json({error: 'Nenhuma imagem enviada'})
+        let imagempath;
+        if (req.file){
+            let imagem = req.file;
+            imagempath = imagem.path
         }
         else{
-            console.log(imagem.path)
+            const {imagem} = req.body
+            imagempath = imagem
         }
+
+        console.log(imagempath)
         const {
             nome,
             codigo,
@@ -97,8 +104,12 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             marketId,
             fabricacao,
             validade,
-
         } = req.body;
+
+        // Verifique se todos os campos necessários estão presentes
+        if (!nome || !codigo || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade) {
+            return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." });
+        }
 
         const produto = {
             nome,
@@ -111,22 +122,25 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             marketId,
             fabricacao,
             validade,
-            imagem: imagem.path
+            imagem: imagempath
         };
+
         console.log([
             produto.marketId,
             produto.nome,
             produto.preco,
             produto.categoria,
+            produto.departamento,
             produto.estoque,
             produto.lote,
             produto.validade,
             produto.fabricacao,
             produto.codigo,
             produto.imagem
-        ])
+        ]);
+
         insert("products", [
-            "marketId", "name", "price", "category",
+            "marketId", "name", "price", "category","departament",
             "stock", "lot", "expirationDate", "manufactureDate",
             "barcode", "image"
         ], [
@@ -134,6 +148,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.nome,
             produto.preco,
             produto.categoria,
+            produto.departamento,
             produto.estoque,
             produto.lote,
             produto.validade,
@@ -149,6 +164,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         res.status(500).json({ erro: "Erro ao adicionar produto." });
     }
 });
+
 
 // Endpoint para deletar produto pelo código
 app.post('/deletarProduto', async (req, res) => {
@@ -233,8 +249,10 @@ app.post('/finalizarCompra', async (req, res) => {
             const product = await select('products', 'WHERE productId = ?', [item.productId]);
             if (product.length > 0) {
                 const currentStock = product[0].stock;
-                const newStock = currentStock - item.quantity;
-                await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+                if (currentStock > 0){
+                    const newStock = currentStock - item.quantity;
+                    await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+                }
             } else {
                 console.warn(`Product not found: ${item.productId}`);
             }
@@ -423,6 +441,12 @@ app.post("/cadastro", async (req, res) => {
         return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
     }
 
+    const existAcount = await select("users", "WHERE email = ?", email)
+
+    if (existAcount.length != 0 ) {
+        return res.status(300).json({erro: "ja existe conta com este email"})
+    }
+
     try {
         insert("users", ["name", "email", "password"], [name, email, password]);
         res.status(200).json({ mensagem: "Usuario cadastrado com sucesso"});
@@ -451,18 +475,19 @@ app.post('/login', async (req, res) => {
             });
         }   
 
-        const user = users[0];
+        const user = users[0];  
         if (senha !== user.password) {
             return res.status(401).json({ 
                 status: "error", 
                 message: "Senha incorreta!" 
             });
         }
-
         res.status(200).json({ 
             status: "success", 
+            id: user.userId ,
             name: user.name,
-            email: user.email
+            email: user.email,
+            userId: user.userId
         });
 
     } catch (err) {
@@ -474,11 +499,142 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.post("/adicionarSupermercado", async (req, res) => {
-    const {nome, local, onwerId, icon} = req.body
+const generateMarketId = async () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let marketId;
 
-    insert("supermarkets", ["name", "local", "ownerId", "icon"], [nome, local, onwerId, icon])
+    const generateRandomId = () => {
+        return Array.from({ length: 6 }, () =>
+            chars[Math.floor(Math.random() * chars.length)]
+        ).join("");
+    };
+
+    let isUnique = false;
+    while (!isUnique) {
+        marketId = generateRandomId();
+
+        // Verifica se já existe no banco de dados
+        const existing = await new Promise((resolve, reject) => {
+            db.get("SELECT marketId FROM supermarkets WHERE marketId = ?", [marketId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        if (!existing) {
+            isUnique = true;
+        }
+    }
+
+    return marketId;
+};
+
+// Rota para cadastrar supermercado + gerar links
+app.post("/adicionarSupermercado", async (req, res) => {
+    const { nome, local, ownerId, icon } = req.body;
+    var search = await select("supermarkets", `Where name = ?`, [nome])
+    console.log(search)
+    if (search.length > 0) return res.status(400).json({erro : "Supermercado já existente"});
+   
+    try {
+        // 1. Gera um marketId único
+        const marketId = await generateMarketId();
+
+        // 2. Insere o supermercado
+        await new Promise((resolve, reject) => {
+            db.run(
+                `INSERT INTO supermarkets (marketId, name, local, ownerId, icon, createdAt) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [marketId, nome, local, ownerId, icon, new Date().toISOString()],
+                function (err) {
+                    if (err) reject(err);
+                    else resolve();
+                }
+            );
+        });
+
+        // 3. Gera os links
+        const baseUrl = `http://localhost:${port}`;
+        const pdvLink = `${baseUrl}/pdv/${marketId}`;
+        const estoqueLink = `${baseUrl}/estoque/${marketId}`;
+
+        // 4. Retorna resposta
+        res.status(201).json({
+            success: true,
+            data: {
+                marketId,
+                pdvLink,
+                estoqueLink,
+                nome,
+                local,
+                icon
+            }
+        });
+
+    } catch (err) {
+        console.error("Erro:", err);
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+
+app.post('/deletarSupermercado', async (req, res) => {
+    const { id } = req.body;
+    console.log(id)
+    if (!id) {
+        return res.status(400).json({ erro: "Nome do mercado não fornecido." });
+    }
+
+    try {
+        delet("supermarkets", `marketId = '${id}'`);
+        res.status(200).json({ mensagem: "Supermercado deletado com sucesso!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao deletar supermercado." });
+    }
+});
+
+
+app.post('/supermercadoData', async (req, res) => {
+    const {busca} = req.body;
+    let condicao = "";
+    if (busca) {
+        const termo = busca.replace(/'/g, "''")
+        condicao = `WHERE ownerId = ${termo}` 
+    }
+
+    try{
+    const results = await select("supermarkets", condicao);
+    res.status(200).json({mensagem: results});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({erro: "Erro ao consultar supermercados."})
+    }
+});
+
+app.post('/updateSupermercado', async (req, res) => {
+    if (req.body){
+        const {
+            id,
+            nome,
+            local,
+            icon,  
+        } = req.body 
+        const columns = ["name", "local", "icon"]
+
+        const values = [nome, local, icon]
+        const condition = `marketId = "${id}"`
+
+        update("supermarkets", columns, values, condition)
+
+        res.json({ success: true, message: "Supermercado atualizado com Sucesso!" });
+    }
+    
 })
+
 
 //Adicionar Cookie para o Carrinho de Compras
 app.post('/addCarrinho', async (req, res) => {
@@ -500,9 +656,32 @@ app.post('/getMarketId', async (req, res) => {
     query(`SELECT marketd FROM superMarkets WHERE marketid == '${code}'`)
 })
 
+
+app.post("/verific", async (req, res) => { //Verficação se existe o SuperMercado
+    const {busca, column, tableSelect} = req.body
+    let condicao = "";
+    if (busca && column) {
+        const termo = busca.replace(/'/g, "''")
+        condicao = `WHERE ${column.replace(/'/g, "''")} = ${termo}` 
+    }
+    try{
+    const results = await select(tableSelect, condicao);
+    res.status(200).json({mensagem: results});
+    }
+    catch(e){
+        console.log(e)
+    }
+})
+
+
+
+app.get("/Error404", (req, res) => {
+    const pathError =  `${webpages_dir}/erro404/index.html`
+    res.sendFile(pathError)
+})
+
 loadPages();
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Servidor iniciado na porta http://localhost:${port}`);
 });
-

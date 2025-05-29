@@ -4,17 +4,9 @@ const db = new sqlite3.Database('./database.sqlite')
 
 db.serialize(() => {
     db.exec(`
-CREATE TABLE IF NOT EXISTS accessKeys (
-    key TEXT PRIMARY KEY,
-    expiresIn TEXT,
-    marketId TEXT,
-    type TEXT,
-    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
-);
-
 CREATE TABLE IF NOT EXISTS supermarkets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    marketId TEXT UNIQUE NOT NULL,
+    marketId TEXT UNIQUE,
     createdAt TEXT,
     name TEXT NOT NULL,
     local TEXT NOT NULL,
@@ -124,11 +116,25 @@ function query(query){
     })
 }
 
+async function insertLink(key, marketId, type) {
+    return new Promise((resolve, reject) => {
+        db.run(
+            `INSERT INTO accessKeys (key, marketId, type) VALUES (?, ?, ?)`,
+            [key, marketId, type],
+            function(err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            }
+        );
+    });
+}
+
 module.exports = {
     insert,
     select,
     update,
     delet,
     query,
+    insertLink,
     db
 }

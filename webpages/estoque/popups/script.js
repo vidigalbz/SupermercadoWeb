@@ -2,6 +2,54 @@ let categorias;
 let departamentos;
 let tipoAtual = "Departamento"; // ou "Categoria"
 
+function showAlert(message, title = 'Aviso', type = 'info') {
+  // Cria container se não existir
+  let container = document.querySelector('.toast-wrapper');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-wrapper';
+    document.body.appendChild(container);
+  }
+
+  // Cria o toast
+  const toastEl = document.createElement('div');
+  toastEl.className = `toast show toast-${type}`;
+  toastEl.setAttribute('role', 'alert');
+  toastEl.setAttribute('aria-live', 'assertive');
+  toastEl.setAttribute('aria-atomic', 'true');
+
+  toastEl.innerHTML = `
+    <div class="toast-header">
+      <strong class="me-auto">${title}</strong>
+      <small class="text-white">Agora</small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    </div>
+    <div class="toast-body">
+      ${message}
+    </div>
+  `;
+
+  // Adiciona no início (para novos aparecerem em cima)
+  container.insertBefore(toastEl, container.firstChild);
+
+  // Configura auto-fechamento
+  const toast = new bootstrap.Toast(toastEl, {
+    autohide: true,
+    delay: 5000
+  });
+
+  toast.show();
+
+  // Remove após fechar
+  toastEl.addEventListener('hidden.bs.toast', () => {
+    toastEl.remove();
+    // Remove container se não houver mais toasts
+    if (container.children.length === 0) {
+      container.remove();
+    }
+  });
+}
+
 function carregarSetoresGlobais() {
   fetch('/getSetor', {
     method: 'POST',
@@ -78,22 +126,19 @@ function abrirModalExclusaoProduto() {
   const produto = currentData.find(p => String(p.productId) === String(productId));
 
   if (!produto) {
-    alert("Produto não encontrado.");
+    showAlert("Produto não encontrado.", "Erro", "error");
     return;
   }
 
-  // Preenche os dados no modal com formatação
   document.getElementById("codigo-excluir").value = produto.productId || '';
   document.getElementById("excluir-nome").textContent = produto.name || 'Nome não informado';
   document.getElementById("excluir-codigo").textContent = produto.productId || '—';
   document.getElementById("excluir-categoria").textContent = produto.category || '—';
   document.getElementById("excluir-estoque").textContent = formatarNumero(produto.stock);
 
-  // Mostra o modal
   const modal = new bootstrap.Modal(document.getElementById("modalExcluirProduto"));
   modal.show();
 
-  // Previne múltiplos event listeners
   const btnExcluir = document.getElementById("confirmar-exclusao");
   const novoBtn = btnExcluir.cloneNode(true);
   btnExcluir.parentNode.replaceChild(novoBtn, btnExcluir);
@@ -102,6 +147,7 @@ function abrirModalExclusaoProduto() {
       modal.hide();
   });
 }
+
 
 // Função utilitária para formatar números com separador de milhar
 function formatarNumero(valor) {
@@ -123,49 +169,44 @@ const produtoExemplo = {
     imagem: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/800px-Placeholder_view_vector.svg.png"
 };
   
-function abrirModalEditarProduto(productId) {
-  preencherCombosEdicao(); // Carrega os <select> de categorias e departamentos, por exemplo.
-  console.log(currentData)
-  // Caso o parâmetro não seja passado, tenta pegar do input manual
-  if (!productId) {
-    productId = document.getElementById("codigo-editar").value;
+  function abrirModalEditarProduto(productId) {
+    preencherCombosEdicao();
+
+    if (!productId) {
+      productId = document.getElementById("codigo-editar").value;
+    }
+
+    const produto = currentData.find(p => String(p.productId) === String(productId));
+    console.log("Produto encontrado para edição:", produto);
+
+    if (!produto) {
+      showAlert("Produto não encontrado.", "Erro", "error");
+      return;
+    }
+
+    document.getElementById('codigo-editar').value = produto.productId || '';
+    document.getElementById('editar-nome').value = produto.name || '';
+    document.getElementById('editar-barcode').value = produto.barcode || '';
+    document.getElementById('editar-preco').value = produto.price || '';
+    document.getElementById('editar-categoria').value = produto.category || '';
+    document.getElementById('editar-estoque').value = produto.stock || '';
+    document.getElementById('editar-lote').value = produto.lot || '';
+    document.getElementById('editar-departamento').value = produto.departament || '';
+    document.getElementById('editar-marketId').value = produto.marketId || '';
+    document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
+    document.getElementById('editar-validade').value = produto.expirationDate || '';
+
+    const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
+    modal.show();
+
+    const btnConfirmar = document.getElementById('btn-confirmar-edicao');
+    const novoBtn = btnConfirmar.cloneNode(true);
+    btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
+
+    novoBtn.addEventListener('click', async () => {
+      modal.hide();
+    });
   }
-
-  // Garante que o ID seja tratado como string para comparação
-  const produto = currentData.find(p => String(p.productId) === String(productId));
-  console.log("Produto encontrado para edição:", produto);
-  
-  if (!produto) {
-    alert("Produto não encontrado.");
-    return;
-  }
-
-  // Preenche os campos com os dados do produto
-  document.getElementById('codigo-editar').value = produto.productId || '';
-  document.getElementById('editar-nome').value = produto.name || '';
-  document.getElementById('editar-barcode').value = produto.barcode || '';
-  document.getElementById('editar-preco').value = produto.price || '';
-  document.getElementById('editar-categoria').value = produto.category || '';
-  document.getElementById('editar-estoque').value = produto.stock || '';
-  document.getElementById('editar-lote').value = produto.lot || '';
-  document.getElementById('editar-departamento').value = produto.departament || '';
-  document.getElementById('editar-marketId').value = produto.marketId || '';
-  document.getElementById('editar-fabricacao').value = produto.manufactureDate || '';
-  document.getElementById('editar-validade').value = produto.expirationDate || '';
-  // Nota: não é possível preencher um <input type="file"> via JavaScript por segurança
-
-  const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
-  modal.show();
-
-  // Evita múltiplos bindings duplicados
-  const btnConfirmar = document.getElementById('btn-confirmar-edicao');
-  const novoBtn = btnConfirmar.cloneNode(true);
-  btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
-
-  novoBtn.addEventListener('click', async () => {
-    modal.hide();
-  });
-}
 
 function abrirModalDepCat() {
     // Reset toggle
@@ -205,7 +246,10 @@ function preencherComboExcluirSetor() {
 
 function adicionarDepartamentoCategoria() {
   const valor = document.getElementById("input-novo").value.trim();
-  if (!valor) return;
+  if (!valor) {
+    showAlert("Informe um valor antes de adicionar.", "Campo obrigatório", "warning");
+    return;
+  }
 
   const tipo = tipoAtual === "Departamento" ? "dept" : "cat";
 
@@ -216,20 +260,26 @@ function adicionarDepartamentoCategoria() {
   })
   .then(res => res.json())
   .then(data => {
-    alert(data.mensagem || "Adicionado com sucesso!");
+    showAlert(data.mensagem || "Adicionado com sucesso!", "Sucesso", "success");
+    location.reload()
     document.getElementById("input-novo").value = "";
-    atualizarSelectSetores(); // Atualiza o select do modal
+    atualizarSelectSetores();
   })
   .catch(err => {
     console.error(err);
-    alert("Erro ao adicionar setor.");
+    showAlert(data.mensagem || "Adicionado com sucesso!", "Sucesso", "success");
+    location.reload()
   });
 }
+
   
 function excluirDepartamentoCategoria() {
   const select = document.getElementById("select-del");
   const valor = select.value;
-  if (!valor) return;
+  if (!valor) {
+    showAlert("Selecione um item para excluir.", "Aviso", "warning");
+    return;
+  }
 
   const tipo = tipoAtual === "Departamento" ? "dept" : "cat";
 
@@ -240,14 +290,16 @@ function excluirDepartamentoCategoria() {
   })
   .then(res => res.json())
   .then(data => {
-    alert(data.mensagem || "Excluído com sucesso!");
-    atualizarSelectSetores(); // Atualiza o select do modal
+    showAlert(data.mensagem || "Excluído com sucesso!", "Sucesso", "success");
+    atualizarSelectSetores();
+    location.reload()
   })
   .catch(err => {
     console.error(err);
-    alert("Erro ao excluir setor.");
+    showAlert("Erro ao excluir setor.", "Erro", "error");
   });
 }
+
 
 function alternarTipo() {
   const checked = document.getElementById("toggleTipo").checked;

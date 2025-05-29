@@ -3,60 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SuperMercado Didático - Gerenciador</title>
+  <title>Gerenciar Supermercados</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-  <style>
-    .card-super:hover {
-      transform: scale(1.03) translateY(-5px);
-      transition: all 0.3s ease-in-out;
-      z-index: 2;
-    }
-    .card-super {
-      transition: all 0.3s ease-in-out;
-    }
-    .contador-box {
-      height: 38px;
-      min-width: 130px;
-      text-align: center;
-      padding: 6px 12px;
-      border-radius: 6px;
-      background-color: white;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .contador-box.alerta {
-      background-color: #ffc107;
-      color: #000;
-    }
-    .contador-box.maximo {
-      background-color: #dc3545;
-      color: #fff;
-    }
-    .btn-outline-secondary:hover,
-    .btn-outline-info:hover,
-    .btn-warning:hover {
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-      transform: scale(1.05);
-      transition: 0.2s ease;
-    }
-    .offcanvas-body {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .perfil-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .perfil-box i {
-      font-size: 2rem;
-      color: #6c757d;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/supermercado/style.css">
 </head>
 <body>
   <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
@@ -73,7 +24,7 @@
 
   <div class="container my-5 pt-5">
     <div class="d-flex align-items-center justify-content-between bg-primary p-3 rounded shadow-sm mb-4">
-      <h4 class="mb-0 text-white"><i class="bi bi-shop"></i> Gerenciar Supermercados</h4>
+      <h4 class="mb-0 text-white"><i class="bi bi-shop"></i> Gerenciar Supermercado</h4>
       <div class="d-flex align-items-center gap-2">
         <button class="btn btn-light fs-5" data-bs-toggle="modal" data-bs-target="#modalAdicionar">
           <i class="bi bi-plus-square"></i> Adicionar
@@ -84,20 +35,10 @@
       </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4 card-container">
-        <div id="empty-card" class="col">
-          <div class="card bg-light h-100"></div>
-        </div>
-        <div id="empty-card" class="col">
-          <div class="card bg-light h-100"></div>
-        </div>
-        <div id="empty-card" class="col">
-          <div class="card bg-light h-100"></div>
-        </div>
-        <div id="empty-card" class="col">
-          <div class="card bg-light h-100"></div>
-        </div>
-      </div>      
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4 card-container" id="supermercado-container">
+      <!-- Cards de supermercado vão aqui -->
+    </div>
+        
       
   </div>
 
@@ -111,20 +52,20 @@
       <div class="perfil-box mb-3 bg-light rounded p-2">
         <i class="bi bi-person-circle"></i>
         <div class="d-flex flex-column">
-          <p class="mb-0 fw-bold">Z1C4</p>
-          <small class="text-muted">Gerente do sistema</small>
-          <small class="text-muted"><strong>Email:</strong> user@gmail.com</small>
+          <p class="mb-0 fw-bold" id="userName"></p>
+          <small class="text-muted" id="userRole"></small>
+          <small class="text-muted"><strong>Email:</strong> <span id="userEmail"></span></small>
         </div>
       </div>
       <div>
-        <button class="btn btn-danger w-100">Deslogar</button>
+        <a href="http://localhost:4000/login/"><button class="btn btn-danger w-100">Deslogar</button></a>
       </div>
     </div>
   </div>
 
   <!-- Modal: Adicionar Supermercado -->
   <div class="modal fade" id="modalAdicionar" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Adicionar Supermercado</h5>
@@ -136,10 +77,6 @@
             <div class="mb-3">
               <label class="form-label">Nome do supermercado</label>
               <input type="text" class="form-control" id="nomeSupermercado">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Nome do gerente</label>
-              <input type="text" class="form-control", id="nomeGerente">
             </div>
             <div class="mb-3">
               <label class="form-label">Localização</label>
@@ -155,17 +92,7 @@
                 <option>&#x1F6CD;</option>
               </select>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Cor de fundo</label>
-              <div class="d-flex gap-2">
-                <input type="radio" class="btn-check" name="corAdd" id="corAdd1" checked>
-                <label class="btn btn-sm btn-primary" for="corAdd1">Azul</label>
-
-                <input type="radio" class="btn-check" name="corAdd" id="corAdd2">
-                <label class="btn btn-sm btn-danger" for="corAdd2">Vermelho</label>
-              </div>
-            </div>
-            <button class="btn btn-primary w-100" id="addMarket">Salvar</button>
+            <button class="btn btn-primary w-100 close" data-bs-dismiss="modal" id="addMarket">Salvar</button>
           </form>
         </div>
       </div>
@@ -174,7 +101,7 @@
 
   <!-- Modal: Editar Supermercado -->
   <div class="modal fade" id="modalEditar" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Editar Supermercado</h5>
@@ -184,19 +111,15 @@
           <form>
             <div class="mb-3">
               <label class="form-label">Nome do supermercado</label>
-              <input type="text" class="form-control" value="Supermercado A">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Nome do gerente</label>
-              <input type="text" class="form-control" value="João">
+              <input type="text" id="SupermercadoUpdate" class="form-control">
             </div>
             <div class="mb-3">
               <label class="form-label">Localização</label>
-              <input type="text" class="form-control" value="Rua 123">
+              <input type="text" id="LocalUpdate" class="form-control">
             </div>
             <div class="mb-3">
               <label class="form-label">Ícone (Bootstrap ou Emoji)</label>
-              <select class="form-select">
+              <select class="form-select" id="IconUpdate">
                 <option selected>🏪</option>
                 <option>🛒</option>
               </select>
@@ -208,14 +131,30 @@
                 <label class="btn btn-sm btn-primary" for="cor1">Azul</label>
               </div>
             </div>
-            <button class="btn btn-primary w-100 mb-3">Salvar</button>
+            <button class="btn btn-primary w-100 mb-3" id="SalvarUpdate">Salvar</button>
 
             <!-- Exclusão -->
             <hr>
-            <button type="button" class="btn btn-outline-danger w-100" onclick="confirmarExclusao()">Excluir Supermercado</button>
+            <div class="mb-3">
+              <label class="form-label text-danger fw-bold">Digite o nome do supermercado para confirmar exclusão:</label>
+              <input type="text" class="form-control" placeholder="Supermercado A" id="confirmarExclusao">
+            </div>
+            <button type="button" class="btn btn-outline-danger w-100" id="excluirMercado">Excluir Supermercado</button>
           </form>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Toast de Notificação -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1200">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto" id="toastTitle">Notificação</strong>
+        <small>Agora</small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      </div>
+      <div class="toast-body" id="toastMessage"></div>
     </div>
   </div>
 

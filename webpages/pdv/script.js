@@ -5,13 +5,56 @@ let totalQuantity = 0;
 let currentInvoice = null;
 let modalInstance = null;
 const codigoInput = document.getElementById("codigoProdutoInput");
-let currentMarketId = 1; // Default market ID - should be set based on logged-in market
+let currentMarketId = 1;
 
-// DOM elements
 const labelPrice = document.getElementById("preco-total");
 const labelQuant = document.getElementById("total-produtos");
 const checkoutModalBody = document.getElementById("checkoutModalBody");
 const confirmCheckoutBtn = document.getElementById("confirmCheckoutBtn");
+
+function toggleSearch() {
+    const container = document.querySelector('.search-container');
+    const input = document.getElementById('pesquisaInput');
+    
+    if (container.classList.contains('active')) {
+        input.value = '';
+        filtrarProdutos('');
+    }
+    
+    container.classList.toggle('active');
+    
+    if (container.classList.contains('active')) {
+        input.focus();
+    }
+}
+
+document.getElementById('pesquisaInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const valorBusca = this.value.trim();
+        if (valorBusca !== '') {
+            searchProducts(valorBusca);
+        }
+    }
+});
+
+function filtrarProdutos(termoBusca) {
+    const container = document.getElementById("produtos-container");
+    const cards = container.querySelectorAll('.card-produto');
+    const termo = termoBusca.trim().toLowerCase();
+    
+    cards.forEach(card => {
+        const productName = card.querySelector('.card-title').textContent.toLowerCase();
+        const barcode = card.id.replace('card(', '').replace(')', '');
+        
+        if (termo === '' || 
+            productName.includes(termo) || 
+            barcode.includes(termo)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
 
 function getQueryParam(paramName) {
     const queryString = window.location.search.substring(1);
@@ -26,7 +69,25 @@ function getQueryParam(paramName) {
     return null;
   }
   
+async function verificSuper(){
+  fetch("/verific", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
+  }).then( res => res.json())
+  .then( data => {
+    if (Object.keys(data.mensagem).length === 0){
+      window.location.href = '/Error404'
+    } else {
+      // Update supermarket name
+      const supermarketName = data.mensagem[0].name;
+      document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
+    }
+  })
+  .catch(err => console.error('Error verifying supermarket:', err));
+}
   const id = getQueryParam('id');
+  verificSuper()
   console.log(id);
 
 // Initialize the application
@@ -150,7 +211,7 @@ async function recreateProductCard(productData) {
 
 // Helper function to get image URL
 function getImageUrl(imagePath) {
-    if (!imagePath) return 'https://via.placeholder.com/150?text=Sem+Imagem';
+    if (!imagePath) return 'https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';
     // Normalize path and ensure it points to the correct server URL
     const normalizedPath = imagePath.replace(/\\/g, '/').replace(/^\/?/, '');
     return `http://localhost:4000/${normalizedPath}`;
@@ -167,7 +228,6 @@ function focusCodigoInput() {
 // Setup event listeners
 function setupEventListeners() {
     codigoInput.addEventListener("keypress", handleEnterKey);
-    document.querySelector('.input-group input[placeholder="Pesquisar produto"]').addEventListener("input", handleSearch);
     document.getElementById('modalConfirmarCompra').addEventListener('show.bs.modal', prepareCheckoutModal);
     confirmCheckoutBtn.addEventListener("click", finalizarCompra);
     
@@ -201,7 +261,7 @@ function showAlert(message, title = 'Aviso', type = 'info') {
     const modalBody = document.getElementById('globalAlertModalBody');
     
     modal.classList.remove('modal-warning', 'modal-error', 'modal-success');
-    
+
     switch(type.toLowerCase()) {
         case 'warning':
             modal.classList.add('modal-warning');
@@ -213,10 +273,12 @@ function showAlert(message, title = 'Aviso', type = 'info') {
             modal.classList.add('modal-success');
             break;
     }
-    
+
     modalLabel.textContent = title;
     modalBody.textContent = message;
-    modalInstance.show();
+
+    const instance = bootstrap.Modal.getOrCreateInstance(modal);
+    instance.show();
 }
 
 function updateTotals() {
@@ -271,7 +333,7 @@ function AdicionarProdutoNovo() {
             codigoInput.value = "";
             focusCodigoInput();
         } else {
-            showAlert("Produto não encontrado!", "Erro na busca", "error");
+            showAlert("Produto não encontrado.", "Erro", "error");
             focusCodigoInput();
         }
     })
