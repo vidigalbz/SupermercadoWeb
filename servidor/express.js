@@ -435,20 +435,20 @@ app.post("/editarProduto", (req, res) => {
 });
 
 app.post("/cadastro", async (req, res) => {
-    const {name, email, password} = req.body;
+    const {name, password, gestor} = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !password) {
         return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
     }
 
-    const existAcount = await select("users", "WHERE email = ?", email)
+    const existAcount = await select("users", "WHERE name = ?", name)
 
     if (existAcount.length != 0 ) {
-        return res.status(300).json({erro: "ja existe conta com este email"})
+        return res.status(300).json({erro: "Usuário já existente!"})
     }
 
     try {
-        insert("users", ["name", "email", "password"], [name, email, password]);
+        insert("users", ["name", "password", "gestor"], [name, password, gestor]);
         res.status(200).json({ mensagem: "Usuario cadastrado com sucesso"});
     }
     catch (err) {
@@ -458,20 +458,17 @@ app.post("/cadastro", async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    let { email, senha } = req.body;
-
-    email = email?.toLowerCase().trim();
-    senha = senha?.trim();
+    let { name, senha } = req.body;
 
     try {
-        const users = await select("users", "WHERE email = ?", [email]);
+        const users = await select("users", "WHERE name = ?", [name]);
 
         console.log(" Resultado do SELECT:", users);
 
         if (users.length === 0) {
             return res.status(401).json({ 
                 status: "error", 
-                message: "E-mail não cadastrado!" 
+                message: "Usuário não cadastrado!" 
             });
         }   
 
@@ -486,7 +483,6 @@ app.post('/login', async (req, res) => {
             status: "success", 
             id: user.userId ,
             name: user.name,
-            email: user.email,
             userId: user.userId
         });
 

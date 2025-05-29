@@ -25,11 +25,11 @@ document.getElementById("registerButton").addEventListener("click", function (e)
   e.preventDefault();
 
   const nome = document.getElementById("nomeCadastro").value;
-  const email = document.getElementById("emailCadastro").value;
   const senha = document.getElementById("senhaCadastro").value;
   const confirmar = document.getElementById("confirmedsenhaCadastro").value;
+  const funcao = document.getElementById("funcaoToggle");
 
-  if (!nome || !email || !senha || !confirmar) {
+  if (!nome || !senha || !confirmar) {
     showToast("Preencha todos os campos!", "warning");
     return;
   }
@@ -38,40 +38,40 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     showToast("As senhas não coincidem!", "danger");
     return;
   }
-    
+
   fetch(`/cadastro`, {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ name: nome, email: email, password: senha })
+    body: JSON.stringify({ name: nome, password: senha, gestor: funcao.checked})
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === "success") {
-      showToast("Erro ao cadastrar", "danger");
-      container.classList.remove("right-panel-active"); // Volta para login
-    } else if (data.erro == "ja existe conta com este email"){
-      showToast("Este email ja esta cadastrado", "danger");
-      container.classList.remove("right-panel-active");
-    }
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "success") {
+        showToast("Erro ao cadastrar", "danger");
+        container.classList.remove("right-panel-active"); // Volta para login
+      } else if (data.erro == "Usuário já cadastrado!") {
+        showToast("Este usuário já esta cadastrado", "danger");
+        container.classList.remove("right-panel-active");
+      }
       else {
-      // Exibir a mensagem de erro recebida do servidor
-      showToast(data.message || "Cadastro realizado com sucesso!", "success");
-      container.classList.remove("right-panel-active")
-    }
-  })
-  .catch(() => showToast("Erro ao conectar com o servidor!", "danger"));
+        // Exibir a mensagem de erro recebida do servidor
+        showToast(data.message || "Cadastro realizado com sucesso!", "success");
+        container.classList.remove("right-panel-active")
+      }
+    })
+    .catch(() => showToast("Erro ao conectar com o servidor!", "danger"));
 });
 
 // LOGIN
 document.getElementById("loginButton").addEventListener("click", async function (e) {
   e.preventDefault();
 
-  const email = document.getElementById("emailLogin").value;
+  const name = document.getElementById("nameLogin").value;
   const senha = document.getElementById("senhaLogin").value;
 
-  if (!email || !senha) {
+  if (!name || !senha) {
     showToast("Preencha todos os campos!", "warning");
     return;
   }
@@ -80,19 +80,19 @@ document.getElementById("loginButton").addEventListener("click", async function 
     const response = await fetch(`/login`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, senha })
+      body: JSON.stringify({ name, senha })
     });
 
     const result = await response.json();
 
     if (result.status === "success") {
       showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
-      
+
       setTimeout(() => {
         window.location.href = `/supermercado/?userID=${result.id}`;
       }, 1500);
     } else {
-      showToast(result.message || "Email ou senha incorretos!", "danger");
+      showToast(result.message || "Usuário ou senha incorretos!", "danger");
     }
   } catch (error) {
     console.error("Erro ao fazer login:", error);

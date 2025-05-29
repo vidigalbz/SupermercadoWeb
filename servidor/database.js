@@ -18,8 +18,12 @@ CREATE TABLE IF NOT EXISTS supermarkets (
 CREATE TABLE IF NOT EXISTS users (
     userId INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    email TEXT UNIQUE,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    gestor BOOL NOT NULL,
+    pdv BOOL NOT NULL DEFAULT 0,
+    estoque BOOL NOT NULL DEFAULT 0,
+    fornecedor BOOL NOT NULL DEFAULT 0,
+    relatorios BOOL NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS products (
