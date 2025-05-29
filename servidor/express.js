@@ -580,7 +580,6 @@ app.post("/adicionarSupermercado", async (req, res) => {
     }
 });
 
-
 app.post('/deletarSupermercado', async (req, res) => {
     const { id } = req.body;
     console.log(id)
@@ -596,7 +595,6 @@ app.post('/deletarSupermercado', async (req, res) => {
         res.status(500).json({ erro: "Erro ao deletar supermercado." });
     }
 });
-
 
 app.post('/supermercadoData', async (req, res) => {
     const {busca} = req.body;
@@ -635,7 +633,6 @@ app.post('/updateSupermercado', async (req, res) => {
     
 })
 
-
 //Adicionar Cookie para o Carrinho de Compras
 app.post('/addCarrinho', async (req, res) => {
     const carrinho = req.body;
@@ -672,9 +669,37 @@ app.post("/verific", async (req, res) => { //Verficação se existe o SuperMerca
         console.log(e)
     }
 })
-
-
-
+app.post("/addFornecedor", (req, res) => {
+    const {cnpj, 
+        razao_social, 
+        inscricao_estadual, 
+        endereco, 
+        contato,
+        tipo_de_produto
+    } = req.body
+    try {   
+        insert(
+            "fornecedores", 
+            ["cnpj", 
+            "razao_social", 
+            "inscricao_estadual", 
+            "endereco", 
+            "contato",
+            "tipo_de_produto"],
+            [cnpj, 
+            razao_social, 
+            inscricao_estadual, 
+            endereco, 
+            contato,
+            tipo_de_produto]
+        )
+        res.json({
+            status: "success"
+        })
+    } catch (error) {
+        
+    }
+})
 app.get("/Error404", (req, res) => {
     const pathError =  `${webpages_dir}/erro404/index.html`
     res.sendFile(pathError)

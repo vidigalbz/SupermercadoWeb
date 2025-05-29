@@ -64,6 +64,14 @@ CREATE TABLE IF NOT EXISTS setors (
     marketId TEXT NOT NULL,
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );
+
+CREATE TABLE IF NOT EXISTS fornecedores (
+    cnpj INTENGER NOT NULL UNIQUE,
+    razao_social TEXT NOT NULL,
+    inscricao_estadual TEXT NOT NULL,
+    endereco TEXT NOT NULL,
+    contato TEXT NOT NULL,
+    tipo_de_produto TEXT NOT NULL)
 `);
 });
 
