@@ -435,7 +435,7 @@ app.post("/editarProduto", (req, res) => {
 });
 
 app.post("/cadastro", async (req, res) => {
-    const {name, password} = req.body;
+    const {name, password, gestor} = req.body;
 
     if (!name || !password) {
         return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
@@ -448,7 +448,7 @@ app.post("/cadastro", async (req, res) => {
     }
 
     try {
-        insert("users", ["name", "password"], [name, password]);
+        insert("users", ["name", "password", "gestor"], [name, password, gestor]);
         res.status(200).json({ mensagem: "Usuario cadastrado com sucesso"});
     }
     catch (err) {

@@ -27,6 +27,7 @@ document.getElementById("registerButton").addEventListener("click", function (e)
   const nome = document.getElementById("nomeCadastro").value;
   const senha = document.getElementById("senhaCadastro").value;
   const confirmar = document.getElementById("confirmedsenhaCadastro").value;
+  const funcao = document.getElementById("funcaoToggle");
 
   if (!nome || !senha || !confirmar) {
     showToast("Preencha todos os campos!", "warning");
@@ -43,7 +44,7 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ name: nome, password: senha })
+    body: JSON.stringify({ name: nome, password: senha, gestor: funcao.checked})
   })
     .then(res => res.json())
     .then(data => {

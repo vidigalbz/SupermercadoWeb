@@ -42,6 +42,10 @@ async function verificUser(){
     else {
         document.getElementById('userName').textContent = data.mensagem[0].name;
         document.getElementById('userRole').textContent = "Gerente";
+        if (!data.mensagem[0].gerente){
+          console.log("Usuário não possui acesso a esta página!");
+          window.location.href = "http://localhost:4000/error403";
+        }
     }
   }
   )
