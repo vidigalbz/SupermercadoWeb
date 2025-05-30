@@ -1,13 +1,16 @@
-const { cmp } = require("semver");
+
+const container = document.getElementById('fornecedores-container')
+let dataFornecedores = []
 
 async function adicionarFornecedor() {
     const cnpj = document.getElementById('cnpj').value;
-    const razao_social = document.getElementById("razao_social").value;
-    const inscricao_estadual = document.getElementById('inscricao_estadual').value;
+    const razao_social = document.getElementById("razaoSocial").value;
+    const inscricao_estadual = document.getElementById('inscricaoEstadual').value;
     const endereco = document.getElementById("endereco").value;
     const contato = document.getElementById('contato').value;
-    const tipo_de_produto = document.getElementById('tipo_de_produto').value;
+    const tipo_de_produto = document.getElementById('tipoProduto').value;
 
+    console.log("Entrou")
     await fetch('/addFornecedor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,6 +26,92 @@ async function adicionarFornecedor() {
         
     })
 }
+
+function criarCardFornecedor(fornecedor) {
+    const div = document.createElement("div")
+    div.className = 'col'
+    div.innerHTML = `<div id="fornecedor-${fornecedor.cnpj}" class="card mb-3" style="border: 1px solid #dee2e6; max-width: 280px;">
+                    <div class="row g-0">
+                        <!-- Conteúdo -->
+                        <div class="col-md-9">
+                            <div class="card-body d-flex flex-column justify-content-between h-100">
+                                <div>
+                                    <h6 class="card-title mb-1 fw-bold">${fornecedor.razao_social}</h6>
+                                    <p class="card-text mb-1"><strong>CNPJ:</strong> ${fornecedor.cnpj}</p>
+                                    <p class="card-text mb-1"><strong>Tipo:</strong> ${fornecedor.tipo_de_produto}</p>
+                                </div>
+
+                                <!-- Botões -->
+                                <div class="card-actions d-flex gap-2 mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-popover"
+                                        data-bs-toggle="popover" data-bs-html="true" title="Detalhes do Fornecedor"
+                                        data-bs-content="
+                                            <strong>Razão Social:</strong> ${fornecedor.razao_social}<br>
+                                            <strong>CNPJ:</strong> ${fornecedor.cnpj}<br>
+                                            <strong>Inscrição Estadual:</strong> ${fornecedor.inscricao_estadual}<br>
+                                            <strong>Tipo:</strong> ${fornecedor.tipo_de_produto}<br>
+                                            <strong>Endereço:</strong> ${fornecedor.endereco}<br>
+                                            <strong>Contato:</strong> ${fornecedor.contato}">
+                                        <i class="bi bi-info-square"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>`
+    container.appendChild(div)
+
+    const popoverTriggerList = div.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach(el => new bootstrap.Popover(el));
+}
+
+
+async function carregarFornecedor() {
+    
+    fetch("/fornecedorData", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    }).then(res => res.json()).then(data => {
+        if(data.result){
+            dataFornecedores = data.result
+            renderizar(dataFornecedores)
+        }
+        else {
+            console.log("Erro no fetch")
+        }
+    })
+}
+
+function renderizar(fornecedores){
+    container.innerHTML = ''
+    if(fornecedores){
+        for(var fornecedor of fornecedores ){
+            criarCardFornecedor(fornecedor)
+        } 
+    }
+}
+
+function updateFornecedor(){
+    
+    var fornecedor = {
+        cnpj: cnpj = document.getElementById("cnpjEditar").value,
+        razaoSocial: razaoSocial = document.getElementById("razaoSocialEditar").value,
+        inscricaoEstadual: inscricaoEstadual = document.getElementById("inscricaoEstadualEditar").value,
+        tipoProduto: tipoProduto = document.getElementById("tipoProdutoEditar").value,
+        endereco: endereco = document.getElementById("enderecoEditar").value,
+        contato: contato = document.getElementById("contatoEditar").value,
+    }
+
+    fetch("/editar", {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json' },
+        body: JSON.stringify(fornecedor)
+    })
+}
+
+carregarFornecedor()
 
 async function comprardofornecedor() {
     const cnpj = document.getElementById('cnpj').value;

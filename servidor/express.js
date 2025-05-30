@@ -700,6 +700,45 @@ app.post("/addFornecedor", (req, res) => {
         
     }
 })
+
+app.post("/fornecedorData", async (req, res) =>  {
+    try{
+        var data = await select("fornecedores")
+        res.status(200).json({result: data})
+    }
+    catch(e) {
+        res.status(500).json({erro: e})
+    }
+
+})
+
+app.post("/updateFornecedor", async (req, res) => {
+    const {
+        cnpj,
+        razaoSocial,
+        inscricaoEstadual, 
+        tipoProduto,
+        endereco,
+        contato,
+    } = req.body
+
+    try {
+        update("fornecedores",
+            ["cnpj", 
+                "razao_social", 
+                "inscricao_estadual", 
+                "endereco", 
+                "contato",
+                "tipo_de_produto"],
+            [
+                cnpj, razaoSocial, inscricaoEstadual, endereco, contato, tipoProduto,
+            ], `cnpj = ${cnpj}`
+        )
+    }catch (e) {
+        res.status(500).json({ erro: "Não ocorreu como Devia ter ocorrido"})
+    }
+})
+
 app.post("/comprardofornecedor", async (req, res) => {
     const  {
         cnpj,
