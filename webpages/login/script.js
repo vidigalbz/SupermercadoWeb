@@ -4,6 +4,44 @@ const container = document.getElementById('container');
 const signUpButton = document.getElementById('signUp');
 const signInButton = document.getElementById('signIn');
 
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+loginWithCookie();
+
+async function loginWithCookie() {
+  let cookieId = getCookie("user");
+  if (cookieId != "") {
+    const response = await fetch(`/loginWithId`, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: cookieId })
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+      window.location.href = "/supermercado";
+    } else {
+      console.error("Login failed:", data.message);
+    }
+  }
+}
+
+
 // Alterna entre login e cadastro
 signUpButton.addEventListener('click', () => container.classList.add("right-panel-active"));
 signInButton.addEventListener('click', () => container.classList.remove("right-panel-active"));
@@ -39,30 +77,35 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     return;
   }
 
-  fetch(`/cadastro`, {
+  fetch("/cadastro", {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ name: nome, password: senha, gestor: funcao.checked})
+    body: JSON.stringify({ name: nome, password: senha, gestor: funcao.checked })
   })
     .then(res => res.json())
     .then(data => {
       if (data.status === "success") {
-        showToast("Erro ao cadastrar", "danger");
-        container.classList.remove("right-panel-active"); // Volta para login
-      } else if (data.erro == "Usuário já cadastrado!") {
-        showToast("Este usuário já esta cadastrado", "danger");
+        showToast(data.message || "Cadastro realizado com sucesso!", "success");
+        container.classList.remove("right-panel-active");
+
+        if (data.userId != null) {
+          document.cookie = `user=${data.userId}; path=/`;
+          setTimeout(() => {
+            loginWithCookie();
+          }, 1000);
+        }
+      } else {
+        showToast(data.message || "Erro ao cadastrar", "danger");
         container.classList.remove("right-panel-active");
       }
-      else {
-        // Exibir a mensagem de erro recebida do servidor
-        showToast(data.message || "Cadastro realizado com sucesso!", "success");
-        container.classList.remove("right-panel-active")
-      }
     })
-    .catch(() => showToast("Erro ao conectar com o servidor!", "danger"));
+    .catch(() => {
+      showToast("Erro ao conectar com o servidor!", "danger");
+    });
 });
+
 
 // LOGIN
 document.getElementById("loginButton").addEventListener("click", async function (e) {
@@ -87,6 +130,8 @@ document.getElementById("loginButton").addEventListener("click", async function 
 
     if (result.status === "success") {
       showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
+
+      document.cookie = `user=${result.id}; path=/"`;
 
       setTimeout(() => {
         window.location.href = `/supermercado/?userID=${result.id}`;

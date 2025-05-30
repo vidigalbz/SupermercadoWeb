@@ -435,27 +435,76 @@ app.post("/editarProduto", (req, res) => {
 });
 
 app.post("/cadastro", async (req, res) => {
-    const {name, password, gestor} = req.body;
+    const { name, password, gestor } = req.body;
 
     if (!name || !password) {
-        return res.status(400).json({ erro: "Todos os campos são obrigatórios" });
-    }
-
-    const existAcount = await select("users", "WHERE name = ?", name)
-
-    if (existAcount.length != 0 ) {
-        return res.status(300).json({erro: "Usuário já existente!"})
+        return res.status(400).json({ 
+            status: "error",
+            message: "Todos os campos são obrigatórios." 
+        });
     }
 
     try {
-        insert("users", ["name", "password", "gestor"], [name, password, gestor]);
-        res.status(200).json({ mensagem: "Usuario cadastrado com sucesso"});
-    }
-    catch (err) {
-        console.error(err);
-        res.status(500).json({ erro: "Erro ao cadastrar usuario"})
+        const existingAccount = await select("users", "WHERE name = ?", [name]);
+
+        if (existingAccount.length > 0) {
+            return res.status(409).json({ 
+                status: "error", 
+                message: "Usuário já existente!" 
+            });
+        }
+
+        await insert("users", ["name", "password", "gestor"], [name, password, gestor]);
+
+        const users = await select("users", "WHERE name = ?", [name]);
+        const user = users[0];
+
+        res.status(200).json({ 
+            status: "success",
+            message: "Usuário cadastrado com sucesso.",
+            userId: user.userId,
+            name: user.name
+        });
+
+    } catch (err) {
+        console.error("Erro no cadastro:", err);
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro ao cadastrar usuário." 
+        });
     }
 });
+
+
+app.post("/loginWithId", async (req, res) => {
+    let { id } = req.body;
+
+    try {
+        let user = await select("users", "WHERE userId = ?", [id]);
+
+        if (!user || user.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                message: "User not found"
+            });
+        }
+
+        user = user[0];
+
+        res.status(200).json({ 
+            status: "success", 
+            id: user.userId,
+            name: user.name,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            status: "error",
+            message: "Internal server error"
+        });
+    }
+});
+
 
 app.post('/login', async (req, res) => {
     let { name, senha } = req.body;
@@ -653,7 +702,7 @@ app.post('/getMarketId', async (req, res) => {
 })
 
 
-app.post("/verific", async (req, res) => { //Verficação se existe o SuperMercado
+app.post("/verific", async (req, res) => {
     const {busca, column, tableSelect} = req.body
     let condicao = "";
     if (busca && column) {
@@ -669,7 +718,36 @@ app.post("/verific", async (req, res) => { //Verficação se existe o SuperMerca
     }
 })
 
+app.get('/users/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const users = await select("users", "WHERE userId = ?", [userId]);
 
+        if (users.length === 0) {
+            return res.status(404).json({ 
+                status: "error", 
+                message: "User not found" 
+            });
+        }
+
+        const user = users[0];
+        res.status(200).json({
+            status: "success",
+            data: {
+                userId: user.userId,
+                name: user.name,
+                gestor: user.gestor
+            }
+        });
+
+    } catch (err) {
+        console.error("Error fetching user:", err);
+        res.status(500).json({ 
+            status: "error", 
+            message: "Server error" 
+        });
+    }
+});
 
 app.get("/Error404", (req, res) => {
     const pathError =  `${webpages_dir}/erro404/index.html`

@@ -17,18 +17,24 @@ function getUrl() {
   }
 }
 
-function getQueryParam(paramName) {
-  const queryString = window.location.search.substring(1);
-  const params = queryString.split('&');
-
-  for (const param of params) {
-    const [key, value] = param.split('=');
-    if (key === paramName) {
-      return decodeURIComponent(value || '');
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
     }
   }
-  return null;
+  return "";
 }
+
+let userId = getCookie("user");
+
 async function verificUser(){
   fetch("/verific", {
     method: 'POST',
@@ -42,16 +48,32 @@ async function verificUser(){
     else {
         document.getElementById('userName').textContent = data.mensagem[0].name;
         document.getElementById('userRole').textContent = "Gerente";
-        if (!data.mensagem[0].gerente){
-          console.log("Usuário não possui acesso a esta página!");
+    
+        if (userId == "")
           window.location.href = "http://localhost:4000/error403";
+        else {
+          fetch('/users/' + userId)
+            .then(response => response.json())
+            .then(data => {
+              if (data.status === "success") {
+                if (!data.data.gestor){
+                  console.log("Usuário não possui acesso a esta página!");
+                  window.location.href = "http://localhost:4000/error403";
+                }
+              } else {
+                console.error("Error:", data.message);
+              }
+            })
+            .catch(error => {
+              console.error("Fetch failed:", error);
+            });
         }
     }
   }
   )
 }
 
-const id = getQueryParam('userID');
+const id = userId;
 verificUser()
 
 var inputSuper = document.getElementById("SupermercadoUpdate") // Pegando os input da tela de Update
@@ -261,6 +283,11 @@ function alternarVisibilidade(botao) {
       renderizarSupermercados(currentData);
     })
   };
+
+function deslogar() {
+  document.cookie = "user=; path=/";
+  window.location.href = "/login"
+}
 
   document.addEventListener('DOMContentLoaded', function(){ //Carregar os Modal de Acordo com os dados
     const modalEditar = document.getElementById("modalEditar")
