@@ -33,6 +33,9 @@
     <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
+                <button class="btn btn-dark" onclick="history.back()">
+                    voltar
+                </button>
                 <h1>🛒</h1>
                 <span class="navbar-brand mb-0 h1">Super Mercado Didático:</span>
             </div>
@@ -43,18 +46,11 @@
         <!-- Topo com botão voltar e título -->
         <div class="container my-4 p-4 bg-white rounded shadow-sm">
 
-            <!-- Linha do botão de voltar -->
-            <div class="mb-3">
-                <button class="btn btn-outline-secondary" onclick="history.back()">
-                    ← Voltar
-                </button>
-            </div>
-
             <!-- Linha do título e botões -->
             <div class="d-flex flex-wrap justify-content-between align-items-start">
 
                 <!-- Título -->
-                <h2 class="mb-0">Gerenciar Fornecedores</h2>
+                <h4 class="text-dark"><strong>🚚 Gerenciamento de Fornecedores</strong></h4>
 
                 <!-- Botões de ação -->
                 <div class="d-flex flex-wrap gap-3">
@@ -92,7 +88,7 @@
 
         <!-- Div de produto -->
         <div class="container my-4">
-            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-secondary text-white">
                 <h4 class="mb-0"><i class="bi bi-people-fill"></i> Fornecedores</h4>
                 <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque"
                     onclick="reloadPage()">
@@ -118,92 +114,181 @@
                                     <button type="button" class="btn btn-sm btn-outline-primary btn-popover"
                                         data-bs-toggle="popover" data-bs-html="true" title="Detalhes do Fornecedor"
                                         data-bs-content="
-                    <strong>Razão Social:</strong> ${razaoSocial}<br>
-                    <strong>CNPJ:</strong> ${cnpj}<br>
-                    <strong>Inscrição Estadual:</strong> ${inscricaoEstadual}<br>
-                    <strong>Tipo:</strong> ${tipoProduto}<br>
-                    <strong>Endereço:</strong> ${endereco}<br>
-                    <strong>Contato:</strong> ${contato}">
+                                            <strong>Razão Social:</strong> ${razaoSocial}<br>
+                                            <strong>CNPJ:</strong> ${cnpj}<br>
+                                            <strong>Inscrição Estadual:</strong> ${inscricaoEstadual}<br>
+                                            <strong>Tipo:</strong> ${tipoProduto}<br>
+                                            <strong>Endereço:</strong> ${endereco}<br>
+                                            <strong>Contato:</strong> ${contato}">
                                         <i class="bi bi-info-square"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Modal de Adicionar Fornecedor -->
-                <div class="modal fade" id="addFornecedorModal" tabindex="-1" aria-labelledby="addFornecedorLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
+    <!-- Modal de Adicionar Fornecedor -->
+    <div class="modal fade" id="addFornecedorModal" tabindex="-1" aria-labelledby="addFornecedorLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
 
-                            <!-- Cabeçalho -->
-                            <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title" id="addFornecedorLabel">Adicionar Fornecedor</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                    aria-label="Fechar"></button>
+                <!-- Cabeçalho -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="addFornecedorLabel">Adicionar Fornecedor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Fechar"></button>
+                </div>
+
+                <!-- Formulário -->
+                <form id="formAddFornecedor">
+                    <div class="modal-body">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label for="cnpj" class="form-label">CNPJ</label>
+                                <input type="text" class="form-control" id="cnpj" required>
                             </div>
 
-                            <!-- Formulário -->
-                            <form id="formAddFornecedor">
-                                <div class="modal-body">
-                                    <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="razaoSocial" class="form-label">Razão Social</label>
+                                <input type="text" class="form-control" id="razaoSocial" required>
+                            </div>
 
-                                        <div class="col-md-6">
-                                            <label for="cnpj" class="form-label">CNPJ</label>
-                                            <input type="text" class="form-control" id="cnpj" required>
-                                        </div>
+                            <div class="col-md-6">
+                                <label for="inscricaoEstadual" class="form-label">Inscrição Estadual</label>
+                                <input type="text" class="form-control" id="inscricaoEstadual">
+                            </div>
 
-                                        <div class="col-md-6">
-                                            <label for="razaoSocial" class="form-label">Razão Social</label>
-                                            <input type="text" class="form-control" id="razaoSocial" required>
-                                        </div>
+                            <div class="col-md-6">
+                                <label for="tipoProduto" class="form-label">Tipo de Produto/Serviço</label>
+                                <input type="text" class="form-control" id="tipoProduto" required>
+                            </div>
 
-                                        <div class="col-md-6">
-                                            <label for="inscricaoEstadual" class="form-label">Inscrição Estadual</label>
-                                            <input type="text" class="form-control" id="inscricaoEstadual">
-                                        </div>
+                            <div class="col-md-6">
+                                <label for="endereco" class="form-label">Endereço</label>
+                                <input type="text" class="form-control" id="endereco" required>
+                            </div>
 
-                                        <div class="col-md-6">
-                                            <label for="tipoProduto" class="form-label">Tipo de Produto/Serviço</label>
-                                            <input type="text" class="form-control" id="tipoProduto" required>
-                                        </div>
+                            <div class="col-md-6">
+                                <label for="contato" class="form-label">Contato (telefone ou email)</label>
+                                <input type="text" class="form-control" id="contato" required>
+                            </div>
 
-                                        <div class="col-md-6">
-                                            <label for="endereco" class="form-label">Endereço</label>
-                                            <input type="text" class="form-control" id="endereco" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="contato" class="form-label">Contato (telefone ou email)</label>
-                                            <input type="text" class="form-control" id="contato" required>
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                                <!-- Rodapé do modal -->
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="submit" class="btn btn-success">Salvar</button>
-                                </div>
-
-                            </form>
                         </div>
                     </div>
+
+                    <!-- Rodapé do modal -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Salvar</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Editar Fornecedor -->
+    <div class="modal fade" id="editarFornecedorModal" tabindex="-1" aria-labelledby="editarFornecedorLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <!-- Cabeçalho -->
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="editarFornecedorLabel">Editar Fornecedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
 
-                <!-- Bootstrap JS -->
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-                <script>
-                    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-                    popoverTriggerList.forEach(popoverTriggerEl => {
-                        new bootstrap.Popover(popoverTriggerEl)
-                    })
-                </script>
+                <!-- Formulário -->
+                <form id="formEditarFornecedor">
+                    <div class="modal-body">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label for="cnpjEditar" class="form-label">CNPJ</label>
+                                <input type="text" class="form-control" id="cnpjEditar" required readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="razaoSocialEditar" class="form-label">Razão Social</label>
+                                <input type="text" class="form-control" id="razaoSocialEditar" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="inscricaoEstadualEditar" class="form-label">Inscrição Estadual</label>
+                                <input type="text" class="form-control" id="inscricaoEstadualEditar">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="tipoProdutoEditar" class="form-label">Tipo de Produto/Serviço</label>
+                                <input type="text" class="form-control" id="tipoProdutoEditar" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="enderecoEditar" class="form-label">Endereço</label>
+                                <input type="text" class="form-control" id="enderecoEditar" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="contatoEditar" class="form-label">Contato (telefone ou email)</label>
+                                <input type="text" class="form-control" id="contatoEditar" required>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Rodapé do modal -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning">Salvar Alterações</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Remover Fornecedor -->
+    <div class="modal fade" id="removerFornecedorModal" tabindex="-1" aria-labelledby="removerFornecedorLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- Cabeçalho -->
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="removerFornecedorLabel">Remover Fornecedor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <form id="formRemoverFornecedor">
+                    <div class="modal-body">
+                        <p>Tem certeza que deseja remover o fornecedor com o CNPJ <strong id="cnpjRemoverTexto"></strong>?</p>
+                    </div>
+
+                    <!-- Rodapé -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Confirmar Remoção</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+        popoverTriggerList.forEach(popoverTriggerEl => {
+            new bootstrap.Popover(popoverTriggerEl)
+        })
+    </script>
 </body>
 
 </html>
