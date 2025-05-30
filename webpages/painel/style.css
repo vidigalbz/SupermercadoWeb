@@ -1,0 +1,58 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    background-color: #f8f9fa;
+    font-family: "Poppins", sans-serif;
+}
+
+.main-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    overflow: hidden;
+}
+
+.custom-card {
+    width: 1000px;
+    height: 650px;
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-card .card-body {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.fixed-section {
+    height: 100%;
+    overflow: hidden;
+}
+
+.fixed-section .inner-scroll {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.access-card {
+    transition: transform 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.access-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.access-icon {
+    font-size: 2rem;
+    color: #0d6efd;
+}
+
+.disabled-card {
+    opacity: 0.4;
+    pointer-events: none;
+}
