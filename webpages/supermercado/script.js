@@ -50,14 +50,13 @@ async function verificUser(){
         document.getElementById('userRole').textContent = "Gerente";
     
         if (userId == "")
-          window.location.href = "http://localhost:4000/error404";
+          window.location.href = "http://localhost:4000/error403";
         else {
           fetch('/users/' + userId)
             .then(response => response.json())
             .then(data => {
               if (data.status === "success") {
                 if (!data.data.gestor){
-                  console.log("Usuário não possui acesso a esta página!");
                   window.location.href = "http://localhost:4000/error403";
                 }
               } else {
@@ -329,7 +328,6 @@ document.getElementById("addMarket").addEventListener("click", function(e){
   e.preventDefault();
   const box = contador.parentElement;
   count();
-  console.log(total)
   if (total < 4 ){
   const name = document.getElementById("nomeSupermercado").value;
   const local = document.getElementById("localizacao").value;
@@ -383,7 +381,6 @@ document.getElementById("addMarket").addEventListener("click", function(e){
         })
         
         const result = await res.json();
-        console.log(result)
         
         if (res.ok) {
           showToast(result.mensagem, "success");
@@ -400,7 +397,6 @@ document.getElementById("addMarket").addEventListener("click", function(e){
   });
 function count(){
     if(!contador){
-      console.log('Erro no count')
       return
     }
     total = document.querySelectorAll(".card-super").length;

@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS users (
     pdv BOOL NOT NULL DEFAULT 0,
     estoque BOOL NOT NULL DEFAULT 0,
     fornecedor BOOL NOT NULL DEFAULT 0,
-    relatorios BOOL NOT NULL DEFAULT 0
+    relatorios BOOL NOT NULL DEFAULT 0,
+    profileImage TEXT NULL
 );
 
 CREATE TABLE IF NOT EXISTS products (

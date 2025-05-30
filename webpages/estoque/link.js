@@ -54,7 +54,6 @@ function limparFiltros() {
   
     // Chamada para atualizar a listagem se necessário
     // atualizarListaProdutos();
-    console.log("Filtros limpos");
     carregarProdutos();
 }
   
@@ -140,7 +139,6 @@ async function confirmarEdicaoFinal() {
   // Chama a função real de edição (opcional)
   await confirmarEdicao();
   location.reload()
-  console.log('Alterações salvas!');
 }
 
 function confirmarExclusaoFinal() {

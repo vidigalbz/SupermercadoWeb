@@ -177,7 +177,6 @@ const produtoExemplo = {
     }
 
     const produto = currentData.find(p => String(p.productId) === String(productId));
-    console.log("Produto encontrado para edição:", produto);
 
     if (!produto) {
       showAlert("Produto não encontrado.", "Erro", "error");
