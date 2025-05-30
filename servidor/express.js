@@ -700,6 +700,47 @@ app.post("/addFornecedor", (req, res) => {
         
     }
 })
+app.post("/comprardofornecedor", async (req, res) => {
+    const  {
+        cnpj,
+        productId,
+    quantidade_produto,
+    data_compra,
+    preco_unitario,
+    subtotal_produto,
+    valor_final,
+} = req.body
+    try {
+
+        insert(
+            "comprarfornecedor",
+            ["cnpj",
+            "productId",
+            'quantidade_produto',
+            'data_compra',
+            'preco_unitario',
+            'subtotal_produto',
+            'valor_final',],
+            [cnpj,
+            productId,
+        quantidade_produto,
+        data_compra,
+        preco_unitario,
+        subtotal_produto,
+        valor_final]
+        )
+        res.json({
+            status: "success"
+        })
+    } catch (error) {
+        console.error(error);
+    
+
+    }
+})
+
+
+
 app.get("/Error404", (req, res) => {
     const pathError =  `${webpages_dir}/erro404/index.html`
     res.sendFile(pathError)
