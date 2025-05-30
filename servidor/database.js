@@ -64,6 +64,18 @@ CREATE TABLE IF NOT EXISTS setors (
     marketId TEXT NOT NULL,
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );
+
+CREATE TABLE IF NOT EXISTS history (
+  historyId INTEGER PRIMARY KEY AUTOINCREMENT,
+  productId INTEGER NOT NULL,
+  marketId TEXT NOT NULL,
+  type TEXT NOT NULL,
+  beforeData TEXT,
+  afterData TEXT,
+  createdAt TEXT NOT NULL,
+  FOREIGN KEY (productId) REFERENCES products(productId),
+  FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
+);
 `);
 });
 

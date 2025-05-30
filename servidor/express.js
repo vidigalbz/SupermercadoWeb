@@ -247,11 +247,42 @@ app.post('/finalizarCompra', async (req, res) => {
             
             // Update product stock
             const product = await select('products', 'WHERE productId = ?', [item.productId]);
+
             if (product.length > 0) {
-                const currentStock = product[0].stock;
-                if (currentStock > 0){
+                const currentProduct = product[0];
+                const currentStock = currentProduct.stock;
+            
+                if (currentStock > 0) {
                     const newStock = currentStock - item.quantity;
+            
+                    // Atualizar o estoque
                     await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+            
+                    // Registrar no histórico
+                    const historyEntry = {
+                        productId: item.productId,
+                        marketId,
+                        type: 'saida',
+                        beforeData: JSON.stringify({ stock: currentStock }),
+                        afterData: JSON.stringify({ stock: newStock }),
+                        date: new Date().toISOString()
+                    };
+            
+                    await insert('history', [
+                        'productId',
+                        'marketId',
+                        'type',
+                        'beforeData',
+                        'afterData',
+                        'date'
+                    ], [
+                        historyEntry.productId,
+                        historyEntry.marketId,
+                        historyEntry.type,
+                        historyEntry.beforeData,
+                        historyEntry.afterData,
+                        historyEntry.date
+                    ]);
                 }
             } else {
                 console.warn(`Product not found: ${item.productId}`);
@@ -370,7 +401,7 @@ app.post('/deleteSetor', (req, res) => {
     }
 });   
 
-app.post("/editarProduto", (req, res) => {
+app.post("/editarProduto", async (req, res) => {
     const {
         productId,
         name,
@@ -385,53 +416,68 @@ app.post("/editarProduto", (req, res) => {
         marketId
     } = req.body;
 
-    const columns = [
-        "name", "price", "category", "departament", "stock",
-        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
-    ];
+    try {
+        // Buscar dados antigos do produto
+        const oldData = await select("products", "WHERE productId = ?", [productId]);
 
-    const values = [
-        name, price, category, departament, stock,
-        lot, expirationDate, manufactureDate, barcode, marketId
-    ];
+        if (!oldData || oldData.length === 0) {
+            return res.status(404).json({ success: false, message: "Produto não encontrado." });
+        }
 
-    const condition = `productId = ${productId}`;
+        const beforeData = oldData[0]; // produto antes da edição
 
-    update("products", columns, values, condition);
+        const columns = [
+            "name", "price", "category", "departament", "stock",
+            "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
+        ];
 
-    res.json({ success: true, message: "Produto atualizado com sucesso!" });
-});
+        const values = [
+            name, price, category, departament, stock,
+            lot, expirationDate, manufactureDate, barcode, marketId
+        ];
 
-app.post("/editarProduto", (req, res) => {
-    const {
-        productId,
-        name,
-        price,
-        category,
-        departament,
-        stock,
-        lot,
-        expirationDate,
-        manufactureDate,
-        barcode,
-        marketId
-    } = req.body;
+        const condition = `productId = ${productId}`;
 
-    const columns = [
-        "name", "price", "category", "departament", "stock",
-        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
-    ];
+        // Atualizar o produto
+        await update("products", columns, values, condition);
 
-    const values = [
-        name, price, category, departament, stock,
-        lot, expirationDate, manufactureDate, barcode, marketId
-    ];
+        // Registrar histórico
+        const afterData = {
+            name, price, category, departament, stock,
+            lot, expirationDate, manufactureDate, barcode, marketId
+        };
 
-    const condition = `productId = ${productId}`;
+        const historyEntry = {
+            productId,
+            marketId,
+            type: 'edicao',
+            beforeData: JSON.stringify(beforeData),
+            afterData: JSON.stringify(afterData),
+            date: new Date().toISOString()
+        };
 
-    update("products", columns, values, condition);
+        await insert("history", [
+            "productId",
+            "marketId",
+            "type",
+            "beforeData",
+            "afterData",
+            "date"
+        ], [
+            historyEntry.productId,
+            historyEntry.marketId,
+            historyEntry.type,
+            historyEntry.beforeData,
+            historyEntry.afterData,
+            historyEntry.date
+        ]);
 
-    res.json({ success: true, message: "Produto atualizado com sucesso!" });
+        res.json({ success: true, message: "Produto atualizado com sucesso!" });
+
+    } catch (err) {
+        console.error("Erro ao editar produto:", err);
+        res.status(500).json({ success: false, message: "Erro interno ao editar produto." });
+    }
 });
 
 app.post("/cadastro", async (req, res) => {
