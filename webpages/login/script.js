@@ -32,9 +32,14 @@ async function loginWithCookie() {
     });
 
     const data = await response.json();
-
+    
     if (data.status === "success") {
-      window.location.href = "/supermercado";
+      if (data.gestor){
+        window.location.href = "/supermercado";
+      }
+      else {
+        window.location.href = "/painel"
+      }
     } else {
       console.error("Login failed:", data.message);
     }
@@ -131,14 +136,21 @@ document.getElementById("loginButton").addEventListener("click", async function 
     if (result.status === "success") {
       showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
 
-      document.cookie = `user=${result.id}; path=/"`;
+      if (result.userId) {
+        document.cookie = `user=${result.userId}; path=/`;
+      }
 
       setTimeout(() => {
-        window.location.href = `/supermercado/?userID=${result.id}`;
+        if (result.gestor) {
+          window.location.href = `/supermercado`;
+        } else {
+          window.location.href = '/painel';
+        }
       }, 1500);
     } else {
       showToast(result.message || "Usuário ou senha incorretos!", "danger");
     }
+
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     showToast("Erro na conexão com o servidor.", "danger");

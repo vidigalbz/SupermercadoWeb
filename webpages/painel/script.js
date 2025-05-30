@@ -1,24 +1,47 @@
 // Dados do usuário
-document.getElementById('userName').textContent = 'João Silva';
-document.getElementById('userEnrollment').textContent = '12345';
-document.getElementById('userRole').textContent = 'Operador de Caixa';
+let username = document.getElementById('userName');
+let userIdLabel = document.getElementById('userEnrollment');
+
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+let userId;
 
 const permissoesPorLoja = {
     "Loja Centro": {
-    estoque: true,
-    caixa: true,
-    relatorios: true,
-    rastreio: false,
-    configuracoes: false
+        estoque: true,
+        caixa: true,
+        relatorios: true,
+        rastreio: false,
+        configuracoes: false
     },
     "Loja Norte": {
-    estoque: true,
-    caixa: false,
-    relatorios: false,
-    rastreio: false,
-    configuracoes: false
+        estoque: true,
+        caixa: false,
+        relatorios: false,
+        rastreio: false,
+        configuracoes: false
     }
 };
+
+main();
+
+function main(){
+    loadUserData();
+}
 
 function selecionarSupermercado(nomeLoja) {
     document.getElementById('nomeLojaSelecionada').textContent = nomeLoja;
@@ -43,8 +66,37 @@ function atualizarAcessos(permissoes) {
 function toggleCard(id, habilitado) {
     const card = document.getElementById(id);
     if (habilitado) {
-    card.classList.remove('disabled-card');
+        card.classList.remove('disabled-card');
     } else {
-    card.classList.add('disabled-card');
+        card.classList.add('disabled-card');
     }
+}
+
+function loadUserData() {
+    userId = getCookie("user");
+    console.log("User: " + userId   )
+    console.log("startup");
+    if (userId == "")
+   //     window.location.href = "http://localhost:4000/error404";
+        return
+    else {
+        fetch('/users/' + userId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    username.textContent = data.data.name;
+                    userIdLabel.textContent = userId;
+                } else {
+                    console.error("Error:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Fetch failed:", error);
+            });
+    }
+}
+
+function confirmarSaida(){
+    document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+    window.location.href = "/login";
 }

@@ -463,7 +463,8 @@ app.post("/cadastro", async (req, res) => {
             status: "success",
             message: "Usuário cadastrado com sucesso.",
             userId: user.userId,
-            name: user.name
+            name: user.name,
+            gestor: user.gestor
         });
 
     } catch (err) {
@@ -495,6 +496,7 @@ app.post("/loginWithId", async (req, res) => {
             status: "success", 
             id: user.userId,
             name: user.name,
+            gestor: user.gestor,
         });
     } catch (err) {
         console.error(err);

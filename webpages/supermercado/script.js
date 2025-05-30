@@ -50,7 +50,7 @@ async function verificUser(){
         document.getElementById('userRole').textContent = "Gerente";
     
         if (userId == "")
-          window.location.href = "http://localhost:4000/error403";
+          window.location.href = "http://localhost:4000/error404";
         else {
           fetch('/users/' + userId)
             .then(response => response.json())
@@ -285,8 +285,8 @@ function alternarVisibilidade(botao) {
   };
 
 function deslogar() {
-  document.cookie = "user=; path=/";
-  window.location.href = "/login"
+    document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+    window.location.href = "/login";
 }
 
   document.addEventListener('DOMContentLoaded', function(){ //Carregar os Modal de Acordo com os dados

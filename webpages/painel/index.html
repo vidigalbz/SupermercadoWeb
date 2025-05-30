@@ -27,9 +27,8 @@
                 <hr>
                 <p class="text-start"><strong>Nome:</strong> <span id="userName">[Nome]</span></p>
                 <p class="text-start"><strong>Matrícula:</strong> <span id="userEnrollment">[Matrícula]</span></p>
-                <p class="text-start"><strong>Cargo:</strong> <span id="userRole">[Cargo]</span></p>
               </div>
-              <button class="btn btn-secondary m-2 mt-0" type="button">
+              <button class="btn btn-secondary m-2 mt-0" type="button" onclick="navigator.clipboard.writeText(document.getElementById('userEnrollment').textContent)">
                  Copiar codigo
               </button>
             </div>
