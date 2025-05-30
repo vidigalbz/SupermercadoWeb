@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciamento de Mercados</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 60px;
+        }
+
+        .card-mercado {
+            background: linear-gradient(to right, #1976d2, #42a5f5);
+            color: white;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .card-mercado .bi {
+            font-size: 2rem;
+        }
+
+        .card-mercado .btn {
+            background-color: white;
+            color: #1976d2;
+        }
+
+        .info-box {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .flex-md-row {
+                flex-direction: column !important;
+            }
+
+            .mercados-lista {
+                width: 100% !important;
+            }
+
+            .mercado-info {
+                width: 100% !important;
+            }
+        }
+
+        .card-button {
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .card-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            background-color: #f8f9fa;
+        }
+
+        .card-button:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-dark" onclick="history.back()">voltar</button>
+                <h1 class="ms-3">🏬</h1>
+                <span class="navbar-brand mb-0 h1">Super Mercado Didático:</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo principal -->
+    <div class="container py-4">
+        <!-- card do titulo -->
+        <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-secondary text-white">
+            <h4 class="mb-0"><i class="bi bi-people-fill"></i> Gerenciamento de Mercados</h4>
+            <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque"
+                onclick="reloadPage()">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div>
+
+        <div class="d-flex flex-md-row gap-3">
+            <!-- Lista de Mercados -->
+            <div class="card p-3 mercados-lista" style="width: 300px;">
+                <!-- Cabeçalho com contagem e botão -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="btn btn-outline-info">
+                        <span id="contador-mercados" class="fw-semibold">3/4</span>
+                    </div>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAdicionar">Adicionar
+                        mercado</button>
+                </div>
+
+                <!-- Lista de mercados rolável -->
+                <div class="overflow-auto" style="max-height: 400px;">
+                    <!-- Card de mercado -->
+                    <div class="card text-center shadow mb-2">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-shop fs-3"></i>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title mb-3">Mercado Central</h6>
+                            <button class="btn btn-outline-primary btn-sm fw-bold"
+                                onclick="selecionarMercado('Mercado Central')">Selecionar</button>
+                        </div>
+                    </div>
+
+                    <div class="card text-center shadow mb-2">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-shop fs-3"></i>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title mb-3">SuperMais</h6>
+                            <button class="btn btn-outline-primary btn-sm fw-bold"
+                                onclick="selecionarMercado('SuperMais')">Selecionar</button>
+                        </div>
+                    </div>
+
+                    <div class="card text-center shadow mb-2">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-shop fs-3"></i>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title mb-3">Mercadão do Zé</h6>
+                            <button class="btn btn-outline-primary btn-sm fw-bold"
+                                onclick="selecionarMercado('Mercadão do Zé')">Selecionar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Mercado Selecionado -->
+            <div class="mercado-info flex-grow-1">
+                <div class="info-box">
+                    <div id="sem-mercado-selecionado">
+                        <p>Selecione um mercado para ver detalhes.</p>
+                    </div>
+
+                    <div id="mercado-detalhes" class="d-none">
+                        <!-- Card de informações do mercado -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title" id="nome-mercado-info">Nome do Mercado</h5>
+                                <p><strong>Endereço:</strong> <span id="endereco-mercado-info">Rua Exemplo,
+                                        123</span></p>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                        data-bs-target="#modalEditar">Editar
+                                    </button>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Funcionários -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <h6 class="fw-bold mb-0">Funcionários</h6>
+                                <button class="btn btn-sm bg-light ms-2">3/3</button>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#modalAdicionarFuncionario"">
+                                    Adicionar Funcionário
+                                </button>
+                                <button class=" btn btn-sm btn-warning ms-2" data-bs-toggle="modal"
+                                    data-bs-target="#modalPedirCodigoFuncionario">
+                                    Editar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Lista de funcionários com rolagem se passar de 3 itens -->
+                        <div style="max-height: 110px; overflow-y: auto;" class="mb-4">
+                            <ul class="list-group" id="lista-funcionarios">
+                                <!-- Itens inseridos dinamicamente -->
+                            </ul>
+                        </div>
+
+                        <!-- Navegação para outras telas -->
+                        <div class="row row-cols-2 row-cols-md-6 g-3">
+                            <div class="col">
+                                <div class="card text-center shadow-sm p-3 card-button" onclick="irParaTela('pdv')">
+                                    <i class="bi bi-cash-coin fs-3 text-primary"></i>
+                                    <div class="fw-semibold mt-2">PDV</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card text-center shadow-sm p-3 card-button" onclick="irParaTela('estoque')">
+                                    <i class="bi bi-box-seam fs-3 text-success"></i>
+                                    <div class="fw-semibold mt-2">Estoque</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card text-center shadow-sm p-3 card-button" onclick="irParaTela('alertas')">
+                                    <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
+                                    <div class="fw-semibold mt-2">Alertas</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card text-center shadow-sm p-3 card-button"
+                                    onclick="irParaTela('relatorio')">
+                                    <i class="bi bi-clipboard-data fs-3 text-info"></i>
+                                    <div class="fw-semibold mt-2">Relatório</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card text-center shadow-sm p-3 card-button"
+                                    onclick="irParaTela('rastreamento')">
+                                    <i class="bi bi-geo-alt fs-3 text-warning"></i>
+                                    <div class="fw-semibold mt-2">Rastreamento</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card text-center shadow-sm p-3 card-button"
+                                    onclick="irParaTela('fornecedores')">
+                                    <i class="bi bi-truck fs-3 text-secondary"></i>
+                                    <div class="fw-semibold mt-2">Fornecedores</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Adicionar Supermercado -->
+    <div class="modal fade" id="modalAdicionar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adicionar Supermercado</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <!-- Mesmo conteúdo do modal de edição -->
+                        <div class="mb-3">
+                            <label class="form-label">Nome do supermercado</label>
+                            <input type="text" class="form-control" id="nomeSupermercado">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Localização</label>
+                            <input type="text" class="form-control" id="localizacao">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ícone (Bootstrap ou Emoji)</label>
+                            <select class="form-select" id="icon">
+                                <option>🏪</option>
+                                <option>🛒</option>
+                                <option>&#x1F6D2;</option>
+                                <option>&#x1F3EA;</option>
+                                <option>&#x1F6CD;</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100 close" data-bs-dismiss="modal"
+                            id="addMarket">Salvar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Supermercado -->
+    <div class="modal fade" id="modalEditar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Supermercado</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Nome do supermercado</label>
+                            <input type="text" id="SupermercadoUpdate" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Localização</label>
+                            <input type="text" id="LocalUpdate" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ícone (Bootstrap ou Emoji)</label>
+                            <select class="form-select" id="IconUpdate">
+                                <option selected>🏪</option>
+                                <option>🛒</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100 mb-3" id="SalvarUpdate">Salvar</button>
+
+                        <!-- Exclusão -->
+                        <hr>
+                        <div class="mb-3">
+                            <label class="form-label text-danger fw-bold">Digite o nome do supermercado para confirmar
+                                exclusão:</label>
+                            <input type="text" class="form-control" placeholder="Supermercado A" id="confirmarExclusao">
+                        </div>
+                        <button type="button" class="btn btn-outline-danger w-100" id="excluirMercado">Excluir
+                            Supermercado</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificação -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1200">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">Notificação</strong>
+                <small>Agora</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+            </div>
+            <div class="toast-body" id="toastMessage"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAdicionarFuncionario" tabindex="-1"
+        aria-labelledby="modalAdicionarFuncionarioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adicionar Funcionário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAdicionarFuncionario">
+                        <div class="mb-3">
+                            <label for="nomeFuncionario" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="nomeFuncionario" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cargoFuncionario" class="form-label">Código</label>
+                            <input type="text" class="form-control" id="cargoFuncionario" required>
+                        </div>
+
+                        <!-- Acessos -->
+<div id="aba-acessos" class="mt-4">
+    <label class="form-label mb-3">Permissões de Acesso</label>
+    <div class="row g-3">
+        <div class="col-6 col-md-4">
+            <div class="card card-acesso text-center p-3" data-target="acessoEstoque">
+                <i class="bi bi-box-seam fs-3 mb-2"></i>
+                <div>Estoque</div>
+                <input type="checkbox" class="d-none" id="acessoEstoque">
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card card-acesso text-center p-3" data-target="acessoPDV">
+                <i class="bi bi-cash-register fs-3 mb-2"></i>
+                <div>PDV</div>
+                <input type="checkbox" class="d-none" id="acessoPDV">
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card card-acesso text-center p-3" data-target="acessoAlert">
+                <i class="bi bi-bell-fill fs-3 mb-2"></i>
+                <div>Alertas</div>
+                <input type="checkbox" class="d-none" id="acessoAlert">
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card card-acesso text-center p-3" data-target="acessoRelatorio">
+                <i class="bi bi-graph-up fs-3 mb-2"></i>
+                <div>Relatórios</div>
+                <input type="checkbox" class="d-none" id="acessoRelatorio">
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card card-acesso text-center p-3" data-target="acessoRastreamento">
+                <i class="bi bi-geo-alt-fill fs-3 mb-2"></i>
+                <div>Rastreamento</div>
+                <input type="checkbox" class="d-none" id="acessoRastreamento">
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card card-acesso text-center p-3" data-target="acessoFornecedores">
+                <i class="bi bi-truck fs-3 mb-2"></i>
+                <div>Fornecedores</div>
+                <input type="checkbox" class="d-none" id="acessoFornecedores">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+                        <div class="modal-footer mt-4">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Adicionar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Pedir Codigo de Edição -->
+    <div class="modal fade" id="modalPedirCodigoFuncionario" tabindex="-1" aria-labelledby="tituloPedirCodigo"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloPedirCodigo">Editar Funcionário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formPedirCodigoFuncionario">
+                        <div class="mb-3">
+                            <label for="codigoParaEdicao" class="form-label">Digite o código do funcionário</label>
+                            <input type="text" class="form-control" id="codigoParaEdicao" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" form="formPedirCodigoFuncionario">Continuar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Funcionario -->
+    <div class="modal fade" id="modalEditarFuncionario" tabindex="-1" aria-labelledby="tituloEditarFuncionario"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloEditarFuncionario">Editar Funcionário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditarFuncionario">
+                        <input type="hidden" id="idFuncionarioEditando"> <!-- usado para identificar -->
+                        <div class="mb-3">
+                            <label for="nomeFuncionarioEditar" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="nomeFuncionarioEditar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cargoFuncionarioEditar" class="form-label">Cargo</label>
+                            <input type="text" class="form-control" id="cargoFuncionarioEditar" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" form="formEditarFuncionario">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Script de Seleção -->
+    <script>
+        let funcionarios = [
+            { nome: "Ana Silva - (Codigo)", online: true, tela: "PDV" },
+            { nome: "João Pedro - (Codigo)", online: false, tela: null },
+            { nome: "Maria Oliveira - (Codigo)", online: true, tela: "Estoque" },
+            { nome: "Ana Silva - (Codigo)", online: true, tela: "PDV" },
+            { nome: "João Pedro - (Codigo)", online: false, tela: null },
+            { nome: "Maria Oliveira - (Codigo)", online: true, tela: "Estoque" },
+        ];
+
+        function selecionarMercado(nome) {
+            //document.getElementById('titulo-mercado').innerText = nome;
+
+            // Atualiza info
+            document.getElementById('nome-mercado-info').innerText = nome;
+            document.getElementById('endereco-mercado-info').innerText = "Rua Exemplo, 123";
+            //document.getElementById('status-mercado-info').innerText = "Operando normalmente";
+
+            // Exibe detalhes
+            document.getElementById('sem-mercado-selecionado').classList.add('d-none');
+            document.getElementById('mercado-detalhes').classList.remove('d-none');
+
+            renderizarFuncionarios();
+        }
+
+        function irParaTela(tela) {
+            //alert("Indo para tela: " + tela);
+            // Aqui pode ir um `window.location.href =` futuramente
+        }
+
+        function renderizarFuncionarios() {
+            const lista = document.getElementById('lista-funcionarios');
+            lista.innerHTML = ''; // limpa a lista
+
+            if (funcionarios.length === 0) {
+                lista.innerHTML = '<li class="list-group-item text-muted">Nenhum funcionário cadastrado.</li>';
+                return;
+            }
+
+            funcionarios.forEach(func => {
+                const item = document.createElement('li');
+                item.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+                // Estilo para online/offline
+                if (func.online) {
+                    item.classList.add('list-group-item-success');
+                }
+
+                // Conteúdo
+                item.innerHTML = `
+      <div>
+        <strong>${func.nome}</strong>
+        ${func.online ? `<span class="badge bg-success ms-2">Online</span>` : ''}
+      </div>
+      <small class="text-muted">${func.online ? `Na tela: ${func.tela}` : 'Offline'}</small>
+    `;
+
+                lista.appendChild(item);
+            });
+        }
+
+    </script>
+</body>
+
+</html>
