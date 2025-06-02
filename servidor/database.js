@@ -76,6 +76,53 @@ CREATE TABLE IF NOT EXISTS history (
   FOREIGN KEY (productId) REFERENCES products(productId),
   FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );
+
+CREATE TABLE IF NOT EXISTS relatorio_entrada (
+    entrada_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_supermercado TEXT NOT NULL,
+    cnpj_fornecedor TEXT NOT NULL,
+    numero_nota_fiscal TEXT NOT NULL,
+    data_entrada TEXT NOT NULL,
+    produto TEXT NOT NULL,
+    preco_unitario REAL NOT NULL,
+    preco_total REAL NOT NULL,
+    categoria TEXT,
+    departamento TEXT,
+    estoque INTEGER DEFAULT 0,
+    lote TEXT,
+    data_validade TEXT,
+    data_fabricacao TEXT,
+    codigo_barras TEXT NOT NULL,
+    imagem TEXT,
+    tributos_simulados TEXT NOT NULL,
+    FOREIGN KEY (id_supermercado) REFERENCES supermarkets(marketId)
+);
+
+CREATE TABLE IF NOT EXISTS relatorio_saida (
+    saida_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_supermercado TEXT NOT NULL,
+    id_caixa TEXT NOT NULL,
+    id_notafisca TEXT NOT NULL,
+    cpf_cliente TEXT,
+    produto TEXT NOT NULL,
+    quantidade TEXT NOT NULL,
+    preco_unitario REAL NOT NULL,
+    preco_total REAL NOT NULL,
+    data_saida TEXT NOT NULL,
+    horario_saida TEXT NOT NULL,
+    tributos_simulados TEXT NOT NULL,
+    FOREIGN KEY (id_supermercado) REFERENCES supermarkets(marketId)
+);
+
+CREATE TABLE IF NOT EXISTS relatorio_abc (
+    abc_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_supermercado TEXT NOT NULL,
+    id_caixa TEXT NOT NULL,
+    produto TEXT NOT NULL,
+    quantidade_vendida TEXT NOT NULL,
+    preco_total REAL NOT NULL,
+    FOREIGN KEY (id_supermercado) REFERENCES supermarkets(marketId)
+);
 `);
 });
 
