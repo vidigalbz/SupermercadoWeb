@@ -749,7 +749,7 @@ app.post("/fornecedorData", async (req, res) =>  {
 
 })
 
-app.post("/updateFornecedor", async (req, res) => {
+app.post("/editarFornecedor", async (req, res) => {
     const {
         cnpj,
         razaoSocial,
@@ -774,6 +774,13 @@ app.post("/updateFornecedor", async (req, res) => {
     }catch (e) {
         res.status(500).json({ erro: "Não ocorreu como Devia ter ocorrido"})
     }
+})
+
+app.post("/excluirFornecedor", async (req, res) => {
+    const {cnpj} = req.body
+    if (!cnpj) return res.status(404).json({erro: "Cnpj não encotrado"})
+    delet("fornecedores", `cnpj = ${cnpj}`)
+    return res.status(200).json({mensagem: "Excluido com Sucesso"})
 })
 
 app.post("/comprardofornecedor", async (req, res) => {

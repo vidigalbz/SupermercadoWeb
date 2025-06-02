@@ -29,7 +29,7 @@ async function adicionarFornecedor() {
 
 function criarCardFornecedor(fornecedor) {
     const div = document.createElement("div")
-    div.className = 'col'
+    div.className = 'col-md-3'
     div.innerHTML = `<div id="fornecedor-${fornecedor.cnpj}" class="card mb-3" style="border: 1px solid #dee2e6; max-width: 280px;">
                     <div class="row g-0">
                         <!-- Conteúdo -->
@@ -93,6 +93,22 @@ function renderizar(fornecedores){
     }
 }
 
+function carregarEdit(){
+    let cnpjFornecedor = document.getElementById("codigo-editar").value;
+    if (cnpjFornecedor == null) return;
+
+    const produto = dataFornecedores.find(f => String(f.cnpj) === String(cnpjFornecedor));
+
+    document.getElementById("cnpjEditar").value = produto.cnpj || ""
+    document.getElementById("razaoSocialEditar").value = produto.razao_social || ""
+    document.getElementById("inscricaoEstadualEditar").value = produto.inscricao_estadual || ''
+    document.getElementById("enderecoEditar").value = produto.endereco || ''
+    document.getElementById("tipoProdutoEditar").value = produto.tipo_de_produto || ''
+    document.getElementById("contatoEditar").value = produto.contato || ''
+
+}
+
+
 function updateFornecedor(){
     
     var fornecedor = {
@@ -108,6 +124,22 @@ function updateFornecedor(){
         method: 'POST',
         headers: {'Content-Type': 'application/json' },
         body: JSON.stringify(fornecedor)
+    })
+}
+
+function excluirFornecedor() {
+    const cnpjExcluir = document.getElementById("codigo-excluir").value;
+    if(cnpjExcluir == null) return;
+    fetch('/excluirFornecedor',{
+        method: 'POST',
+        headers: {'Content-Type': 'application/json' },
+        body: JSON.stringify({cnpj : cnpjExcluir})
+    }).then(res => res.json())
+    .then(data => {
+        if (data.mesagem){
+            
+
+        }
     })
 }
 
