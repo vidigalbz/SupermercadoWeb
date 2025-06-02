@@ -1,4 +1,3 @@
-
 const container = document.getElementById('fornecedores-container')
 let dataFornecedores = []
 
@@ -66,7 +65,6 @@ function criarCardFornecedor(fornecedor) {
     popoverTriggerList.forEach(el => new bootstrap.Popover(el));
 }
 
-
 async function carregarFornecedor() {
     
     fetch("/fornecedorData", {
@@ -93,8 +91,24 @@ function renderizar(fornecedores){
     }
 }
 
+function carregarEdit(){
+    let cnpjFornecedor = document.getElementById("codigo-editar").value;
+    if (cnpjFornecedor == null) return;
+
+    const produto = dataFornecedores.find(f => String(f.cnpj) === String(cnpjFornecedor));
+
+    document.getElementById("cnpjEditar").value = produto.cnpj || ""
+    document.getElementById("razaoSocialEditar").value = produto.razao_social || ""
+    document.getElementById("inscricaoEstadualEditar").value = produto.inscricao_estadual || ''
+    document.getElementById("enderecoEditar").value = produto.endereco || ''
+    document.getElementById("tipoProdutoEditar").value = produto.tipo_de_produto || ''
+    document.getElementById("contatoEditar").value = produto.contato || ''
+
+}
+
+
 function updateFornecedor(){
-    
+
     var fornecedor = {
         cnpj: cnpj = document.getElementById("cnpjEditar").value,
         razaoSocial: razaoSocial = document.getElementById("razaoSocialEditar").value,
@@ -104,10 +118,26 @@ function updateFornecedor(){
         contato: contato = document.getElementById("contatoEditar").value,
     }
 
-    fetch("/editar", {
+    fetch("/editarFornecedor", {
         method: 'POST',
         headers: {'Content-Type': 'application/json' },
         body: JSON.stringify(fornecedor)
+    })
+}
+
+function excluirFornecedor() {
+    const cnpjExcluir = document.getElementById("codigo-excluir").value;
+    if(cnpjExcluir == null) return;
+    fetch('/excluirFornecedor',{
+        method: 'POST',
+        headers: {'Content-Type': 'application/json' },
+        body: JSON.stringify({cnpj : cnpjExcluir})
+    }).then(res => res.json())
+    .then(data => {
+        if (data.mesagem){
+            
+
+        }
     })
 }
 

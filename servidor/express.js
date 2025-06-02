@@ -402,37 +402,6 @@ app.post("/editarProduto", (req, res) => {
     res.json({ success: true, message: "Produto atualizado com sucesso!" });
 });
 
-app.post("/editarProduto", (req, res) => {
-    const {
-        productId,
-        name,
-        price,
-        category,
-        departament,
-        stock,
-        lot,
-        expirationDate,
-        manufactureDate,
-        barcode,
-        marketId
-    } = req.body;
-
-    const columns = [
-        "name", "price", "category", "departament", "stock",
-        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
-    ];
-
-    const values = [
-        name, price, category, departament, stock,
-        lot, expirationDate, manufactureDate, barcode, marketId
-    ];
-
-    const condition = `productId = ${productId}`;
-
-    update("products", columns, values, condition);
-
-    res.json({ success: true, message: "Produto atualizado com sucesso!" });
-});
 
 app.post("/cadastro", async (req, res) => {
     const {name, email, password} = req.body;
@@ -712,7 +681,7 @@ app.post("/fornecedorData", async (req, res) =>  {
 
 })
 
-app.post("/updateFornecedor", async (req, res) => {
+app.post("/editarFornecedor", async (req, res) => {
     const {
         cnpj,
         razaoSocial,
@@ -737,6 +706,13 @@ app.post("/updateFornecedor", async (req, res) => {
     }catch (e) {
         res.status(500).json({ erro: "Não ocorreu como Devia ter ocorrido"})
     }
+})
+
+app.post("/excluirFornecedor", async (req, res) => {
+    const {cnpj} = req.body
+    if (!cnpj) return res.status(404).json({erro: "Cnpj não encotrado"})
+    delet("fornecedores", `cnpj = ${cnpj}`)
+    return res.status(200).json({mensagem: "Excluido com Sucesso"})
 })
 
 app.post("/comprardofornecedor", async (req, res) => {

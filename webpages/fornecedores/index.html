@@ -68,7 +68,7 @@
                     <div class="d-flex flex-column align-items-stretch">
                         <input type="text" class="form-control mb-1" id="codigo-editar" placeholder="CNPJ p/ Editar"
                             required>
-                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarFornecedorModal">
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarFornecedorModal" onclick="carregarEdit()">
                             Editar
                         </button>
                     </div>
@@ -249,7 +249,7 @@
                     <!-- Rodapé -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-danger">Confirmar Remoção</button>
+                        <button type="submit" class="btn btn-danger" onclick="excluirFornecedor()">Confirmar Remoção</button>
                     </div>
                 </form>
 
