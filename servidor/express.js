@@ -162,10 +162,114 @@ app.get('/getCarrinho', (req, res) => {
 });
 
 app.post('/finalizarCompra', async (req, res) => {
-  try {
-    const { items, total, paymentMethod, marketId } = req.body;
-    if (!items || !total || !paymentMethod || !marketId) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    try {
+        const { items, total, paymentMethod, marketId } = req.body;
+        
+        // Validate required fields
+        if (!items || !total || !paymentMethod || !marketId) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // 1. Create sale record
+        const saleDate = new Date().toISOString();
+        await insert('sales', [
+            'marketId', 
+            'total', 
+            'paymentMethod',
+            'saleDate'
+        ], [
+            marketId,
+            total,
+            paymentMethod,
+            saleDate
+        ]);
+        
+        // 2. Get the sale ID
+        const sales = await select('sales', 'WHERE saleDate = ? ORDER BY saleId DESC LIMIT 1', [saleDate]);
+        
+        if (!sales || sales.length === 0) {
+            throw new Error('Failed to retrieve sale ID');
+        }
+        
+        const saleId = sales[0].saleId;
+        
+        // 3. Add sale items and update inventory
+        for (const item of items) {
+            // Validate item structure
+            if (!item.productId || !item.quantity || !item.unitPrice || !item.subtotal) {
+                console.warn('Invalid item structure:', item);
+                continue;
+            }
+
+            // Insert sale item
+            await insert('sale_items', [
+                'saleId',
+                'productId',
+                'quantity',
+                'unitPrice',
+                'subtotal'
+            ], [
+                saleId,
+                item.productId,
+                item.quantity,
+                item.unitPrice,
+                item.subtotal
+            ]);
+            
+            // Update product stock
+            const product = await select('products', 'WHERE productId = ?', [item.productId]);
+
+            if (product.length > 0) {
+                const currentProduct = product[0];
+                const currentStock = currentProduct.stock;
+            
+                if (currentStock > 0) {
+                    const newStock = currentStock - item.quantity;
+            
+                    // Atualizar o estoque
+                    await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+            
+                    // Registrar no histórico
+                    const historyEntry = {
+                        productId: item.productId,
+                        marketId,
+                        type: 'saida',
+                        beforeData: JSON.stringify({ stock: currentStock }),
+                        afterData: JSON.stringify({ stock: newStock }),
+                        date: new Date().toISOString()
+                    };
+            
+                    await insert('history', [
+                        'productId',
+                        'marketId',
+                        'type',
+                        'beforeData',
+                        'afterData',
+                        'date'
+                    ], [
+                        historyEntry.productId,
+                        historyEntry.marketId,
+                        historyEntry.type,
+                        historyEntry.beforeData,
+                        historyEntry.afterData,
+                        historyEntry.date
+                    ]);
+                }
+            } else {
+                console.warn(`Product not found: ${item.productId}`);
+            }
+        }
+        
+        // Clear cart cookie
+        res.clearCookie('carrinho');
+        res.json({ success: true, saleId });
+        
+    } catch (err) {
+        console.error('Error processing sale:', err);
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: err.message 
+        });
     }
 
     const saleDate = new Date().toISOString();
@@ -285,37 +389,103 @@ app.post('/addSetor', (req, res) => {
 });
 
 app.post('/deleteSetor', (req, res) => {
-  const { name, type } = req.body;
-  if (!name || !type) {
-    return res.status(400).json({ erro: "Nome e tipo são obrigatórios." });
-  }
-  const nomeSanitizado = name.replace(/'/g, "''");
-  const tipoSanitizado = type === 'dept' ? 'dept' : 'cat';
-  delet('setors', `name = '${nomeSanitizado}' AND type = '${tipoSanitizado}'`);
-  res.status(200).json({ mensagem: "Setor excluído com sucesso!" });
-});
+    const { name, type } = req.body;
+  
+    if (!name || !type) {
+      return res.status(400).json({ erro: "Nome e tipo são obrigatórios." });
+    }
+  
+    const nomeSanitizado = name.replace(/'/g, "''");
+    const tipoSanitizado = type === 'dept' ? 'dept' : 'cat';
+  
+    const condicao = `name = '${nomeSanitizado}' AND type = '${tipoSanitizado}'`;
+  
+    try {
+      delet('setors', condicao);
+      res.status(200).json({ mensagem: "Setor excluído com sucesso!" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ erro: "Erro ao excluir setor." });
+    }
+});   
 
-app.post("/editarProduto", (req, res) => {
-  const {
-    productId,
-    name,
-    price,
-    category,
-    departament,
-    stock,
-    lot,
-    expirationDate,
-    manufactureDate,
-    barcode,
-    marketId
-  } = req.body;
-  update(
-    "products",
-    ["name","price","category","departament","stock","lot","expirationDate","manufactureDate","barcode","marketId"],
-    [name,price,category,departament,stock,lot,expirationDate,manufactureDate,barcode,marketId],
-    `productId = ${productId}`
-  );
-  res.json({ success: true, message: "Produto atualizado com sucesso!" });
+app.post("/editarProduto", async (req, res) => {
+    const {
+        productId,
+        name,
+        price,
+        category,
+        departament,
+        stock,
+        lot,
+        expirationDate,
+        manufactureDate,
+        barcode,
+        marketId
+    } = req.body;
+
+    try {
+        // Buscar dados antigos do produto
+        const oldData = await select("products", "WHERE productId = ?", [productId]);
+
+        if (!oldData || oldData.length === 0) {
+            return res.status(404).json({ success: false, message: "Produto não encontrado." });
+        }
+
+        const beforeData = oldData[0]; // produto antes da edição
+
+        const columns = [
+            "name", "price", "category", "departament", "stock",
+            "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
+        ];
+
+        const values = [
+            name, price, category, departament, stock,
+            lot, expirationDate, manufactureDate, barcode, marketId
+        ];
+
+        const condition = `productId = ${productId}`;
+
+        // Atualizar o produto
+        await update("products", columns, values, condition);
+
+        // Registrar histórico
+        const afterData = {
+            name, price, category, departament, stock,
+            lot, expirationDate, manufactureDate, barcode, marketId
+        };
+
+        const historyEntry = {
+            productId,
+            marketId,
+            type: 'edicao',
+            beforeData: JSON.stringify(beforeData),
+            afterData: JSON.stringify(afterData),
+            date: new Date().toISOString()
+        };
+
+        await insert("history", [
+            "productId",
+            "marketId",
+            "type",
+            "beforeData",
+            "afterData",
+            "date"
+        ], [
+            historyEntry.productId,
+            historyEntry.marketId,
+            historyEntry.type,
+            historyEntry.beforeData,
+            historyEntry.afterData,
+            historyEntry.date
+        ]);
+
+        res.json({ success: true, message: "Produto atualizado com sucesso!" });
+
+    } catch (err) {
+        console.error("Erro ao editar produto:", err);
+        res.status(500).json({ success: false, message: "Erro interno ao editar produto." });
+    }
 });
 
 app.post("/cadastro", async (req, res) => {

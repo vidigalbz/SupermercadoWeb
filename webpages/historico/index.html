@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Histórico com Tabs</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8f9fa;
+      padding-top: 60px;
+    }
+
+    /* NAVBAR ESTILIZADA */
+    .navbar {
+      background: linear-gradient(to left, #ff6f00, #ffa040);
+    }
+
+    /* CONTAINER PRINCIPAL (MAIS COMPACTO) */
+    .container-principal {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      max-width: 1300px; /* LARGURA CONTROLADA */
+      margin: 0 auto; /* CENTRALIZADO */
+      height: 500px;
+    }
+
+    /* ABAS ESTILIZADAS */
+    .nav-tabs {
+      border-bottom: 2px solid #dee2e6;
+    }
+    .nav-tabs .nav-link {
+      font-weight: 600;
+      color: #495057;
+      border: none;
+    }
+    .nav-tabs .nav-link.active {
+      color: #ff6f00;
+      border-bottom: 3px solid #ff6f00;
+    }
+
+    /* ACCORDION COMPACTO */
+    .accordion-item {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      margin-bottom: 8px;
+      border-radius: 8px !important;
+    }
+    .accordion-button {
+      padding: 12px 15px;
+      font-weight: 600;
+    }
+    .accordion-button:not(.collapsed) {
+      background-color: rgba(255, 111, 0, 0.05);
+      color: #ff6f00;
+    }
+
+    /* ESTILOS DOS DADOS */
+    .linha {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      padding: 8px 0;
+    }
+    .antes {
+      background-color: #f8d7da;
+      padding: 10px;
+      border-radius: 6px;
+      flex: 1;
+    }
+    .depois {
+      background-color: #d4edda;
+      padding: 10px;
+      border-radius: 6px;
+      flex: 1;
+    }
+    .alteracao-comparacao {
+      display: flex;
+      gap: 10px;
+    }
+    .titulo-painel {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+
+    /* SCROLL NAS ÁREAS DE DADOS */
+    .scrollable-content {
+    max-height: 400px; /* Ajuste conforme preferir */
+    overflow-y: auto;
+    padding-right: 10px; /* Evita que o conteúdo encoste na barra */
+    }
+    .accordion {
+  max-height: 350px;   /* você pode ajustar esse valor como quiser */
+  overflow-y: auto;
+  padding-right: 5px; /* para evitar que a barra de rolagem sobreponha conteúdo */
+}
+  </style>
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-light fixed-top">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">
+        <i class="bi bi-box-seam me-2"></i>Histórico de Produtos
+      </span>
+    </div>
+  </nav>
+<!-- Container Principal -->
+<div class="container my-4 p-4 bg-white rounded shadow-sm">
+
+    <!-- Título -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <h4 class="text-primary"><strong>📦 Histórico de Produtos</strong></h4>
+      </div>
+    </div>
+  
+    <!-- Linha de Pesquisa e Exclusão -->
+    <div class="row g-3 align-items-end">
+      
+      <!-- Campo de Pesquisa -->
+      <div class="col-md-6">
+        <label for="pesquisa" class="form-label">Pesquisar produto (nome ou código)</label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Arroz, 0012..." oninput="pesquisarHistorico()">
+          <button class="input-group-text">🔍</button>
+        </div>
+      </div>
+  
+      <!-- Filtro por Categoria -->
+      <div class="col-md-3">
+        <label for="filtro-categoria" class="form-label">Categoria</label>
+        <select class="form-select" id="filtro-categoria" onchange="pesquisarHistorico()">
+          <option value="">Todas</option>
+          <option value="entrada">Entrada</option>
+          <option value="saida">Saída</option>
+          <option value="alteracao">Alterações</option>
+        </select>
+      </div>
+  
+      <!-- Excluir -->
+      <div class="col-md-3">
+        <label for="campo-excluir" class="form-label">Apagar produto ou categoria</label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="campo-excluir" placeholder="Ex: arroz ou entrada">
+          <button class="btn btn-danger" onclick="confirmarExclusao()">🗑️ Apagar</button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Resultados -->
+    <div class="mt-4" id="resultado-pesquisa">
+      <!-- Resultados da pesquisa serão renderizados aqui -->
+    </div>
+  
+  </div>
+  <!-- CONTAINER DE INFORMAÇÕES -->
+  <div style="width: 1300px;" class="mx-auto d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-primary text-white">
+    <h4 class="mb-0"><i class="bi bi-archive"></i> Histórico</h4>
+    <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque"
+        onclick="reloadPage()">
+        <i class="bi bi-arrow-clockwise"></i>
+    </button>
+</div>
+  <!-- CONTAINER PRINCIPAL (MAIS COMPACTO) -->
+  <div class="container-principal mt-4">
+    <!-- ABAS -->
+    <ul class="nav nav-tabs" id="historicoTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="entradas-tab" data-bs-toggle="tab" data-bs-target="#entradas" type="button" role="tab">
+          <i class="bi bi-box-arrow-in-down me-1"></i>Entradas
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="saidas-tab" data-bs-toggle="tab" data-bs-target="#saidas" type="button" role="tab">
+          <i class="bi bi-box-arrow-right me-1"></i>Saídas
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="alteracoes-tab" data-bs-toggle="tab" data-bs-target="#alteracoes" type="button" role="tab">
+          <i class="bi bi-pencil-square me-1"></i>Alterações
+        </button>
+      </li>
+    </ul>
+
+    <!-- CONTEÚDO DAS ABAS -->
+    <div class="tab-content p-3" id="historicoTabsContent">
+      <!-- ABA DE ENTRADAS -->
+      <div class="tab-pane fade show active" id="entradas" role="tabpanel">
+        <div class="titulo-painel text-success">Entradas Registradas</div>
+        <div class="accordion scrollable-content" id="entradasAccordion"></div>
+      </div>
+
+      <!-- ABA DE SAÍDAS -->
+      <div class="tab-pane fade" id="saidas" role="tabpanel">
+        <div class="titulo-painel text-danger">Saídas Registradas</div>
+        <div class="accordion scrollable-content" id="saidasAccordion"></div>
+      </div>
+
+      <!-- ABA DE ALTERAÇÕES -->
+      <div class="tab-pane fade" id="alteracoes" role="tabpanel">
+        <div class="titulo-painel text-primary">Alterações Registradas</div>
+        <div class="accordion scrollable-content" id="alteracoesAccordion"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS (NO FINAL DO BODY PARA GARANTIR FUNCIONAMENTO) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // DADOS DINÂMICOS
+    const produtos = [
+      "Arroz", "Feijão", "Macarrão", "Açúcar", "Sal", "Óleo", "Café", "Farinha", 
+      "Milho", "Bolacha", "Achocolatado", "Sabão", "Shampoo", "Detergente", 
+      "Água sanitária", "Papel higiênico", "Pasta de dente", "Escova", "Alvejante", "Biscoito"
+    ];
+
+    // FUNÇÃO PARA GERAR OS CARDS
+    function gerarCards() {
+      const entradasContainer = document.getElementById("entradasAccordion");
+      const saidasContainer = document.getElementById("saidasAccordion");
+      const alteracoesContainer = document.getElementById("alteracoesAccordion");
+
+      produtos.forEach((nome, i) => {
+        const data = `2${Math.floor(Math.random() * 8) + 1}/05`;
+
+        // ENTRADAS
+        entradasContainer.innerHTML += `
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="entrada${i}">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseEntrada${i}" aria-expanded="false">
+                <i class="bi bi-box-arrow-in-down me-2 text-success"></i>${nome}
+                <span class="badge bg-success ms-2">${data}</span>
+              </button>
+            </h2>
+            <div id="collapseEntrada${i}" class="accordion-collapse collapse" aria-labelledby="entrada${i}">
+              <div class="accordion-body">
+                <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 40 + 10)}</div>
+                <div class="linha"><strong>Valor:</strong> R$ ${(Math.random() * 200).toFixed(2)}</div>
+                <div class="linha"><strong>Fornecedor:</strong> Empresa ${i + 1}</div>
+              </div>
+            </div>
+          </div>`;
+
+        // SAÍDAS
+        saidasContainer.innerHTML += `
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="saida${i}">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseSaida${i}" aria-expanded="false">
+                <i class="bi bi-box-arrow-right me-2 text-danger"></i>${nome}
+                <span class="badge bg-danger ms-2">${data}</span>
+              </button>
+            </h2>
+            <div id="collapseSaida${i}" class="accordion-collapse collapse" aria-labelledby="saida${i}">
+              <div class="accordion-body">
+                <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 20 + 5)}</div>
+                <div class="linha"><strong>Motivo:</strong> ${i % 2 === 0 ? "Vencido" : "Venda"}</div>
+              </div>
+            </div>
+          </div>`;
+
+        // ALTERAÇÕES
+        alteracoesContainer.innerHTML += `
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="alteracao${i}">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseAlteracao${i}" aria-expanded="false">
+                <i class="bi bi-pencil-square me-2 text-primary"></i>${nome}
+                <span class="badge bg-primary ms-2">${data}</span>
+              </button>
+            </h2>
+            <div id="collapseAlteracao${i}" class="accordion-collapse collapse" aria-labelledby="alteracao${i}">
+              <div class="accordion-body">
+                <div class="alteracao-comparacao">
+                  <div class="antes">
+                    <h6><strong>Antes:</strong></h6>
+                    <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 30 + 1)}</div>
+                    <div class="linha"><strong>Preço:</strong> R$ ${(Math.random() * 100).toFixed(2)}</div>
+                  </div>
+                  <div class="depois">
+                    <h6><strong>Depois:</strong></h6>
+                    <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 30 + 1)}</div>
+                    <div class="linha"><strong>Preço:</strong> R$ ${(Math.random() * 100).toFixed(2)}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      });
+    }
+
+    // CARREGA OS CARDS QUANDO A PÁGINA ESTIVER PRONTA
+    document.addEventListener('DOMContentLoaded', gerarCards);
+
+        function pesquisarHistorico() {
+    const termo = document.getElementById('pesquisa').value.toLowerCase();
+    const categoria = document.getElementById('filtro-categoria').value;
+
+    // Simulação de busca: substitua com seus dados reais do Firebase ou onde estiver
+    console.log(`Pesquisar: termo="${termo}", categoria="${categoria}"`);
+    // Aqui você filtra os itens e exibe no resultado
+    }
+
+    function confirmarExclusao() {
+    const valor = document.getElementById('campo-excluir').value.trim().toLowerCase();
+
+    if (!valor) {
+        alert('Digite um nome de produto ou categoria para apagar.');
+        return;
+    }
+
+    const confirmar = confirm(`Tem certeza que deseja apagar "${valor}"? Essa ação não pode ser desfeita.`);
+    if (confirmar) {
+        // Aqui você identifica se é um produto ou categoria, e executa a exclusão
+        console.log(`Apagar: "${valor}"`);
+        // Função para deletar do banco
+    }
+    }
+
+  </script>
+</body>
+
+</html>
