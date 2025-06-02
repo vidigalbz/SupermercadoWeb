@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relatórios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 60px;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .info-card {
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #fff;
+        }
+
+        .info-card h6 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card p.fs-3 {
+            font-size: 1.3rem !important;
+        }
+
+        .export-buttons button {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-dark" onclick="history.back()">Voltar</button>
+                <h1 class="ms-3">🏪</h1>
+                <span class="navbar-brand mb-0 h1 text-white">Mercado Didático</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Cabeçalho -->
+    <div class="container mt-5 justify-content-center">
+        <div class="d-flex justify-content-between align-items-center p-3 rounded bg-primary text-white">
+            <h4 class="mb-0">🧻 Relatórios</h4>
+            <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar"
+                onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div>
+
+        <!-- Linha 1 -->
+        <div class="row my-3">
+            <div class="col-md-3">
+                <div class="info-card text-center">
+                    <h6>Total Vendido (Hoje)</h6>
+                    <p class="fs-3 text-success">R$ 1.500,00</p>
+                </div>
+                <div class="info-card text-center">
+                    <h6>Total Vendido (Últimos 7 dias)</h6>
+                    <p class="fs-3 text-success">R$ 32.000,00</p>
+                </div>
+                <div class="info-card text-center">
+                    <h6>Total Vendido (Últimos 30 dias)</h6>
+                    <p class="fs-3 text-muted">R$ 29.500,00</p>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="info-card text-center">
+                    <h6>Curva ABC</h6>
+                    <canvas id="curvaABCChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card text-center d-flex flex-column justify-content-center align-items-center h-100">
+                    <h6>Comparado com o mês anterior</h6>
+                    <h1 class="text-primary">📈 +8%</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- Linha 2 -->
+        <div class="row my-3">
+            <div class="col-md-4">
+                <div class="info-card">
+                    <div class="d-flex justify-content-between mb-2">
+                        <button class="btn btn-outline-success btn-sm" id="btn-mais-vendidos">Mais Vendidos</button>
+                        <button class="btn btn-outline-danger btn-sm" id="btn-menos-vendidos">Menos Vendidos</button>
+                    </div>
+                    <div style="max-height: 140px; overflow-y: auto;">
+                        <ul class="list-group" id="lista-vendidos"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="info-card">
+                    <h6>Produtos Encalhados</h6>
+                    <div style="max-height: 140px; overflow-y: auto;">
+                        <ul class="list-group" id="lista-encalhados">
+                            <li class="list-group-item d-flex justify-content-between">Detergente <span>30 dias</span></li>
+                            <li class="list-group-item d-flex justify-content-between">Papel Higiênico <span>45 dias</span></li>
+                            <li class="list-group-item d-flex justify-content-between">Amido de Milho <span>60 dias</span></li>
+                            <li class="list-group-item d-flex justify-content-between">Sabão em Barra <span>70 dias</span></li>
+                            <li class="list-group-item d-flex justify-content-between">Farinha <span>80 dias</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="info-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Relatório Financeiro</h6>
+                        <div>
+                            <button class="btn btn-outline-secondary btn-sm me-1" id="btn-mes-anterior" title="Mês anterior">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" id="btn-proximo-mes" title="Próximo mês">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <canvas id="graficoFinanceiro" height="200"></canvas>
+                    <div class="export-buttons mt-3 text-center">
+                        <button class="btn btn-outline-primary btn-sm" onclick="exportarPDF()"><i class="bi bi-file-earmark-pdf"></i> Exportar PDF</button>
+                        <button class="btn btn-outline-success btn-sm" onclick="exportarCSV()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const dadosFinanceirosPorMes = [
+            { mes: 'Mar', receita: 48000, despesa: 30000, lucro: 18000 },
+            { mes: 'Abr', receita: 50000, despesa: 32000, lucro: 18000 },
+            { mes: 'Mai', receita: 52000, despesa: 33000, lucro: 19000 },
+            { mes: 'Jun', receita: 50000, despesa: 33000, lucro: 17000 }
+        ];
+
+        let mesAtualIndex = dadosFinanceirosPorMes.length - 2;
+
+        const ctx = document.getElementById('curvaABCChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Classe A (70%)', 'Classe B (20%)', 'Classe C (10%)'],
+                datasets: [{
+                    data: [70, 20, 10],
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+
+        const maisVendidos = [
+            { nome: "Arroz", qtd: 320 },
+            { nome: "Feijão", qtd: 280 },
+            { nome: "Macarrão", qtd: 200 },
+            { nome: "Sabão", qtd: 180 },
+            { nome: "Óleo", qtd: 170 }
+        ];
+        const menosVendidos = [
+            { nome: "Molho Inglês", qtd: 5 },
+            { nome: "Curry", qtd: 7 },
+            { nome: "Açafrão", qtd: 10 },
+            { nome: "Picles", qtd: 12 },
+            { nome: "Alcaparra", qtd: 15 }
+        ];
+
+        function renderizarListaVendidos(lista) {
+            const ul = document.getElementById('lista-vendidos');
+            ul.innerHTML = '';
+            lista.forEach(item => {
+                ul.innerHTML += `<li class="list-group-item d-flex justify-content-between">${item.nome} <span>${item.qtd}</span></li>`;
+            });
+        }
+
+        renderizarListaVendidos(maisVendidos);
+
+        document.getElementById('btn-mais-vendidos').onclick = () => renderizarListaVendidos(maisVendidos);
+        document.getElementById('btn-menos-vendidos').onclick = () => renderizarListaVendidos(menosVendidos);
+
+        function atualizarGraficoFinanceiro() {
+            const ctx = document.getElementById('graficoFinanceiro').getContext('2d');
+            const mes = dadosFinanceirosPorMes[mesAtualIndex];
+            if (window.financeiroChart) window.financeiroChart.destroy();
+            window.financeiroChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [mes.mes],
+                    datasets: [
+                        { label: 'Receita', data: [mes.receita], backgroundColor: '#198754' },
+                        { label: 'Despesa', data: [mes.despesa], backgroundColor: '#dc3545' },
+                        { label: 'Lucro', data: [mes.lucro], backgroundColor: '#0d6efd' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        document.getElementById('btn-mes-anterior').onclick = () => {
+            if (mesAtualIndex > 0) {
+                mesAtualIndex--;
+                atualizarGraficoFinanceiro();
+            }
+        };
+
+        document.getElementById('btn-proximo-mes').onclick = () => {
+            if (mesAtualIndex < dadosFinanceirosPorMes.length - 1) {
+                mesAtualIndex++;
+                atualizarGraficoFinanceiro();
+            }
+        };
+
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const mes = dadosFinanceirosPorMes[mesAtualIndex];
+            doc.text(`Relatório Financeiro - ${mes.mes}`, 10, 10);
+            doc.text(`Receita: R$ ${mes.receita}`, 10, 20);
+            doc.text(`Despesa: R$ ${mes.despesa}`, 10, 30);
+            doc.text(`Lucro: R$ ${mes.lucro}`, 10, 40);
+            doc.save(`relatorio-financeiro-${mes.mes}.pdf`);
+        }
+
+        function exportarCSV() {
+            const mes = dadosFinanceirosPorMes[mesAtualIndex];
+            const csv = Papa.unparse([
+                ["Mês", "Receita", "Despesa", "Lucro"],
+                [mes.mes, mes.receita, mes.despesa, mes.lucro]
+            ]);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `relatorio-financeiro-${mes.mes}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        atualizarGraficoFinanceiro();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
