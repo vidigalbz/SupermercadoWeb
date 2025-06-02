@@ -119,8 +119,30 @@ CREATE TABLE IF NOT EXISTS relatorio_abc (
     preco_total REAL NOT NULL,
     FOREIGN KEY (id_supermercado) REFERENCES supermarkets(marketId)
 );
-`);
+
+CREATE TABLE IF NOT EXISTS fornecedores (
+    cnpj INTENGER NOT NULL UNIQUE,
+    razao_social TEXT NOT NULL,
+    inscricao_estadual TEXT NOT NULL,
+    endereco TEXT NOT NULL,
+    contato TEXT NOT NULL,
+    tipo_de_produto TEXT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS comprarfornecedor (
+    compraId INTEGER PRIMARY KEY AUTOINCREMENT,
+    cnpj TEXT NOT NULL,
+    productId INTEGER NOT NULL,
+    quantidade_produto REAL NOT NULL,
+    data_compra TEXT NOT NULL,
+    preco_unitario REAL NOT NULL,
+    subtotal_produto REAL NOT NULL,
+    valor_final REAL NOT NULL,
+    FOREIGN KEY (cnpj) REFERENCES fornecedores(cnpj),
+    FOREIGN KEY (productId) REFERENCES products(productId)
+);`
+);
 });
+
 
 function select(table, condition = "", params = []) {
     return new Promise((resolve, reject) => {
