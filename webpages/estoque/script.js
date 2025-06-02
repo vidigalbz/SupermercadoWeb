@@ -126,6 +126,7 @@ async function criarCardHTML(produto) {
                     <strong>Lote:</strong> ${produto.lot}<br>
                     <strong>Departamento:</strong> ${produto.departament}<br>
                     <strong>Validade:</strong> ${produto.expirationDate}<br>
+                    <strong>Fornecedor:</strong> ${produto.fornecedor}<br>
                     <strong>Fabricação:</strong> ${produto.manufactureDate}">
             <i class="bi bi-info-circle"></i>
           </button>
@@ -264,6 +265,7 @@ async function adicionarProduto() {
   const marketId = document.getElementById("produto-marketId").value.trim();
   const fabricacao = document.getElementById("produto-fabricacao").value;
   const validade = document.getElementById("produto-validade").value;
+  const fornecedor = document.getElementById("cnpj-fornecedor").value;
   const imagemInput = document.getElementById("produto-imagem");
 
   if (!nome || !codigo || isNaN(preco) || isNaN(estoque) || !marketId) {
@@ -282,6 +284,7 @@ async function adicionarProduto() {
   formData.append("marketId", marketId);
   formData.append("fabricacao", fabricacao);
   formData.append("validade", validade);
+  formData.append("fornecedor", fornecedor);
 
   console.log(categoria)
 

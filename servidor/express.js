@@ -84,15 +84,11 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     try {
         let imagempath;
         if (req.file){
-            let imagem = req.file;
-            imagempath = imagem.path
-        }
-        else{
-            const {imagem} = req.body
-            imagempath = imagem
+            imagempath = req.file.path;
+        } else {
+            imagempath = req.body.imagem || '';
         }
 
-        console.log(imagempath)
         const {
             nome,
             codigo,
@@ -104,57 +100,52 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             marketId,
             fabricacao,
             validade,
+            fornecedor
         } = req.body;
 
-        // Verifique se todos os campos necessários estão presentes
-        if (!nome || !codigo || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade) {
+        // Verificação de campos obrigatórios
+        if (!nome || !codigo || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade || !fornecedor) {
             return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." });
         }
 
-        const produto = {
-            nome,
-            codigo,
-            preco: parseFloat(preco),
-            categoria,
-            estoque: parseInt(estoque),
-            lote,
-            departamento,
+        // Inserir na tabela products
+        await insert("products", [
+            "marketId", "name", "price", "category", "departament",
+            "stock", "lot", "expirationDate", "manufactureDate",
+            "barcode", "fornecedor", "image"
+        ], [
             marketId,
-            fabricacao,
+            nome,
+            parseFloat(preco),
+            categoria,
+            departamento,
+            parseInt(estoque),
+            lote,
             validade,
-            imagem: imagempath
-        };
-
-        console.log([
-            produto.marketId,
-            produto.nome,
-            produto.preco,
-            produto.categoria,
-            produto.departamento,
-            produto.estoque,
-            produto.lote,
-            produto.validade,
-            produto.fabricacao,
-            produto.codigo,
-            produto.imagem
+            fabricacao,
+            codigo,
+            fornecedor,
+            imagempath
         ]);
 
-        insert("products", [
-            "marketId", "name", "price", "category","departament",
-            "stock", "lot", "expirationDate", "manufactureDate",
-            "barcode", "image"
+        // Inserir na tabela relatorio_entrada
+        await insert("relatorio_entrada", [
+            "id_supermercado", "cnpj_fornecedor", "produto", "preco_unitario", "categoria",
+            "departamento", "estoque", "lote", "data_fabricacao", "data_validade", 
+            "codigo_barras", "imagem"
         ], [
-            produto.marketId,
-            produto.nome,
-            produto.preco,
-            produto.categoria,
-            produto.departamento,
-            produto.estoque,
-            produto.lote,
-            produto.validade,
-            produto.fabricacao,
-            produto.codigo,
-            produto.imagem
+            marketId,
+            fornecedor,
+            nome,
+            parseFloat(preco),
+            categoria,
+            departamento,
+            parseInt(estoque),
+            lote,
+            fabricacao,
+            validade,
+            codigo,
+            imagempath
         ]);
 
         res.status(200).json({ mensagem: "Produto adicionado com sucesso!" });

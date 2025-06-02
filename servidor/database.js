@@ -81,20 +81,16 @@ CREATE TABLE IF NOT EXISTS relatorio_entrada (
     entrada_id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_supermercado TEXT NOT NULL,
     cnpj_fornecedor TEXT NOT NULL,
-    numero_nota_fiscal TEXT NOT NULL,
-    data_entrada TEXT NOT NULL,
     produto TEXT NOT NULL,
     preco_unitario REAL NOT NULL,
-    preco_total REAL NOT NULL,
     categoria TEXT,
     departamento TEXT,
     estoque INTEGER DEFAULT 0,
-    lote TEXT,
-    data_validade TEXT,
+    lote TEXT NOT NULL,
     data_fabricacao TEXT,
+    data_validade TEXT,
     codigo_barras TEXT NOT NULL,
     imagem TEXT,
-    tributos_simulados TEXT NOT NULL,
     FOREIGN KEY (id_supermercado) REFERENCES supermarkets(marketId)
 );
 
