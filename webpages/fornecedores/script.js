@@ -10,6 +10,7 @@ async function adicionarFornecedor() {
     const contato = document.getElementById('contato').value;
     const tipo_de_produto = document.getElementById('tipoProduto').value;
 
+    if (cnpj && razao_social && inscricao_estadual && endereco && contato && tipo_de_produto){
     console.log("Entrou")
     await fetch('/addFornecedor', {
         method: 'POST',
@@ -24,7 +25,7 @@ async function adicionarFornecedor() {
         })
     }).then(res => res.json()).then(data => {
         
-    })
+    })}
 }
 
 function criarCardFornecedor(fornecedor) {
@@ -94,8 +95,10 @@ function renderizar(fornecedores){
 }
 
 function carregarEdit(){
+    const modalElement = document.getElementById("editarFornecedorModal");
+    const modal = bootstrap.Modal.getInstance(modalElement);
     let cnpjFornecedor = document.getElementById("codigo-editar").value;
-    if (cnpjFornecedor == null) return;
+    if (!cnpjFornecedor || cnpjFornecedor.trim() === "") {modal.hide()};
 
     const produto = dataFornecedores.find(f => String(f.cnpj) === String(cnpjFornecedor));
 
@@ -110,7 +113,6 @@ function carregarEdit(){
 
 
 function updateFornecedor(){
-    
     var fornecedor = {
         cnpj: cnpj = document.getElementById("cnpjEditar").value,
         razaoSocial: razaoSocial = document.getElementById("razaoSocialEditar").value,
@@ -120,12 +122,13 @@ function updateFornecedor(){
         contato: contato = document.getElementById("contatoEditar").value,
     }
 
-    fetch("/editar", {
+    fetch("/editarFornecedor", {
         method: 'POST',
         headers: {'Content-Type': 'application/json' },
         body: JSON.stringify(fornecedor)
     })
 }
+
 
 function excluirFornecedor() {
     const cnpjExcluir = document.getElementById("codigo-excluir").value;
