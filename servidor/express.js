@@ -4,30 +4,29 @@ const fs = require("fs");
 const multer = require("multer");
 const cookieParser = require('cookie-parser');
 
-const { select, insert, update, delet, query, db } = require("./database.js");
+const { select, insert, update, delet, query } = require("./database.js");
 
 const app = express();
 const port = 4000;
 
+const { db } = require('./database.js');
+
 const webpages_dir = path.join(__dirname, "../webpages");
 var pages = [];
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  );
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  next();
-});
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// -------------------------------------------------
-// Configuração do Multer para Upload de Perfis
-// -------------------------------------------------
+const storage = multer.diskStorage({
+  destination: ('servidor/uploads'),
+  filename: (req, file, cb) => {
+    const ext = file.originalname.split(".").pop();
+    cb(null, `imagem-${Date.now()}.${ext}`);
+  }
+});
+const upload = multer({ storage: storage });
+
 const profileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, "uploads", "profiles");
@@ -38,24 +37,17 @@ const profileStorage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const userId = req.body.userId || "unknown";
-    const ext = file.originalname.split('.').pop();
+    const ext = file.originalname.split(".").pop();
     cb(null, `profile-${userId}-${Date.now()}.${ext}`);
   }
 });
 const uploadProfile = multer({ storage: profileStorage });
 
-// -------------------------------------------------
-// Permitir acesso estático à pasta /uploads
-// -------------------------------------------------
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"))
-);
+app.use('/servidor/uploads', express.static(path.resolve(__dirname, './uploads')));
+app.use('/uploads', express.static(path.join(__dirname, "uploads")));
 
-// -------------------------------------------------
-// Rota para obter IP (já existente)
-// -------------------------------------------------
 const os = require('os');
+
 function getRealWirelessIP() {
   const interfaces = os.networkInterfaces();
   for (const name in interfaces) {
@@ -71,14 +63,12 @@ function getRealWirelessIP() {
   }
   return 'localhost';
 }
+
 app.get('/api/ip', (req, res) => {
   const ip = getRealWirelessIP();
   res.json({ ip });
 });
 
-// -------------------------------------------------
-// Carregamento de páginas estáticas (já existente)
-// -------------------------------------------------
 async function loadPages() {
   app.use(express.static(webpages_dir));
   fs.readdir(webpages_dir, (err, arquivos) => {
@@ -99,11 +89,7 @@ async function loadPages() {
   });
 }
 
-// -------------------------------------------------
-// Endpoint para adicionar produto
-// (permanece igual ao original)
-// -------------------------------------------------
-app.post("/adicionarProduto", multer().single("imagem"), async (req, res) => {
+app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
   try {
     let imagempath;
     if (req.file) {
@@ -127,51 +113,26 @@ app.post("/adicionarProduto", multer().single("imagem"), async (req, res) => {
       validade,
     } = req.body;
 
-    if (
-      !nome ||
-      !codigo ||
-      !preco ||
-      !categoria ||
-      !estoque ||
-      !lote ||
-      !departamento ||
-      !marketId ||
-      !fabricacao ||
-      !validade
-    ) {
+    if (!nome || !codigo || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade) {
       return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." });
     }
-
-    const produto = {
-      nome,
-      codigo,
-      preco: parseFloat(preco),
-      categoria,
-      estoque: parseInt(estoque),
-      lote,
-      departamento,
-      marketId,
-      fabricacao,
-      validade,
-      imagem: imagempath,
-    };
 
     insert("products", [
       "marketId", "name", "price", "category", "departament",
       "stock", "lot", "expirationDate", "manufactureDate",
       "barcode", "image"
     ], [
-      produto.marketId,
-      produto.nome,
-      produto.preco,
-      produto.categoria,
-      produto.departamento,
-      produto.estoque,
-      produto.lote,
-      produto.validade,
-      produto.fabricacao,
-      produto.codigo,
-      produto.imagem,
+      marketId,
+      nome,
+      parseFloat(preco),
+      categoria,
+      departamento,
+      parseInt(estoque),
+      lote,
+      validade,
+      fabricacao,
+      codigo,
+      imagempath
     ]);
 
     res.status(200).json({ mensagem: "Produto adicionado com sucesso!" });
@@ -181,9 +142,6 @@ app.post("/adicionarProduto", multer().single("imagem"), async (req, res) => {
   }
 });
 
-// -------------------------------------------------
-// Endpoint para deletar produto (já existente)
-// -------------------------------------------------
 app.post('/deletarProduto', async (req, res) => {
   const { codigo } = req.body;
   if (!codigo) {
@@ -198,9 +156,6 @@ app.post('/deletarProduto', async (req, res) => {
   }
 });
 
-// -------------------------------------------------
-// Rotas de Carrinho e Finalizar compra (existentes)
-// -------------------------------------------------
 app.get('/getCarrinho', (req, res) => {
   const carrinho = req.cookies.carrinho || {};
   res.json({ carrinho });
@@ -212,6 +167,7 @@ app.post('/finalizarCompra', async (req, res) => {
     if (!items || !total || !paymentMethod || !marketId) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+
     const saleDate = new Date().toISOString();
     await insert('sales', [
       'marketId',
@@ -273,17 +229,16 @@ app.post('/finalizarCompra', async (req, res) => {
   }
 });
 
-// -------------------------------------------------
-// Endpoint para listar produtos (existente)
-// -------------------------------------------------
 app.post('/estoqueData', async (req, res) => {
   const { busca, category, marketId } = req.body;
   if (!marketId) {
     return res.status(400).json({ erro: "marketId é obrigatório" });
   }
+
   const marketIdSafe = marketId.replace(/'/g, "''");
   let buscaSafe = busca ? busca.replace(/'/g, "''") : null;
   let categorySafe = category ? category.replace(/'/g, "''") : null;
+
   let conditions = [`marketId = '${marketIdSafe}'`];
   if (buscaSafe) {
     conditions.push(`(name LIKE '%${buscaSafe}%' OR productId LIKE '%${buscaSafe}%' OR barcode = '${buscaSafe}')`);
@@ -291,7 +246,9 @@ app.post('/estoqueData', async (req, res) => {
   if (categorySafe) {
     conditions.push(`category = '${categorySafe}'`);
   }
-  const condicao = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const condicao = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : "";
+
   try {
     const results = await select("products", condicao);
     res.status(200).json({ mensagem: results });
@@ -301,9 +258,6 @@ app.post('/estoqueData', async (req, res) => {
   }
 });
 
-// -------------------------------------------------
-// Endpoints de Setors (existentes)
-// -------------------------------------------------
 app.post('/getSetor', async (req, res) => {
   try {
     const cats = await select("setors", "WHERE type = 'cat'");
@@ -326,15 +280,8 @@ app.post('/addSetor', (req, res) => {
   }
   const nomeSanitizado = name.replace(/'/g, "''");
   const tipoSanitizado = type === 'dept' ? 'dept' : 'cat';
-  const columns = ['name', 'type', 'marketId'];
-  const values = [nomeSanitizado, tipoSanitizado, 1];
-  try {
-    insert('setors', columns, values);
-    res.status(200).json({ mensagem: "Setor adicionado com sucesso!" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Erro ao adicionar setor." });
-  }
+  insert('setors', ['name','type','marketId'], [nomeSanitizado, tipoSanitizado, 1]);
+  res.status(200).json({ mensagem: "Setor adicionado com sucesso!" });
 });
 
 app.post('/deleteSetor', (req, res) => {
@@ -344,19 +291,10 @@ app.post('/deleteSetor', (req, res) => {
   }
   const nomeSanitizado = name.replace(/'/g, "''");
   const tipoSanitizado = type === 'dept' ? 'dept' : 'cat';
-  const condicao = `name = '${nomeSanitizado}' AND type = '${tipoSanitizado}'`;
-  try {
-    delet('setors', condicao);
-    res.status(200).json({ mensagem: "Setor excluído com sucesso!" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Erro ao excluir setor." });
-  }
+  delet('setors', `name = '${nomeSanitizado}' AND type = '${tipoSanitizado}'`);
+  res.status(200).json({ mensagem: "Setor excluído com sucesso!" });
 });
 
-// -------------------------------------------------
-// Rota para editar produto (existente, duplicado removido)
-// -------------------------------------------------
 app.post("/editarProduto", (req, res) => {
   const {
     productId,
@@ -371,23 +309,15 @@ app.post("/editarProduto", (req, res) => {
     barcode,
     marketId
   } = req.body;
-
-  const columns = [
-    "name", "price", "category", "departament", "stock",
-    "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
-  ];
-  const values = [
-    name, price, category, departament, stock,
-    lot, expirationDate, manufactureDate, barcode, marketId
-  ];
-  const condition = `productId = ${productId}`;
-  update("products", columns, values, condition);
+  update(
+    "products",
+    ["name","price","category","departament","stock","lot","expirationDate","manufactureDate","barcode","marketId"],
+    [name,price,category,departament,stock,lot,expirationDate,manufactureDate,barcode,marketId],
+    `productId = ${productId}`
+  );
   res.json({ success: true, message: "Produto atualizado com sucesso!" });
 });
 
-// -------------------------------------------------
-// Rota de Cadastro de Usuário (existente)
-// -------------------------------------------------
 app.post("/cadastro", async (req, res) => {
   const { name, password, gestor } = req.body;
   if (!name || !password) {
@@ -404,7 +334,7 @@ app.post("/cadastro", async (req, res) => {
         message: "Usuário já existente!"
       });
     }
-    await insert("users", ["name", "password", "gestor"], [name, password, gestor]);
+    insert("users", ["name","password","gestor"], [name,password,gestor]);
     const users = await select("users", "WHERE name = ?", [name]);
     const user = users[0];
     res.status(200).json({
@@ -423,9 +353,6 @@ app.post("/cadastro", async (req, res) => {
   }
 });
 
-// -------------------------------------------------
-// Rota para login com ID (ajustada para profileImage)
-// -------------------------------------------------
 app.post("/loginWithId", async (req, res) => {
   let { id } = req.body;
   try {
@@ -442,20 +369,17 @@ app.post("/loginWithId", async (req, res) => {
       id: user.userId,
       name: user.name,
       gestor: user.gestor,
-      profileImage: user.profileImage
+      profileImage: user.profileImage || null
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({
+    res.status(500).json({
       status: "error",
       message: "Internal server error"
     });
   }
 });
 
-// -------------------------------------------------
-// Rota de login (ajustada para profileImage)
-// -------------------------------------------------
 app.post('/login', async (req, res) => {
   let { name, senha } = req.body;
   try {
@@ -479,7 +403,7 @@ app.post('/login', async (req, res) => {
       name: user.name,
       userId: user.userId,
       gestor: user.gestor,
-      profileImage: user.profileImage
+      profileImage: user.profileImage || null
     });
   } catch (err) {
     console.error("Erro no login:", err);
@@ -490,78 +414,44 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// -------------------------------------------------
-// Rotas de Perfis: Upload e Remoção de Imagem
-// -------------------------------------------------
-
-// Upload de nova foto de perfil
 app.post(
   "/uploadProfileImage",
   uploadProfile.single("profileImage"),
   async (req, res) => {
     try {
-      // 1) Validar userId
       const userId = req.body.userId;
       if (!userId) {
-        console.error("[UPLOAD] Falta userId no body");
-        return res
-          .status(400)
-          .json({ status: "error", message: "UserId não fornecido" });
+        return res.status(400).json({ status: "error", message: "UserId não fornecido" });
       }
-
-      // 2) Verificar se multer trouxe o arquivo
       if (!req.file) {
-        console.error("[UPLOAD] req.file está undefined");
-        return res
-          .status(400)
-          .json({ status: "error", message: "Nenhum arquivo enviado" });
+        return res.status(400).json({ status: "error", message: "Nenhum arquivo enviado" });
       }
-      console.log("[UPLOAD] Arquivo recebido:", req.file.filename);
 
-      // 3) Remover foto antiga, se existir
       const rows = await select("users", "WHERE userId = ?", [userId]);
       if (rows && rows.length > 0) {
         const oldPath = rows[0].profileImage;
         if (oldPath) {
           const fullOldPath = path.join(__dirname, oldPath);
-          console.log("[UPLOAD] Tentando remover foto antiga em:", fullOldPath);
           if (fs.existsSync(fullOldPath)) {
             fs.unlinkSync(fullOldPath);
-            console.log("[UPLOAD] Foto antiga removida");
-          } else {
-            console.log("[UPLOAD] Foto antiga não encontrada");
           }
         }
-      } else {
-        console.warn(`[UPLOAD] Nenhum usuário encontrado com userId = ${userId}`);
       }
 
-      // 4) Construir caminho relativo correto para salvar no banco
-      const rawPath = req.file.path;
-      let relativePath = path.relative(__dirname, rawPath).replace(/\\/g, "/");
-      console.log("[UPLOAD] Caminho relativo para DB:", relativePath);
+      const relativePath = path.relative(__dirname, req.file.path).replace(/\\/g, "/");
+      await update("users", ["profileImage"], [relativePath], `userId = '${userId}'`);
 
-      // 5) Atualizar no banco (com aspas simples em torno de userId)
-      const condition = `userId = '${userId}'`;
-      console.log(`[UPLOAD] UPDATE users SET profileImage = ? WHERE ${condition}`);
-      await update("users", ["profileImage"], [relativePath], condition);
-      console.log("[UPLOAD] UPDATE concluído com sucesso");
-
-      // 6) Responder ao cliente
       return res.status(200).json({
         status: "success",
-        profileImage: relativePath,
+        profileImage: relativePath
       });
     } catch (err) {
       console.error("Erro em /uploadProfileImage:", err);
-      return res
-        .status(500)
-        .json({ status: "error", message: "Erro interno no servidor" });
+      return res.status(500).json({ status: "error", message: "Erro interno no servidor" });
     }
   }
 );
 
-// Remover foto de perfil
 app.post("/removeProfileImage", async (req, res) => {
   try {
     const userId = req.body.userId;
@@ -569,7 +459,6 @@ app.post("/removeProfileImage", async (req, res) => {
       return res.status(400).json({ status: "error", message: "UserId não fornecido" });
     }
 
-    // Buscar e remover do disco, se existir
     const rows = await select("users", "WHERE userId = ?", [userId]);
     if (rows && rows.length > 0) {
       const oldPath = rows[0].profileImage;
@@ -581,9 +470,7 @@ app.post("/removeProfileImage", async (req, res) => {
       }
     }
 
-    // Atualizar para null no banco
     await update("users", ["profileImage"], [null], `userId = '${userId}'`);
-
     return res.status(200).json({ status: "success", message: "Imagem removida" });
   } catch (err) {
     console.error("Erro em /removeProfileImage:", err);
@@ -591,9 +478,6 @@ app.post("/removeProfileImage", async (req, res) => {
   }
 });
 
-// -------------------------------------------------
-// Outras rotas (Supermercados, Relatórios, etc.)
-// -------------------------------------------------
 const generateMarketId = async () => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let marketId;
@@ -668,7 +552,7 @@ app.post('/deletarSupermercado', async (req, res) => {
   }
   try {
     delet("supermarkets", `marketId = '${id}'`);
-    res.status(200).json({ mensagem: "Supervisor deletado com sucesso!" });
+    res.status(200).json({ mensagem: "Supermercado deletado com sucesso!" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao deletar supermercado." });
@@ -705,7 +589,7 @@ app.post('/updateSupermercado', async (req, res) => {
 app.post('/addCarrinho', async (req, res) => {
   const carrinho = req.body;
   if (!carrinho) {
-    res.status(400).send('Dados não recebidos');
+    return res.status(400).send('Dados não recebidos');
   }
   res.cookie('carrinho', carrinho, {
     maxAge: 900000,
@@ -752,7 +636,7 @@ app.get('/users/:userId', async (req, res) => {
         userId: user.userId,
         name: user.name,
         gestor: user.gestor,
-        profileImage: user.profileImage
+        profileImage: user.profileImage || null
       }
     });
   } catch (err) {
