@@ -25,8 +25,10 @@
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
       padding: 20px;
-      max-width: 1300px; /* LARGURA CONTROLADA */
-      margin: 0 auto; /* CENTRALIZADO */
+      max-width: 1300px;
+      /* LARGURA CONTROLADA */
+      margin: 0 auto;
+      /* CENTRALIZADO */
       height: 500px;
     }
 
@@ -34,11 +36,13 @@
     .nav-tabs {
       border-bottom: 2px solid #dee2e6;
     }
+
     .nav-tabs .nav-link {
       font-weight: 600;
       color: #495057;
       border: none;
     }
+
     .nav-tabs .nav-link.active {
       color: #ff6f00;
       border-bottom: 3px solid #ff6f00;
@@ -50,10 +54,12 @@
       margin-bottom: 8px;
       border-radius: 8px !important;
     }
+
     .accordion-button {
       padding: 12px 15px;
       font-weight: 600;
     }
+
     .accordion-button:not(.collapsed) {
       background-color: rgba(255, 111, 0, 0.05);
       color: #ff6f00;
@@ -66,22 +72,26 @@
       border-bottom: 1px solid #eee;
       padding: 8px 0;
     }
+
     .antes {
       background-color: #f8d7da;
       padding: 10px;
       border-radius: 6px;
       flex: 1;
     }
+
     .depois {
       background-color: #d4edda;
       padding: 10px;
       border-radius: 6px;
       flex: 1;
     }
+
     .alteracao-comparacao {
       display: flex;
       gap: 10px;
     }
+
     .titulo-painel {
       font-weight: bold;
       font-size: 1.2rem;
@@ -90,29 +100,39 @@
 
     /* SCROLL NAS ÁREAS DE DADOS */
     .scrollable-content {
-    max-height: 400px; /* Ajuste conforme preferir */
-    overflow-y: auto;
-    padding-right: 10px; /* Evita que o conteúdo encoste na barra */
+      max-height: 400px;
+      /* Ajuste conforme preferir */
+      overflow-y: auto;
+      padding-right: 10px;
+      /* Evita que o conteúdo encoste na barra */
     }
+
     .accordion {
-  max-height: 350px;   /* você pode ajustar esse valor como quiser */
-  overflow-y: auto;
-  padding-right: 5px; /* para evitar que a barra de rolagem sobreponha conteúdo */
-}
+      max-height: 350px;
+      /* você pode ajustar esse valor como quiser */
+      overflow-y: auto;
+      padding-right: 5px;
+      /* para evitar que a barra de rolagem sobreponha conteúdo */
+    }
   </style>
 </head>
 
 <body>
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-light fixed-top">
-    <div class="container-fluid">
-      <span class="navbar-brand mb-0 h1">
-        <i class="bi bi-box-seam me-2"></i>Histórico de Produtos
-      </span>
+  <!-- Navbar -->
+  <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-dark" onclick="history.back()">voltar</button>
+        <h1 class="ms-3">🏪</h1>
+        <span class="navbar-brand mb-0 h1">Mercado Didático</span>
+      </div>
+      <button class="btn btn-danger fs-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#perfilOffcanvas">
+        <i class="bi bi-person-circle"></i>
+      </button>
     </div>
   </nav>
-<!-- Container Principal -->
-<div class="container my-4 p-4 bg-white rounded shadow-sm">
+  <!-- Container Principal -->
+  <div class="container my-4 p-4 bg-white rounded shadow-sm">
 
     <!-- Título -->
     <div class="row mb-3">
@@ -120,19 +140,20 @@
         <h4 class="text-primary"><strong>📦 Histórico de Produtos</strong></h4>
       </div>
     </div>
-  
+
     <!-- Linha de Pesquisa e Exclusão -->
     <div class="row g-3 align-items-end">
-      
+
       <!-- Campo de Pesquisa -->
       <div class="col-md-6">
         <label for="pesquisa" class="form-label">Pesquisar produto (nome ou código)</label>
         <div class="input-group">
-          <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Arroz, 0012..." oninput="pesquisarHistorico()">
+          <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Arroz, 0012..."
+            oninput="pesquisarHistorico()">
           <button class="input-group-text">🔍</button>
         </div>
       </div>
-  
+
       <!-- Filtro por Categoria -->
       <div class="col-md-3">
         <label for="filtro-categoria" class="form-label">Categoria</label>
@@ -143,7 +164,7 @@
           <option value="alteracao">Alterações</option>
         </select>
       </div>
-  
+
       <!-- Excluir -->
       <div class="col-md-3">
         <label for="campo-excluir" class="form-label">Apagar produto ou categoria</label>
@@ -153,27 +174,28 @@
         </div>
       </div>
     </div>
-  
+
     <!-- Resultados -->
     <div class="mt-4" id="resultado-pesquisa">
       <!-- Resultados da pesquisa serão renderizados aqui -->
     </div>
-  
+
   </div>
   <!-- CONTAINER DE INFORMAÇÕES -->
-  <div style="width: 1300px;" class="mx-auto d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-primary text-white">
+  <div style="width: 1300px;"
+    class="mx-auto d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-primary text-white">
     <h4 class="mb-0"><i class="bi bi-archive"></i> Histórico</h4>
-    <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque"
-        onclick="reloadPage()">
-        <i class="bi bi-arrow-clockwise"></i>
+    <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque" onclick="reloadPage()">
+      <i class="bi bi-arrow-clockwise"></i>
     </button>
-</div>
+  </div>
   <!-- CONTAINER PRINCIPAL (MAIS COMPACTO) -->
   <div class="container-principal mt-4">
     <!-- ABAS -->
     <ul class="nav nav-tabs" id="historicoTabs" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="entradas-tab" data-bs-toggle="tab" data-bs-target="#entradas" type="button" role="tab">
+        <button class="nav-link active" id="entradas-tab" data-bs-toggle="tab" data-bs-target="#entradas" type="button"
+          role="tab">
           <i class="bi bi-box-arrow-in-down me-1"></i>Entradas
         </button>
       </li>
@@ -183,7 +205,8 @@
         </button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="alteracoes-tab" data-bs-toggle="tab" data-bs-target="#alteracoes" type="button" role="tab">
+        <button class="nav-link" id="alteracoes-tab" data-bs-toggle="tab" data-bs-target="#alteracoes" type="button"
+          role="tab">
           <i class="bi bi-pencil-square me-1"></i>Alterações
         </button>
       </li>
@@ -216,8 +239,8 @@
   <script>
     // DADOS DINÂMICOS
     const produtos = [
-      "Arroz", "Feijão", "Macarrão", "Açúcar", "Sal", "Óleo", "Café", "Farinha", 
-      "Milho", "Bolacha", "Achocolatado", "Sabão", "Shampoo", "Detergente", 
+      "Arroz", "Feijão", "Macarrão", "Açúcar", "Sal", "Óleo", "Café", "Farinha",
+      "Milho", "Bolacha", "Achocolatado", "Sabão", "Shampoo", "Detergente",
       "Água sanitária", "Papel higiênico", "Pasta de dente", "Escova", "Alvejante", "Biscoito"
     ];
 
@@ -300,29 +323,29 @@
     // CARREGA OS CARDS QUANDO A PÁGINA ESTIVER PRONTA
     document.addEventListener('DOMContentLoaded', gerarCards);
 
-        function pesquisarHistorico() {
-    const termo = document.getElementById('pesquisa').value.toLowerCase();
-    const categoria = document.getElementById('filtro-categoria').value;
+    function pesquisarHistorico() {
+      const termo = document.getElementById('pesquisa').value.toLowerCase();
+      const categoria = document.getElementById('filtro-categoria').value;
 
-    // Simulação de busca: substitua com seus dados reais do Firebase ou onde estiver
-    console.log(`Pesquisar: termo="${termo}", categoria="${categoria}"`);
-    // Aqui você filtra os itens e exibe no resultado
+      // Simulação de busca: substitua com seus dados reais do Firebase ou onde estiver
+      console.log(`Pesquisar: termo="${termo}", categoria="${categoria}"`);
+      // Aqui você filtra os itens e exibe no resultado
     }
 
     function confirmarExclusao() {
-    const valor = document.getElementById('campo-excluir').value.trim().toLowerCase();
+      const valor = document.getElementById('campo-excluir').value.trim().toLowerCase();
 
-    if (!valor) {
+      if (!valor) {
         alert('Digite um nome de produto ou categoria para apagar.');
         return;
-    }
+      }
 
-    const confirmar = confirm(`Tem certeza que deseja apagar "${valor}"? Essa ação não pode ser desfeita.`);
-    if (confirmar) {
+      const confirmar = confirm(`Tem certeza que deseja apagar "${valor}"? Essa ação não pode ser desfeita.`);
+      if (confirmar) {
         // Aqui você identifica se é um produto ou categoria, e executa a exclusão
         console.log(`Apagar: "${valor}"`);
         // Função para deletar do banco
-    }
+      }
     }
 
   </script>
