@@ -128,7 +128,7 @@
       <div class="col-md-6">
         <label for="pesquisa" class="form-label">Pesquisar produto (nome ou código)</label>
         <div class="input-group">
-          <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Arroz, 0012..." oninput="pesquisarHistorico()">
+          <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Arroz, 0012..." oninput="carregarHistorico()">
           <button class="input-group-text">🔍</button>
         </div>
       </div>
@@ -136,11 +136,11 @@
       <!-- Filtro por Categoria -->
       <div class="col-md-3">
         <label for="filtro-categoria" class="form-label">Categoria</label>
-        <select class="form-select" id="filtro-categoria" onchange="pesquisarHistorico()">
-          <option value="">Todas</option>
-          <option value="entrada">Entrada</option>
-          <option value="saida">Saída</option>
-          <option value="alteracao">Alterações</option>
+        <select class="form-select" id="filtro-categoria" onchange="carregarHistorico()">
+            <option value="">Todas</option>
+            <option value="entrada">Entrada</option>
+            <option value="saida">Saída</option>
+            <option value="alteracao">Alterações</option>
         </select>
       </div>
   
@@ -211,121 +211,229 @@
     </div>
   </div>
 
-  <!-- SCRIPTS (NO FINAL DO BODY PARA GARANTIR FUNCIONAMENTO) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // DADOS DINÂMICOS
-    const produtos = [
-      "Arroz", "Feijão", "Macarrão", "Açúcar", "Sal", "Óleo", "Café", "Farinha", 
-      "Milho", "Bolacha", "Achocolatado", "Sabão", "Shampoo", "Detergente", 
-      "Água sanitária", "Papel higiênico", "Pasta de dente", "Escova", "Alvejante", "Biscoito"
-    ];
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", carregarHistorico);
 
-    // FUNÇÃO PARA GERAR OS CARDS
-    function gerarCards() {
-      const entradasContainer = document.getElementById("entradasAccordion");
-      const saidasContainer = document.getElementById("saidasAccordion");
-      const alteracoesContainer = document.getElementById("alteracoesAccordion");
+async function carregarHistorico() {
+    const entradasEl = document.getElementById("entradasAccordion");
+    const saidasEl = document.getElementById("saidasAccordion");
+    const alteracoesEl = document.getElementById("alteracoesAccordion");
 
-      produtos.forEach((nome, i) => {
-        const data = `2${Math.floor(Math.random() * 8) + 1}/05`;
-
-        // ENTRADAS
-        entradasContainer.innerHTML += `
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="entrada${i}">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#collapseEntrada${i}" aria-expanded="false">
-                <i class="bi bi-box-arrow-in-down me-2 text-success"></i>${nome}
-                <span class="badge bg-success ms-2">${data}</span>
-              </button>
-            </h2>
-            <div id="collapseEntrada${i}" class="accordion-collapse collapse" aria-labelledby="entrada${i}">
-              <div class="accordion-body">
-                <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 40 + 10)}</div>
-                <div class="linha"><strong>Valor:</strong> R$ ${(Math.random() * 200).toFixed(2)}</div>
-                <div class="linha"><strong>Fornecedor:</strong> Empresa ${i + 1}</div>
-              </div>
+    // Estado de carregamento
+    entradasEl.innerHTML = `
+        <div class="text-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
             </div>
-          </div>`;
+            <p class="text-muted mt-2">Carregando histórico...</p>
+        </div>
+    `;
+    saidasEl.innerHTML = '';
+    alteracoesEl.innerHTML = '';
 
-        // SAÍDAS
-        saidasContainer.innerHTML += `
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="saida${i}">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#collapseSaida${i}" aria-expanded="false">
-                <i class="bi bi-box-arrow-right me-2 text-danger"></i>${nome}
-                <span class="badge bg-danger ms-2">${data}</span>
-              </button>
-            </h2>
-            <div id="collapseSaida${i}" class="accordion-collapse collapse" aria-labelledby="saida${i}">
-              <div class="accordion-body">
-                <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 20 + 5)}</div>
-                <div class="linha"><strong>Motivo:</strong> ${i % 2 === 0 ? "Vencido" : "Venda"}</div>
-              </div>
-            </div>
-          </div>`;
+    try {
+        const marketId = localStorage.getItem("marketId") || "1";
+        const busca = document.getElementById("pesquisa")?.value || "";
+        const categoria = document.getElementById("filtro-categoria")?.value || "";
 
-        // ALTERAÇÕES
-        alteracoesContainer.innerHTML += `
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="alteracao${i}">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#collapseAlteracao${i}" aria-expanded="false">
-                <i class="bi bi-pencil-square me-2 text-primary"></i>${nome}
-                <span class="badge bg-primary ms-2">${data}</span>
-              </button>
-            </h2>
-            <div id="collapseAlteracao${i}" class="accordion-collapse collapse" aria-labelledby="alteracao${i}">
-              <div class="accordion-body">
-                <div class="alteracao-comparacao">
-                  <div class="antes">
-                    <h6><strong>Antes:</strong></h6>
-                    <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 30 + 1)}</div>
-                    <div class="linha"><strong>Preço:</strong> R$ ${(Math.random() * 100).toFixed(2)}</div>
-                  </div>
-                  <div class="depois">
-                    <h6><strong>Depois:</strong></h6>
-                    <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 30 + 1)}</div>
-                    <div class="linha"><strong>Preço:</strong> R$ ${(Math.random() * 100).toFixed(2)}</div>
-                  </div>
+        // Debug: mostra os parâmetros enviados
+        console.log("Enviando requisição com:", { marketId, busca, categoria });
+
+        const response = await fetch("/historicoData", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ 
+                marketId, 
+                busca: busca.trim(),
+                categoria 
+            })
+        });
+
+        // Debug: mostra a resposta bruta
+        console.log("Resposta recebida:", response);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+
+        // Debug: mostra o resultado parseado
+        console.log("Dados recebidos:", result);
+
+        if (!result.success) {
+            throw new Error(result.error || "Resposta inválida do servidor");
+        }
+
+        // Limpa os containers
+        entradasEl.innerHTML = '';
+        saidasEl.innerHTML = '';
+        alteracoesEl.innerHTML = '';
+
+        if (!result.data || result.data.length === 0) {
+            const emptyMsg = `
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle"></i>
+                    Nenhum registro encontrado com os filtros atuais
                 </div>
-              </div>
+            `;
+            entradasEl.innerHTML = emptyMsg;
+            return;
+        }
+
+        // Processa os dados
+        const grouped = { entrada: [], saida: [], edicao: [] };
+        
+        result.data.forEach(item => {
+            try {
+                if (item.type === 'entrada') grouped.entrada.push(item);
+                else if (item.type === 'saida') grouped.saida.push(item);
+                else if (item.type === 'edicao') grouped.edicao.push(item);
+            } catch (e) {
+                console.error('Erro ao processar item:', item, e);
+            }
+        });
+
+        // Renderização
+        renderHistoricoItems(grouped.entrada, entradasEl, 'entrada');
+        renderHistoricoItems(grouped.saida, saidasEl, 'saida');
+        renderHistoricoItems(grouped.edicao, alteracoesEl, 'edicao');
+
+    } catch (err) {
+        console.error("Erro detalhado:", err);
+        
+        const errorHTML = `
+            <div class="alert alert-danger mt-3">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Erro ao carregar histórico</strong>
+                <p class="mb-0">${err.message}</p>
+                ${process.env.NODE_ENV === 'development' ? 
+                    `<pre class="mt-2 small">${err.stack}</pre>` : ''}
             </div>
-          </div>`;
-      });
+        `;
+        
+        entradasEl.innerHTML = errorHTML;
     }
+}
 
-    // CARREGA OS CARDS QUANDO A PÁGINA ESTIVER PRONTA
-    document.addEventListener('DOMContentLoaded', gerarCards);
+function renderHistoricoItems(items, container, type) {
+    if (!container || !items) return;
 
-        function pesquisarHistorico() {
-    const termo = document.getElementById('pesquisa').value.toLowerCase();
-    const categoria = document.getElementById('filtro-categoria').value;
-
-    // Simulação de busca: substitua com seus dados reais do Firebase ou onde estiver
-    console.log(`Pesquisar: termo="${termo}", categoria="${categoria}"`);
-    // Aqui você filtra os itens e exibe no resultado
-    }
-
-    function confirmarExclusao() {
-    const valor = document.getElementById('campo-excluir').value.trim().toLowerCase();
-
-    if (!valor) {
-        alert('Digite um nome de produto ou categoria para apagar.');
+    // Mensagem se não houver itens
+    if (items.length === 0) {
+        container.innerHTML = `
+            <p class="text-muted py-3">
+                <i class="bi bi-database-exclamation"></i>
+                Nenhum registro de ${getTypeName(type)} encontrado
+            </p>
+        `;
         return;
     }
 
-    const confirmar = confirm(`Tem certeza que deseja apagar "${valor}"? Essa ação não pode ser desfeita.`);
-    if (confirmar) {
-        // Aqui você identifica se é um produto ou categoria, e executa a exclusão
-        console.log(`Apagar: "${valor}"`);
-        // Função para deletar do banco
-    }
-    }
+    // Limpa o container antes de renderizar
+    container.innerHTML = '';
 
-  </script>
+    items.forEach((item, index) => {
+        // Garante que beforeData e afterData são objetos válidos
+        const before = item.beforeData || {};
+        const after = item.afterData || {};
+        const dataFormatada = formatDate(item.date);
+
+        // Gera o HTML para cada item
+        const itemHTML = `
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-${type}-${index}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                            data-bs-target="#collapse-${type}-${index}">
+                        <i class="bi ${getTypeIcon(type)} me-2 text-${getTypeColor(type)}"></i>
+                        ${item.name || `Produto #${item.productId}`}
+                        <span class="badge bg-${getTypeColor(type)} ms-2">${dataFormatada}</span>
+                    </button>
+                </h2>
+                <div id="collapse-${type}-${index}" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        ${getTypeDetails(type, before, after)}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', itemHTML);
+    });
+}
+
+// Funções auxiliares
+function getTypeName(type) {
+  return {
+    entrada: 'entrada',
+    saida: 'saída',
+    edicao: 'alteração'
+  }[type];
+}
+
+function getTypeIcon(type) {
+  return {
+    entrada: 'bi-box-arrow-in-down',
+    saida: 'bi-box-arrow-right',
+    edicao: 'bi-pencil-square'
+  }[type];
+}
+
+function getTypeColor(type) {
+  return {
+    entrada: 'success',
+    saida: 'danger',
+    edicao: 'primary'
+  }[type];
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+}
+
+function getTypeDetails(type, before, after) {
+  if (type === 'entrada') {
+    return `
+      <div class="linha"><strong>Quantidade:</strong> ${after?.stock ?? "-"}</div>
+      <div class="linha"><strong>Preço:</strong> R$ ${(after?.price ?? 0).toFixed(2)}</div>
+    `;
+  } else if (type === 'saida') {
+    return `
+      <div class="linha"><strong>De:</strong> ${before?.stock ?? "-"}</div>
+      <div class="linha"><strong>Para:</strong> ${after?.stock ?? "-"}</div>
+    `;
+  } else { // edicao
+    return `
+      <div class="alteracao-comparacao">
+        <div class="antes">
+          <h6><strong>Antes:</strong></h6>
+          <div class="linha"><strong>Quantidade:</strong> ${before?.stock ?? "-"}</div>
+          <div class="linha"><strong>Preço:</strong> R$ ${(before?.price ?? 0).toFixed(2)}</div>
+          ${before?.name ? `<div class="linha"><strong>Nome:</strong> ${before.name}</div>` : ''}
+        </div>
+        <div class="depois">
+          <h6><strong>Depois:</strong></h6>
+          <div class="linha"><strong>Quantidade:</strong> ${after?.stock ?? "-"}</div>
+          <div class="linha"><strong>Preço:</strong> R$ ${(after?.price ?? 0).toFixed(2)}</div>
+          ${after?.name ? `<div class="linha"><strong>Nome:</strong> ${after.name}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+}
+
+function reloadPage() {
+  carregarHistorico();
+}
+
+</script>
+
 </body>
 
 </html>

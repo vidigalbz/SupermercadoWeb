@@ -21,22 +21,35 @@ function getQueryParam(paramName) {
   return null;
 }
 
-function verificSuper(){
-    fetch("/verific", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
-    }).then( res => res.json())
-    .then( data => {
-      if (Object.keys(data.mensagem).length === 0){
-        window.location.href = '/Error404'
+function verificSuper() {
+  const id = new URLSearchParams(window.location.search).get("id") || localStorage.getItem("marketId");
+
+  if (!id) {
+    console.warn("marketId não encontrado.");
+    window.location.href = '/Error404';
+    return;
+  }
+
+  fetch("/verific", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ marketId: id })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success || !data.market) {
+        window.location.href = '/Error404';
       } else {
-        // Atualiza o nome do supermercado
-        const supermarketName = data.mensagem[0].name;
+        const supermarketName = data.market.name;
         document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
+        // Salva o marketId no localStorage se ainda não estiver
+        localStorage.setItem("marketId", id);
       }
     })
-    .catch(err => console.error('Erro ao verificar supermercado:', err));
+    .catch(err => {
+      console.error('Erro ao verificar supermercado:', err);
+      window.location.href = '/Error404';
+    });
 }
 
 const id = getQueryParam('id');
