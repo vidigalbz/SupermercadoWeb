@@ -1,6 +1,10 @@
 const container = document.getElementById("produtos-container");
 const filterCategoria = document.getElementById("filtro-categoria");
 const filterDepartamento = document.getElementById("filtro-departamento");
+const precoInput = document.getElementById("add-preco");
+const estoqueInput = document.getElementById("produto-estoque");
+const valorTotalInput = document.getElementById("valor-total-compra");
+
 
 var categoriaValue = "Todos";
 
@@ -443,3 +447,38 @@ async function gerarCodigo() {
     })
     .catch(err => console.error('Erro ao carregar produtos:', err));
 }
+
+
+async function carregarFornecedores() {
+  const res = await fetch('/fornecedorData', { method: 'POST' })
+  const json = await res.json()
+  const fornecedores = json.result
+
+  const select = document.getElementById('add-fornecedor')
+  select.innerHTML = '' // limpa
+
+  fornecedores.forEach(fornecedor => {
+    const option = document.createElement('option')
+    option.value = fornecedor.cnpj  // ou id, se tiver
+    option.text = fornecedor.razao_social
+    select.appendChild(option)
+  })
+}
+
+// Quando o modal de adicionar produto for aberto
+const modalAdicionar = document.getElementById('modalAdicionarItem')
+modalAdicionar.addEventListener('show.bs.modal', () => {
+  carregarFornecedores()
+})
+
+
+function calcularTotalCompra() {
+  const preco = parseFloat(precoInput.value) || 0;
+  const estoque = parseInt(estoqueInput.value) || 0;
+  const total = preco * estoque;
+  valorTotalInput.value = `R$ ${total.toFixed(2)}`;
+}
+
+// Atualiza o valor total sempre que o preço ou o estoque mudar
+precoInput.addEventListener("input", calcularTotalCompra);
+estoqueInput.addEventListener("input", calcularTotalCompra);
