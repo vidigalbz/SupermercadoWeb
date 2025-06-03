@@ -308,14 +308,12 @@ async function carregarHistorico() {
         console.error("Erro detalhado:", err);
         
         const errorHTML = `
-            <div class="alert alert-danger mt-3">
-                <i class="bi bi-exclamation-triangle"></i>
-                <strong>Erro ao carregar histórico</strong>
-                <p class="mb-0">${err.message}</p>
-                ${process.env.NODE_ENV === 'development' ? 
-                    `<pre class="mt-2 small">${err.stack}</pre>` : ''}
-            </div>
-        `;
+          <div class="alert alert-danger mt-3">
+              <i class="bi bi-exclamation-triangle"></i>
+              <strong>Erro ao carregar histórico</strong>
+              <p class="mb-0">${err.message}</p>
+          </div>
+      `;
         
         entradasEl.innerHTML = errorHTML;
     }

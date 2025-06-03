@@ -4,7 +4,7 @@ const fs = require("fs");
 const multer = require("multer");
 const cookieParser = require('cookie-parser');
 
-const { select, insert, update, delet, query } = require("./database.js");
+const { select, insert, update, delet, query, selectFromRaw } = require("./database.js");
 
 const app = express();
 const port = 4000;
@@ -275,14 +275,14 @@ app.post('/finalizarCompra', async (req, res) => {
                         'type',
                         'beforeData',
                         'afterData',
-                        'date'
+                        'createdAt'
                     ], [
                         historyEntry.productId,
                         historyEntry.marketId,
                         historyEntry.type,
                         historyEntry.beforeData,
                         historyEntry.afterData,
-                        historyEntry.date
+                        historyEntry.createdAt
                     ]);
                 }
             } else {
@@ -793,7 +793,7 @@ app.post('/historicoData', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: "Erro interno ao processar histórico",
-            details: process.env.NODE_ENV === 'development' ? err.message : null
+            details: err.message
         });
     }
 });
