@@ -1,0 +1,45 @@
+body {
+    background-color: #f8f9fa;
+    padding-top: 60px;
+    font-family: "Poppins", sans-serif;
+}
+
+.info-card {
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #fff;
+}
+
+.info-card h6 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.info-card p.fs-3 {
+    font-size: 1.3rem !important;
+}
+
+.export-buttons button {
+    margin-right: 0.5rem;
+}
+
+.card {
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    transition: 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.01);
+}
+
+h6 {
+    font-weight: 600;
+}
+
+.list-container {
+    scrollbar-width: thin;
+    scrollbar-color: #aaa #eee;
+}

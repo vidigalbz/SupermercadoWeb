@@ -165,7 +165,6 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
     }
 });
 
-
 // Endpoint para deletar produto pelo código
 app.post('/deletarProduto', async (req, res) => {
     const { codigo } = req.body;
