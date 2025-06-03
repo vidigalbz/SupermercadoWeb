@@ -69,26 +69,49 @@ function getQueryParam(paramName) {
     return null;
   }
   
-async function verificSuper(){
-  fetch("/verific", {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
-  }).then( res => res.json())
-  .then( data => {
-    if (Object.keys(data.mensagem).length === 0){
-      window.location.href = '/Error404'
-    } else {
-      // Update supermarket name
-      const supermarketName = data.mensagem[0].name;
-      document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
+  async function verificSuper() {
+    const id = getQueryParam('id');
+    
+    if (!id) {
+      console.error('ID do supermercado não encontrado na URL');
+      showAlert("Supermercado não identificado na URL", "Erro", "error");
+      return;
     }
-  })
-  .catch(err => console.error('Error verifying supermarket:', err));
-}
-  const id = getQueryParam('id');
-  verificSuper()
-  console.log(id);
+  
+    try {
+      const response = await fetch("/verific", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          busca: id, 
+          column: "marketId", 
+          tableSelect: "supermarkets"
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Erro HTTP! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.mensagem || data.mensagem.length === 0) {
+        window.location.href = '/Error404';
+      } else {
+        const supermarketName = data.mensagem[0].name;
+        document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
+        currentMarketId = parseInt(id); // Garante que é um número
+      }
+    } catch (err) {
+      console.error('Error verifying supermarket:', {
+        error: err.message,
+        stack: err.stack,
+        id: id
+      });
+      showAlert(`Erro ao verificar supermercado: ${err.message}`, "Erro", "error");
+    }
+  }
 
 // Initialize the application
 function init() {
@@ -318,7 +341,16 @@ function AdicionarProdutoNovo() {
         showAlert("Por favor, insira um código de produto", "Campo obrigatório", "warning");
         return;
     }
-    
+
+    // Captura o ID da URL
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    if (!id) {
+        showAlert("ID do mercado não encontrado na URL.", "Erro", "error");
+        return;
+    }
+
     fetch('/estoqueData', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -343,6 +375,7 @@ function AdicionarProdutoNovo() {
         focusCodigoInput();
     });
 }
+
 
 function criarCardEstoque(produto) {
     const barcode = produto.barcode;
@@ -569,42 +602,88 @@ async function finalizarCompra() {
     
     const paymentMethod = document.getElementById("paymentMethodInModal").value;
     
+    // Validações antes de enviar
+    if (!currentMarketId) {
+        showAlert("Supermercado não identificado", "Erro", "error");
+        return;
+    }
+
+    // Preparar dados da compra
     currentInvoice = {
-        date: new Date().toLocaleString(),
+        date: new Date().toISOString(),
         items: [],
-        total: totalPrice,
+        total: parseFloat(totalPrice.toFixed(2)),
         quantity: totalQuantity,
         paymentMethod: paymentMethod,
         marketId: currentMarketId
     };
 
+    // Preparar itens
     for (const barcode in productsOnScreen) {
         const product = productsOnScreen[barcode];
+        
+        if (!product.productData || !product.productData.productId) {
+            showAlert(`Produto ${barcode} sem ID válido`, "Erro", "error");
+            return;
+        }
+
         currentInvoice.items.push({
             name: product.productData.name,
             barcode: barcode,
             productId: product.productData.productId,
             unitPrice: parseFloat(product.productData.price),
             quantity: product.quant,
-            subtotal: parseFloat(product.totalPrice)
+            subtotal: parseFloat(product.totalPrice.toFixed(2))
         });
     }
     
     try {
+        // Mostrar loading
+        confirmCheckoutBtn.disabled = true;
+        checkoutModalBody.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Processando...</span>
+                </div>
+                <p>Enviando dados para o servidor...</p>
+            </div>
+        `;
+
         const response = await fetch('/finalizarCompra', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(currentInvoice)
         });
         
-        if (response.ok) {
-            processPayment();
-        } else {
-            showAlert("Erro ao finalizar compra no servidor", "Erro", "error");
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao finalizar compra');
         }
+
+        // Se chegou aqui, a compra foi processada com sucesso
+        processPayment();
+        
     } catch (err) {
-        console.error('Error finalizing sale:', err);
-        showAlert("Erro de conexão ao finalizar compra", "Erro", "error");
+        console.error('Error finalizing sale:', {
+            error: err.message,
+            stack: err.stack,
+            invoice: currentInvoice
+        });
+        
+        // Restaurar botão
+        confirmCheckoutBtn.disabled = false;
+        
+        // Mostrar erro para o usuário
+        checkoutModalBody.innerHTML = `
+            <div class="alert alert-danger">
+                <h5>Erro ao finalizar compra</h5>
+                <p>${err.message}</p>
+                <button class="btn btn-sm btn-secondary" onclick="prepareCheckoutModal()">
+                    Tentar novamente
+                </button>
+            </div>
+        `;
     }
 }
 

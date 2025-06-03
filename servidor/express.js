@@ -192,116 +192,209 @@ app.get('/getCarrinho', (req, res) => {
 
 // Finalize purchase
 app.post('/finalizarCompra', async (req, res) => {
+    const { items, total, paymentMethod, marketId } = req.body;
+
     try {
-        const { items, total, paymentMethod, marketId } = req.body;
-        
-        // Validate required fields
-        if (!items || !total || !paymentMethod || !marketId) {
-            return res.status(400).json({ error: 'Missing required fields' });
+        // Validação básica já existente...
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'Nenhum item na compra' });
         }
 
-        // 1. Create sale record
-        const saleDate = new Date().toISOString();
-        await insert('sales', [
-            'marketId', 
-            'total', 
-            'paymentMethod',
-            'saleDate'
-        ], [
-            marketId,
-            total,
-            paymentMethod,
-            saleDate
-        ]);
-        
-        // 2. Get the sale ID
-        const sales = await select('sales', 'WHERE saleDate = ? ORDER BY saleId DESC LIMIT 1', [saleDate]);
-        
-        if (!sales || sales.length === 0) {
-            throw new Error('Failed to retrieve sale ID');
+        const parsedTotal = Number(total);
+        if (isNaN(parsedTotal) || parsedTotal <= 0) {
+            return res.status(400).json({ error: 'Total inválido' });
         }
-        
-        const saleId = sales[0].saleId;
-        
-        // 3. Add sale items and update inventory
+
+        if (!['cash', 'credit', 'debit', 'pix'].includes(paymentMethod)) {
+            return res.status(400).json({ error: 'Método de pagamento inválido' });
+        }
+
+        const parsedMarketId = Number(marketId);
+        if (isNaN(parsedMarketId)) {
+            return res.status(400).json({ error: 'ID do mercado inválido' });
+        }
+
         for (const item of items) {
-            // Validate item structure
-            if (!item.productId || !item.quantity || !item.unitPrice || !item.subtotal) {
-                console.warn('Invalid item structure:', item);
-                continue;
+            item.productId = Number(item.productId);
+            item.quantity = Number(item.quantity);
+            item.unitPrice = Number(item.unitPrice);
+            item.subtotal = Number(item.subtotal);
+
+            if (isNaN(item.productId) || item.productId <= 0) {
+                return res.status(400).json({ error: `ID do produto inválido (${item.productId})` });
             }
-
-            // Insert sale item
-            await insert('sale_items', [
-                'saleId',
-                'productId',
-                'quantity',
-                'unitPrice',
-                'subtotal'
-            ], [
-                saleId,
-                item.productId,
-                item.quantity,
-                item.unitPrice,
-                item.subtotal
-            ]);
-            
-            // Update product stock
-            const product = await select('products', 'WHERE productId = ?', [item.productId]);
-
-            if (product.length > 0) {
-                const currentProduct = product[0];
-                const currentStock = currentProduct.stock;
-            
-                if (currentStock > 0) {
-                    const newStock = currentStock - item.quantity;
-            
-                    // Atualizar o estoque
-                    await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
-            
-                    // Registrar no histórico
-                    const historyEntry = {
-                        productId: item.productId,
-                        marketId,
-                        type: 'saida',
-                        beforeData: JSON.stringify({ stock: currentStock }),
-                        afterData: JSON.stringify({ stock: newStock }),
-                        date: new Date().toISOString()
-                    };
-            
-                    await insert('history', [
-                        'productId',
-                        'marketId',
-                        'type',
-                        'beforeData',
-                        'afterData',
-                        'createdAt'
-                    ], [
-                        historyEntry.productId,
-                        historyEntry.marketId,
-                        historyEntry.type,
-                        historyEntry.beforeData,
-                        historyEntry.afterData,
-                        historyEntry.createdAt
-                    ]);
-                }
-            } else {
-                console.warn(`Product not found: ${item.productId}`);
+            if (isNaN(item.quantity) || item.quantity <= 0) {
+                return res.status(400).json({ error: `Quantidade inválida para produto ${item.productId}` });
+            }
+            if (isNaN(item.unitPrice) || item.unitPrice <= 0) {
+                return res.status(400).json({ error: `Preço unitário inválido para produto ${item.productId}` });
+            }
+            if (isNaN(item.subtotal) || item.subtotal <= 0) {
+                return res.status(400).json({ error: `Subtotal inválido para produto ${item.productId}` });
             }
         }
-        
-        // Clear cart cookie
+
+        // VERIFICAR SE O MERCADO EXISTE
+        const marketExists = await new Promise((resolve, reject) => {
+            db.get(`SELECT 1 FROM markets WHERE marketId = ?`, [parsedMarketId], (err, row) => {
+                if (err) reject(err);
+                else resolve(!!row);
+            });
+        });
+
+        if (!marketExists) {
+            return res.status(400).json({ error: `Mercado com ID ${parsedMarketId} não existe.` });
+        }
+
+        // BEGIN TRANSACTION
+        await new Promise((resolve, reject) => {
+            db.run("BEGIN TRANSACTION", (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        const saleDate = new Date().toISOString();
+
+        // 1. Inserir venda
+        const saleId = await new Promise((resolve, reject) => {
+            db.run(
+                `INSERT INTO sales (marketId, total, paymentMethod, saleDate) VALUES (?, ?, ?, ?)`,
+                [parsedMarketId, parsedTotal, paymentMethod, saleDate],
+                function(err) {
+                    if (err) reject(err);
+                    else resolve(this.lastID);
+                }
+            );
+        });
+
+        if (!saleId) throw new Error('Falha ao registrar venda.');
+
+        // 2. Processar itens
+        for (const item of items) {
+            console.log('Verificando produto:', item.productId, 'no mercado:', parsedMarketId);
+
+            // SELECT stock do produto para controle de estoque
+            const products = await new Promise((resolve, reject) => {
+                db.all(
+                    `SELECT stock FROM products WHERE productId = ? AND marketId = ?`,
+                    [item.productId, parsedMarketId],
+                    (err, rows) => {
+                        if (err) reject(err);
+                        else resolve(rows);
+                    }
+                );
+            });
+
+            if (products.length === 0) {
+                throw new Error(`Produto ${item.productId} não encontrado no mercado ${parsedMarketId}`);
+            }
+
+            const currentStock = products[0].stock;
+
+            if (currentStock < item.quantity) {
+                throw new Error(`Estoque insuficiente para produto ${item.productId}`);
+            }
+
+            const newStock = currentStock - item.quantity;
+
+            // LOG antes do insert em sale_items
+            console.log("Inserindo item na sale_items", {
+                saleId,
+                productId: item.productId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                subtotal: item.subtotal
+            });
+
+            // Inserir item na sale_items
+            await new Promise((resolve, reject) => {
+                db.run(
+                    `INSERT INTO sale_items (saleId, productId, quantity, unitPrice, subtotal) VALUES (?, ?, ?, ?, ?)`,
+                    [saleId, item.productId, item.quantity, item.unitPrice, item.subtotal],
+                    (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                    }
+                );
+            });
+
+            // Atualizar estoque
+            await new Promise((resolve, reject) => {
+                db.run(
+                    `UPDATE products SET stock = ? WHERE productId = ? AND marketId = ?`,
+                    [newStock, item.productId, parsedMarketId],
+                    (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                    }
+                );
+            });
+
+            // Inserir histórico
+            await new Promise((resolve, reject) => {
+                db.run(
+                    `INSERT INTO history (productId, marketId, type, beforeData, afterData, createdAt) VALUES (?, ?, 'saida', ?, ?, ?)`,
+                    [
+                        item.productId,
+                        parsedMarketId,
+                        JSON.stringify({ stock: currentStock }),
+                        JSON.stringify({ stock: newStock }),
+                        new Date().toISOString()
+                    ],
+                    (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                    }
+                );
+            });
+        }
+
+        // COMMIT TRANSACTION
+        await new Promise((resolve, reject) => {
+            db.run("COMMIT", (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Limpar cookie
         res.clearCookie('carrinho');
-        res.json({ success: true, saleId });
-        
-    } catch (err) {
-        console.error('Error processing sale:', err);
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: err.message 
+
+        return res.json({
+            success: true,
+            saleId,
+            message: 'Compra finalizada com sucesso'
+        });
+
+    } catch (error) {
+        // Caso erro, tentar rollback
+        try {
+            await new Promise((resolve, reject) => {
+                db.run("ROLLBACK", (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        } catch (rollbackError) {
+            console.error('Erro no rollback:', rollbackError);
+        }
+
+        console.error('Erro ao processar /finalizarCompra:', {
+            message: error.message,
+            stack: error.stack,
+            requestBody: req.body
+        });
+
+        return res.status(500).json({
+            error: 'Erro ao processar a compra',
+            message: error.message,
+            ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
         });
     }
 });
+
 
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
