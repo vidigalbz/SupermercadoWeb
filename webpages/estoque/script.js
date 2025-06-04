@@ -164,15 +164,15 @@ async function criarCardHTML(produto) {
   const cardElement = tempDiv.firstElementChild;
   container.appendChild(cardElement);
 
-  const bntBarCode = cardElement.querySelector("btn-codigoBar")
+  const bntBarCode = cardElement.querySelector("#btn-codigoBar")
   const btnCopiar = cardElement.querySelector('.btn-copiar');
   const btnPopover = cardElement.querySelector('.btn-popover');
 
-  new bootstrap.Tooltip(bntBarCode)
+  
   new bootstrap.Tooltip(btnCopiar);
   new bootstrap.Popover(btnPopover, {
     trigger: 'focus'
-  });
+  })
 
   btnCopiar.addEventListener('click', () => {
     navigator.clipboard.writeText(produto.productId).then(() => {
