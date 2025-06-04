@@ -43,8 +43,24 @@ function verificSuper(){
     .catch(err => console.error('Erro ao verificar supermercado:', err));
 }
 
+function gerarCodigoBarra(){
+  let digitos12 = '';
+  let soma = 0;
+  for(var i=0 ; i< 12; i++){
+    digitos12 += Math.floor(Math.random() * 10);
+  }
+
+  for (var i = 0; i< 12; i++){
+      let n = parseInt(digitos12.charAt(i))
+      soma += i % 2 === 0? n : n * 3;
+  }
+  let resto = soma % 10;
+  return `${digitos12}${resto === 0 ? 0 : 10 - resto}`;
+}
+
 const id = getQueryParam('id');
 document.getElementById("produto-marketId").value = id;
+document.getElementById("produto-barcode").value = gerarCodigoBarra()
 verificSuper()
 console.log(id);
 
@@ -133,6 +149,13 @@ async function criarCardHTML(produto) {
                     <strong>Fabricação:</strong> ${produto.manufactureDate}">
             <i class="bi bi-info-circle"></i>
           </button>
+
+          <button type="button" class="btn btn-light btn-sm btn-codigoBar"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Imprimir Codigo de Barras" onclick="impressao(${produto.barcode})">
+            <i class="bi bi-upc"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -141,13 +164,15 @@ async function criarCardHTML(produto) {
   const cardElement = tempDiv.firstElementChild;
   container.appendChild(cardElement);
 
+  const bntBarCode = cardElement.querySelector("#btn-codigoBar")
   const btnCopiar = cardElement.querySelector('.btn-copiar');
   const btnPopover = cardElement.querySelector('.btn-popover');
 
+  
   new bootstrap.Tooltip(btnCopiar);
   new bootstrap.Popover(btnPopover, {
     trigger: 'focus'
-  });
+  })
 
   btnCopiar.addEventListener('click', () => {
     navigator.clipboard.writeText(produto.productId).then(() => {
@@ -164,6 +189,51 @@ async function criarCardHTML(produto) {
       }, 2000);
     });
   });
+}
+
+function impressao(codigo){
+  
+
+  JsBarcode("#barcode", codigo, {
+    format: "EAN13",
+    displayValue: true,
+    fontSize: 18,
+    width: 2,
+    height: 100
+  })
+
+  const janela = window.open("", "_blank");
+
+  janela.document.write(
+    `<html>
+      <head>
+        <title>Imprimir Código de Barras</title>
+        <style>
+          body {
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            font-family: sans-serif;
+          }
+          svg {
+            width: 300px;
+            height: auto;
+          }
+        </style>
+      </head>
+      <body>
+        <h2>Código de Barras EAN-13</h2>
+        ${barcode.outerHTML}
+        <script>
+          setTimeout(() => {
+                        window.print();
+                        setTimeout(() => window.close(), 500);
+                    }, 200);
+        </script>
+      </body>
+    </html>`
+  )
+  barcode.innerHTML = ""
 }
 
 function mostrarNotificacao(titulo, mensagem, tipo = 'info') {
@@ -325,6 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const year = today.getFullYear();
     const todayFormatted = `${year}-${month}-${day}`;
+    var barcode = getElementById('barcode')
     
     document.getElementById('produto-fabricacao').max = todayFormatted;
     document.getElementById('produto-validade').min = todayFormatted;
