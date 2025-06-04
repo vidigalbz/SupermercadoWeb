@@ -1,24 +1,29 @@
 const sqlite3 = require('sqlite3').verbose();
 
-const db = new sqlite3.Database('./database.sqlite');
-
-// Habilita verificação de chaves estrangeiras
-db.get("PRAGMA foreign_keys = ON");
+const db = new sqlite3.Database('./database.sqlite', (err) => {
+    if (err) {
+        console.error("Erro ao abrir o banco:", err.message);
+        return;
+    }
+    db.run("PRAGMA foreign_keys = ON");
+});
 
 // Criação das tabelas na ordem correta
 db.serialize(() => {
+    db.run("PRAGMA foreign_keys = ON");
+
     db.exec(`
     CREATE TABLE IF NOT EXISTS users (
         userId INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        email TEXT UNIQUE,
+        email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS supermarkets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        marketId TEXT UNIQUE,
-        createdAt TEXT,
+        marketId TEXT UNIQUE NOT NULL,
+        createdAt TEXT NOT NULL,
         name TEXT NOT NULL,
         local TEXT NOT NULL,
         icon TEXT NOT NULL,
@@ -82,14 +87,20 @@ db.serialize(() => {
         historyId INTEGER PRIMARY KEY AUTOINCREMENT,
         productId INTEGER NOT NULL,
         marketId TEXT NOT NULL,
+        userId INTEGER NOT NULL,
         type TEXT NOT NULL,
         beforeData TEXT,
         afterData TEXT,
         createdAt TEXT NOT NULL,
         FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE CASCADE,
-        FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE
+        FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE,
+        FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
     );
-    `);
+    `, (err) => {
+        if (err) {
+            console.error("Erro ao criar tabelas:", err.message);
+        }
+    });
 });
 
 // Funções do banco de dados com tratamento de erros melhorado
@@ -101,7 +112,7 @@ function select(table, where = '', params = []) {
                 console.error(`Erro na consulta SELECT: ${err.message}`);
                 reject(err);
             } else {
-                resolve(rows);
+                resolve(rows || []);
             }
         });
     });
@@ -109,6 +120,10 @@ function select(table, where = '', params = []) {
 
 function insert(table, columns, values) {
     return new Promise((resolve, reject) => {
+        if (!columns || !values || columns.length !== values.length) {
+            return reject(new Error("Colunas e valores devem ter o mesmo tamanho"));
+        }
+
         const placeholders = columns.map(() => '?').join(', ');
         const query = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`;
 
@@ -125,8 +140,12 @@ function insert(table, columns, values) {
 
 function update(table, columns, values, condition = "") {
     return new Promise((resolve, reject) => {
-        const multiColumns = columns.map(col => `${col} = ?`).join(', ');
-        const query = `UPDATE ${table} SET ${multiColumns} ${condition ? "WHERE " + condition : ""}`;
+        if (!columns || !values || columns.length !== values.length) {
+            return reject(new Error("Colunas e valores devem ter o mesmo tamanho"));
+        }
+
+        const setClause = columns.map(col => `${col} = ?`).join(', ');
+        const query = `UPDATE ${table} SET ${setClause} ${condition ? "WHERE " + condition : ""}`;
 
         db.run(query, values, function(err) {
             if (err) {
@@ -141,6 +160,10 @@ function update(table, columns, values, condition = "") {
 
 function delet(table, condition, params = []) {
     return new Promise((resolve, reject) => {
+        if (!condition) {
+            return reject(new Error("Condição de exclusão não fornecida"));
+        }
+
         const query = `DELETE FROM ${table} WHERE ${condition}`;
         
         db.run(query, params, function(err) {
@@ -154,9 +177,9 @@ function delet(table, condition, params = []) {
     });
 }
 
-function query(query, params = []) {
+function query(queryText, params = []) {
     return new Promise((resolve, reject) => {
-        db.run(query, params, function(err) {
+        db.run(queryText, params, function(err) {
             if (err) {
                 console.error(`Erro na query: ${err.message}`);
                 reject(err);
@@ -174,12 +197,11 @@ function selectFromRaw(queryText, params = []) {
                 console.error(`Erro no SELECT raw: ${err.message}`);
                 reject(err);
             } else {
-                resolve(rows);
+                resolve(rows || []);
             }
         });
     });
 }
-
 
 async function insertLink(key, marketId, type) {
     try {

@@ -153,6 +153,16 @@
         </div>
       </div>
     </div>
+
+    <!-- Dropdown de seleção de supermercado -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="select-market" class="form-label">Selecionar Supermercado</label>
+        <select id="select-market" class="form-select" onchange="trocarSupermercado()">
+          <option value="">Carregando...</option>
+        </select>
+      </div>
+    </div>
   
     <!-- Resultados -->
     <div class="mt-4" id="resultado-pesquisa">
@@ -213,7 +223,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", carregarHistorico);
+  document.addEventListener("DOMContentLoaded", () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      alert("Você precisa estar logado para acessar o histórico.");
+      window.location.href = "/login.html"; // ou a página correta de login
+      return;
+    }
+
+    carregarSupermercados();
+  });
 
 async function carregarHistorico() {
     const entradasEl = document.getElementById("entradasAccordion");
@@ -234,11 +253,16 @@ async function carregarHistorico() {
 
     try {
         const marketId = localStorage.getItem("marketId") || "1";
+        const userId = localStorage.getItem("userId");
         const busca = document.getElementById("pesquisa")?.value || "";
         const categoria = document.getElementById("filtro-categoria")?.value || "";
 
         // Debug: mostra os parâmetros enviados
-        console.log("Enviando requisição com:", { marketId, busca, categoria });
+        if (!userId || !marketId) {
+          console.error("Erro: userId ou marketId não está no localStorage");
+          return;
+      }
+        console.log("Enviando requisição com:", { marketId, userId, busca, categoria });
 
         const response = await fetch("/historicoData", {
             method: "POST",
@@ -248,6 +272,7 @@ async function carregarHistorico() {
             },
             body: JSON.stringify({ 
                 marketId, 
+                userId,
                 busca: busca.trim(),
                 categoria 
             })
@@ -430,6 +455,58 @@ function reloadPage() {
   carregarHistorico();
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  carregarSupermercados();
+  carregarHistorico();
+});
+
+async function carregarSupermercados() {
+  const select = document.getElementById("select-market");
+  const userId = localStorage.getItem("userId");
+
+  if (!userId) {
+    console.error("Usuário não logado.");
+    select.innerHTML = `<option value="">Usuário não identificado</option>`;
+    return;
+  }
+
+  try {
+    const response = await fetch("/listarSupermercados", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId })
+    });
+
+    const result = await response.json();
+
+    if (!result.success || !result.data.length) {
+      select.innerHTML = `<option value="">Nenhum supermercado encontrado</option>`;
+      return;
+    }
+
+    // Renderiza os supermercados no <select>
+    select.innerHTML = result.data.map(m => `
+      <option value="${m.marketId}" ${m.marketId === localStorage.getItem("marketId") ? "selected" : ""}>
+        ${m.name} (${m.marketId})
+      </option>
+    `).join("");
+
+    // Atualiza o marketId se ainda não tiver
+    if (!localStorage.getItem("marketId")) {
+      localStorage.setItem("marketId", result.data[0].marketId);
+    }
+
+  } catch (err) {
+    console.error("Erro ao buscar supermercados:", err);
+    select.innerHTML = `<option value="">Erro ao carregar supermercados</option>`;
+  }
+}
+
+function trocarSupermercado() {
+  const novoMarketId = document.getElementById("select-market").value;
+  localStorage.setItem("marketId", novoMarketId);
+  carregarHistorico();
+}
 </script>
 
 </body>

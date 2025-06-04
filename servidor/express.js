@@ -9,7 +9,7 @@ const { select, insert, update, delet, query, selectFromRaw } = require("./datab
 const app = express();
 const port = 4000;
 
-const { db } = require('./database.js'); // Importa o db do seu arquivo database.js
+const { db } = require('./database.js');
 
 const webpages_dir = path.join(__dirname, "../webpages");
 let pages = [];
@@ -101,7 +101,6 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             validade,
         } = req.body;
 
-        // Verifique se todos os campos necessários estão presentes
         if (!nome || !codigo || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade) {
             return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." });
         }
@@ -144,12 +143,14 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             "productId",
             "marketId",
             "type",
+            "userId",
             "beforeData",
             "afterData",
             "createdAt"
         ], [
             result.id,
             produto.marketId,
+            req.body.userId,
             "entrada",
             null,
             JSON.stringify({
@@ -170,19 +171,49 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
 
 // Endpoint para deletar produto pelo código
 app.post('/deletarProduto', async (req, res) => {
-    const { codigo } = req.body;
-    if (!codigo) {
-        return res.status(400).json({ erro: "Código do produto não fornecido." });
+    const { codigo, userId, marketId } = req.body;
+
+    if (!codigo || !userId || !marketId) {
+        return res.status(400).json({ erro: "Parâmetros obrigatórios ausentes." });
     }
 
     try {
+        const produto = await select("products", "WHERE productId = ?", [codigo]);
+
+        if (!produto || produto.length === 0) {
+            return res.status(404).json({ erro: "Produto não encontrado." });
+        }
+
+        const produtoDeletado = produto[0];
+
         await delet("products", "productId = ?", [codigo]);
+
+        await insert("history", [
+            "productId",
+            "marketId",
+            "userId",
+            "type",
+            "beforeData",
+            "afterData",
+            "createdAt"
+        ], [
+            produtoDeletado.productId,
+            produtoDeletado.marketId,
+            userId,
+            "remocao",
+            JSON.stringify(produtoDeletado),
+            null,
+            new Date().toISOString()
+        ]);
+
         res.status(200).json({ mensagem: "Produto deletado com sucesso!" });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ erro: "Erro ao deletar produto." });
     }
 });
+
 
 // Get cart from cookie
 app.get('/getCarrinho', (req, res) => {
@@ -192,11 +223,9 @@ app.get('/getCarrinho', (req, res) => {
 
 // Finalize purchase
 app.post('/finalizarCompra', async (req, res) => {
-    const { items, total, paymentMethod, marketId } = req.body;
+    const { items, total, paymentMethod, marketId, userId } = req.body;
 
     try {
-        // Validação básica já existente...
-
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ error: 'Nenhum item na compra' });
         }
@@ -213,6 +242,11 @@ app.post('/finalizarCompra', async (req, res) => {
         const parsedMarketId = Number(marketId);
         if (isNaN(parsedMarketId)) {
             return res.status(400).json({ error: 'ID do mercado inválido' });
+        }
+
+        const parsedUserId = Number(userId);
+        if (isNaN(parsedUserId)) {
+            return res.status(400).json({ error: 'ID do usuário inválido' });
         }
 
         for (const item of items) {
@@ -235,7 +269,6 @@ app.post('/finalizarCompra', async (req, res) => {
             }
         }
 
-        // VERIFICAR SE O MERCADO EXISTE
         const marketExists = await new Promise((resolve, reject) => {
             db.get(`SELECT 1 FROM markets WHERE marketId = ?`, [parsedMarketId], (err, row) => {
                 if (err) reject(err);
@@ -247,7 +280,6 @@ app.post('/finalizarCompra', async (req, res) => {
             return res.status(400).json({ error: `Mercado com ID ${parsedMarketId} não existe.` });
         }
 
-        // BEGIN TRANSACTION
         await new Promise((resolve, reject) => {
             db.run("BEGIN TRANSACTION", (err) => {
                 if (err) reject(err);
@@ -257,7 +289,6 @@ app.post('/finalizarCompra', async (req, res) => {
 
         const saleDate = new Date().toISOString();
 
-        // 1. Inserir venda
         const saleId = await new Promise((resolve, reject) => {
             db.run(
                 `INSERT INTO sales (marketId, total, paymentMethod, saleDate) VALUES (?, ?, ?, ?)`,
@@ -271,11 +302,7 @@ app.post('/finalizarCompra', async (req, res) => {
 
         if (!saleId) throw new Error('Falha ao registrar venda.');
 
-        // 2. Processar itens
         for (const item of items) {
-            console.log('Verificando produto:', item.productId, 'no mercado:', parsedMarketId);
-
-            // SELECT stock do produto para controle de estoque
             const products = await new Promise((resolve, reject) => {
                 db.all(
                     `SELECT stock FROM products WHERE productId = ? AND marketId = ?`,
@@ -299,16 +326,6 @@ app.post('/finalizarCompra', async (req, res) => {
 
             const newStock = currentStock - item.quantity;
 
-            // LOG antes do insert em sale_items
-            console.log("Inserindo item na sale_items", {
-                saleId,
-                productId: item.productId,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                subtotal: item.subtotal
-            });
-
-            // Inserir item na sale_items
             await new Promise((resolve, reject) => {
                 db.run(
                     `INSERT INTO sale_items (saleId, productId, quantity, unitPrice, subtotal) VALUES (?, ?, ?, ?, ?)`,
@@ -320,7 +337,6 @@ app.post('/finalizarCompra', async (req, res) => {
                 );
             });
 
-            // Atualizar estoque
             await new Promise((resolve, reject) => {
                 db.run(
                     `UPDATE products SET stock = ? WHERE productId = ? AND marketId = ?`,
@@ -332,13 +348,15 @@ app.post('/finalizarCompra', async (req, res) => {
                 );
             });
 
-            // Inserir histórico
+            // ✅ Inserir histórico com userId
             await new Promise((resolve, reject) => {
                 db.run(
-                    `INSERT INTO history (productId, marketId, type, beforeData, afterData, createdAt) VALUES (?, ?, 'saida', ?, ?, ?)`,
+                    `INSERT INTO history (productId, marketId, userId, type, beforeData, afterData, createdAt) 
+                     VALUES (?, ?, ?, 'saida', ?, ?, ?)`,
                     [
                         item.productId,
                         parsedMarketId,
+                        parsedUserId,
                         JSON.stringify({ stock: currentStock }),
                         JSON.stringify({ stock: newStock }),
                         new Date().toISOString()
@@ -351,7 +369,6 @@ app.post('/finalizarCompra', async (req, res) => {
             });
         }
 
-        // COMMIT TRANSACTION
         await new Promise((resolve, reject) => {
             db.run("COMMIT", (err) => {
                 if (err) reject(err);
@@ -359,7 +376,6 @@ app.post('/finalizarCompra', async (req, res) => {
             });
         });
 
-        // Limpar cookie
         res.clearCookie('carrinho');
 
         return res.json({
@@ -369,7 +385,6 @@ app.post('/finalizarCompra', async (req, res) => {
         });
 
     } catch (error) {
-        // Caso erro, tentar rollback
         try {
             await new Promise((resolve, reject) => {
                 db.run("ROLLBACK", (err) => {
@@ -389,11 +404,11 @@ app.post('/finalizarCompra', async (req, res) => {
 
         return res.status(500).json({
             error: 'Erro ao processar a compra',
-            message: error.message,
-            ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+            message: error.message
         });
     }
 });
+
 
 
 // Endpoint para listar produtos
@@ -445,28 +460,39 @@ app.post('/getSetor', async (req, res) => {
     }
 });
 
-app.post('/addSetor', (req, res) => {
-    const { name, type } = req.body;
-  
-    if (!name || !type) {
-        return res.status(400).json({ erro: "Nome e tipo são obrigatórios." });
+app.post('/addSetor', async (req, res) => {
+    const { name, type, marketId } = req.body;
+
+    if (!name || !type || !marketId) {
+        return res.status(400).json({ erro: "Nome, tipo e ID do mercado são obrigatórios." });
     }
-  
-    const nomeSanitizado = name.replace(/'/g, "''");
-    const tipoSanitizado = type === 'dept' ? 'dept' : 'cat';
-  
-    // ID do mercado pode ser dinâmico no futuro
-    const columns = ['name', 'type', 'marketId'];
-    const values = [nomeSanitizado, tipoSanitizado, 1];
-  
+
     try {
-        insert('setors', columns, values);
-        res.status(200).json({ mensagem: "Setor adicionado com sucesso!" });
+        // 1. Verifica se o mercado existe
+        const mercado = await select("supermarkets", "WHERE marketId = ?", [marketId]);
+        if (mercado.length === 0) {
+            return res.status(400).json({ erro: "Mercado não encontrado." });
+        }
+
+        // 2. Insere COM AWAIT
+        await insert('setors', ['name', 'type', 'marketId'], [name, type, marketId]);
+        
+        // 3. Confirmação explícita
+        res.status(200).json({ 
+            success: true,
+            message: "Categoria salva com sucesso!",
+            data: { name, type, marketId }
+        });
+
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ erro: "Erro ao adicionar setor." });
+        console.error("Erro ao salvar categoria:", err);
+        res.status(500).json({ 
+            success: false,
+            error: "Erro interno ao salvar categoria",
+            details: err.message
+        });
     }
-});  
+});
   
 app.post('/deleteSetor', (req, res) => {
     const { name, type } = req.body;
@@ -502,17 +528,17 @@ app.post("/editarProduto", async (req, res) => {
             expirationDate,
             manufactureDate,
             barcode,
-            marketId
+            marketId,
+            userId // ✅ Agora está recebendo corretamente
         } = req.body;
 
-        // Buscar dados antigos do produto
         const oldData = await select("products", "WHERE productId = ?", [productId]);
 
         if (!oldData || oldData.length === 0) {
             return res.status(404).json({ success: false, message: "Produto não encontrado." });
         }
 
-        const beforeData = oldData[0]; // produto antes da edição
+        const beforeData = oldData[0];
 
         const columns = [
             "name", "price", "category", "departament", "stock",
@@ -526,38 +552,30 @@ app.post("/editarProduto", async (req, res) => {
 
         const condition = `productId = ${productId}`;
 
-        // Atualizar o produto
         await update("products", columns, values, condition);
 
-        // Registrar histórico
         const afterData = {
             name, price, category, departament, stock,
             lot, expirationDate, manufactureDate, barcode, marketId
         };
 
-        const historyEntry = {
-            productId,
-            marketId,
-            type: 'edicao',
-            beforeData: JSON.stringify(beforeData),
-            afterData: JSON.stringify(afterData),
-            createdAt: new Date().toISOString()
-        };
-
+        // ✅ Inserção com userId na ordem correta
         await insert("history", [
             "productId",
             "marketId",
+            "userId",
             "type",
             "beforeData",
             "afterData",
             "createdAt"
         ], [
-            historyEntry.productId,
-            historyEntry.marketId,
-            historyEntry.type,
-            historyEntry.beforeData,
-            historyEntry.afterData,
-            historyEntry.createdAt
+            productId,
+            marketId,
+            userId, // aqui vai o ID do usuário logado
+            "edicao",
+            JSON.stringify(beforeData),
+            JSON.stringify(afterData),
+            new Date().toISOString()
         ]);
 
         res.json({ success: true, message: "Produto atualizado com sucesso!" });
@@ -714,19 +732,19 @@ app.post("/adicionarSupermercado", async (req, res) => {
 
 app.post('/deletarSupermercado', async (req, res) => {
     const { id } = req.body;
-    console.log(id);
     if (!id) {
         return res.status(400).json({ erro: "ID do mercado não fornecido." });
     }
 
     try {
-        delet("supermarkets", `marketId = '${id}'`);
+        await delet("supermarkets", `marketId = ?`, [id]);
         res.status(200).json({ mensagem: "Supermercado deletado com sucesso!" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ erro: "Erro ao deletar supermercado." });
     }
 });
+
 
 app.post('/supermercadoData', async (req, res) => {
     const { busca } = req.body;
@@ -802,41 +820,46 @@ app.get("/Error404", (req, res) => {
 loadPages();
 
 app.post('/historicoData', async (req, res) => {
-    console.log('Recebendo requisição de histórico:', req.body); // Log para depuração
-    
-    const { marketId, busca, categoria } = req.body;
+    const { userId, marketId, busca, categoria } = req.body;
 
-    // Validação robusta
-    if (!marketId) {
-        console.error('Erro: marketId não fornecido');
-        return res.status(400).json({ 
-            success: false, 
-            error: "Parâmetro 'marketId' é obrigatório" 
+    if (!userId || !marketId) {
+        return res.status(400).json({
+            success: false,
+            error: "Parâmetros 'userId' e 'marketId' são obrigatórios"
         });
     }
 
     try {
-        let conditions = ["h.marketId = ?"];
-        const params = [marketId];
+        // Confirma se o mercado realmente pertence ao usuário
+        const markets = await select("supermarkets", "WHERE marketId = ? AND ownerId = ?", [marketId, userId]);
+
+        if (!markets || markets.length === 0) {
+            return res.status(403).json({
+                success: false,
+                error: "Este supermercado não pertence a este usuário"
+            });
+        }
+
+        // Condições
+        let conditions = ["h.marketId = ?", "h.userId = ?"];
+        const params = [marketId, userId];
 
         if (busca && busca.trim() !== '') {
             conditions.push("(p.name LIKE ? OR p.barcode = ?)");
             params.push(`%${busca.trim()}%`, busca.trim());
         }
 
-        // Mapeamento de tipos para padronização
         const typeMap = {
-            'entrada': 'entrada',
-            'saida': 'saida',
-            'alteracao': 'edicao'
+            entrada: "entrada",
+            saida: "saida",
+            alteracao: "edicao"
         };
-        
+
         if (categoria && typeMap[categoria]) {
             conditions.push("h.type = ?");
             params.push(typeMap[categoria]);
         }
 
-        // Query mais segura com tratamento de NULL
         const sql = `
             SELECT 
                 h.historyId,
@@ -850,56 +873,57 @@ app.post('/historicoData', async (req, res) => {
                 p.barcode
             FROM history h
             LEFT JOIN products p ON h.productId = p.productId
-            WHERE ${conditions.join(' AND ')}
+            WHERE ${conditions.join(" AND ")}
             ORDER BY h.createdAt DESC
             LIMIT 500
         `;
 
-        console.log('Executando query:', sql, params); // Log da query
-
         const historico = await selectFromRaw(sql, params);
 
-        // Processamento seguro dos dados
-        const processedData = historico.map(item => {
+        const processed = historico.map(item => {
             try {
                 return {
                     ...item,
-                    beforeData: safeJsonParse(item.beforeData),
-                    afterData: safeJsonParse(item.afterData),
+                    beforeData: JSON.parse(item.beforeData || '{}'),
+                    afterData: JSON.parse(item.afterData || '{}'),
                     date: item.date || new Date().toISOString()
                 };
             } catch (e) {
-                console.error('Erro ao processar item:', item, e);
+                console.error("Erro ao parsear JSON:", e);
                 return null;
             }
-        }).filter(item => item !== null);
+        }).filter(Boolean);
 
-        console.log('Dados processados:', processedData.length, 'itens'); // Log do resultado
-
-        res.json({ 
-            success: true, 
-            data: processedData 
-        });
+        res.json({ success: true, data: processed });
 
     } catch (err) {
-        console.error("Erro completo no histórico:", err.stack); // Log detalhado
-        res.status(500).json({ 
-            success: false, 
-            error: "Erro interno ao processar histórico",
-            details: err.message
-        });
+        console.error("Erro no /historicoData:", err.stack);
+        res.status(500).json({ success: false, error: "Erro interno ao processar histórico" });
     }
 });
 
-// Função auxiliar para parse seguro
-function safeJsonParse(str) {
-    try {
-        return str ? JSON.parse(str) : {};
-    } catch (e) {
-        console.error('Erro ao parsear JSON:', str, e);
-        return {};
+app.post("/listarSupermercados", async (req, res) => {
+    const { userId } = req.body;
+  
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "userId obrigatório" });
     }
-}
+  
+    try {
+      const mercados = await select("supermarkets", "WHERE ownerId = ?", [userId]);
+  
+      res.json({
+        success: true,
+        data: mercados.map(m => ({
+          marketId: m.marketId,
+          name: m.name
+        }))
+      });
+    } catch (err) {
+      console.error("Erro ao listar supermercados:", err);
+      res.status(500).json({ success: false, error: "Erro interno" });
+    }
+  });
 
 app.post('/verific', async (req, res) => {
   try {

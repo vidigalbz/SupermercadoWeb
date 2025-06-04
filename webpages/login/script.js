@@ -87,6 +87,8 @@ document.getElementById("loginButton").addEventListener("click", async function 
 
     if (result.status === "success") {
       showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
+
+      localStorage.setItem("userId", result.userId);
       
       setTimeout(() => {
         window.location.href = `/supermercado/?userID=${result.id}`;

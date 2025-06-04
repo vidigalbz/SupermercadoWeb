@@ -8,6 +8,72 @@ function reloadPage() {
   location.reload()
 }
 
+const formAddSetor = document.getElementById('form-add-setor'); // Supondo que este seja o ID do seu formulário
+
+// Função para carregar setores existentes
+async function carregarSetores() {
+    try {
+        const response = await fetch('/getSetor');
+        const data = await response.json();
+        
+        // Atualiza os selects
+        const selectCat = document.getElementById('add-categoria');
+        const selectDept = document.getElementById('add-departamento');
+        
+        selectCat.innerHTML = '<option value="">Selecione...</option>';
+        selectDept.innerHTML = '<option value="">Selecione...</option>';
+        
+        data.cat.forEach(cat => {
+            selectCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
+        
+        data.dept.forEach(dept => {
+            selectDept.innerHTML += `<option value="${dept}">${dept}</option>`;
+        });
+    } catch (error) {
+        console.error('Erro ao carregar setores:', error);
+    }
+}
+
+// Função para adicionar novo setor
+async function adicionarSetor(event) {
+    event.preventDefault(); // Impede o recarregamento da página
+    
+    const tipo = document.querySelector('input[name="tipo-setor"]:checked').value;
+    const nome = document.getElementById('nome-setor').value.trim();
+    const marketId = localStorage.getItem('marketId') || getQueryParam('id');
+
+    if (!nome || !marketId) {
+        mostrarNotificacao('Atenção', 'Preencha todos os campos obrigatórios', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch('/addSetor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                name: nome, 
+                type: tipo,
+                marketId: marketId
+            })
+        });
+
+        const resultado = await response.json();
+
+        if (response.ok) {
+            mostrarNotificacao('Sucesso', 'Setor adicionado com sucesso!', 'success');
+            document.getElementById('nome-setor').value = '';
+            carregarSetores(); // Atualiza a lista de setores
+        } else {
+            mostrarNotificacao('Erro', resultado.erro || 'Erro ao adicionar setor', 'error');
+        }
+    } catch (error) {
+        mostrarNotificacao('Erro', 'Falha na conexão com o servidor', 'error');
+        console.error('Erro:', error);
+    }
+}
+
 function getQueryParam(paramName) {
   const queryString = window.location.search.substring(1);
   const params = queryString.split('&');
@@ -456,3 +522,11 @@ async function gerarCodigo() {
     })
     .catch(err => console.error('Erro ao carregar produtos:', err));
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  carregarSetores();
+  
+  if (formAddSetor) {
+      formAddSetor.addEventListener('submit', adicionarSetor);
+  }
+});
