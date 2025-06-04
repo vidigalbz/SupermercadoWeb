@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
 const cookieParser = require('cookie-parser');
+const { exec } = require('child_process');
 
 const { select, insert, update, delet, query} = require("./database.js");
 
@@ -10,8 +11,10 @@ const app = express();
 const port = 4000;
 
 const { db } = require('./database.js'); // Importa o db do seu arquivo database.js
+const isPkg = typeof process.pkg !== 'undefined';
+const basePath = isPkg ? path.dirname(process.execPath) : __dirname;
 
-const webpages_dir = path.join(__dirname, "../webpages");
+const webpages_dir = path.join(basePath, "../webpages");
 var pages = [];
 
 app.use(cookieParser());
@@ -763,6 +766,6 @@ app.get("/Error404", (req, res) => {
 
 loadPages();
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Servidor iniciado na porta http://localhost:${port}`);
+app.listen(port, '0.0.0.0',async () => {
+    await exec(`start http://localhost:${port}/login`);
 });
