@@ -176,6 +176,8 @@ async function recreateProductCard(productData) {
                                     data-bs-content="
                                         <strong>Nome:</strong> ${productData.name}<br>
                                         <strong>Cód. Barras:</strong> ${barcode}<br>
+                                        <strong>Fornecedor:</strong> ${produto.supplier}<br>
+                                        <Strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
                                         <strong>Preço:</strong> R$ ${productData.price}<br>
                                         <strong>Categoria:</strong> ${productData.category}<br>
                                         <strong>Estoque:</strong> ${productData.stock} unidades<br>
@@ -398,6 +400,8 @@ function criarCardEstoque(produto) {
                                     data-bs-content="
                                         <strong>Nome:</strong> ${produto.name}<br>
                                         <strong>Cód. Barras:</strong> ${barcode}<br>
+                                        <strong>Fornecedor:</strong> ${produto.supplier}<br>
+                                        <Strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
                                         <strong>Preço:</strong> R$ ${produto.price}<br>
                                         <strong>Categoria:</strong> ${produto.category}<br>
                                         <strong>Estoque:</strong> ${produto.stock} unidades<br>

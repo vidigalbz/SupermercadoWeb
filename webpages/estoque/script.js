@@ -140,6 +140,8 @@ async function criarCardHTML(produto) {
                     <strong>Nome:</strong> ${produto.name}<br>
                     <strong>Código de Barras:</strong> ${produto.barcode}<br>
                     <strong>Código de Sistema:</strong> ${produto.productId}<br>
+                    <strong>Fornecedor:</strong> ${produto.supplier}<br>
+                    <Strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
                     <strong>Preço:</strong> R$ ${produto.price.toFixed(2)}<br>
                     <strong>Categoria:</strong> ${produto.category}<br>
                     <strong>Estoque:</strong> ${produto.stock} unidades<br>
@@ -330,6 +332,8 @@ function search() {
 async function adicionarProduto() {
   const nome = document.getElementById("produto-nome").value.trim();
   const codigo = document.getElementById("produto-barcode").value.trim();
+  const fornecedor = document.getElementById("add-fornecedor").value.trim();
+  const precounidade = document.getElementById("add-unidade").value.trim();
   const preco = parseFloat(document.getElementById("add-preco").value);
   const categoria = document.getElementById("add-categoria").value;
   const estoque = parseInt(document.getElementById("produto-estoque").value);
@@ -340,7 +344,7 @@ async function adicionarProduto() {
   const validade = document.getElementById("produto-validade").value;
   const imagemInput = document.getElementById("produto-imagem");
 
-  if (!nome || !codigo || isNaN(preco) || isNaN(estoque) || !marketId) {
+  if (!nome || !codigo || !fornecedor || isNaN(precounidade) || isNaN(preco) || isNaN(estoque) || !marketId) {
     mostrarNotificacao('Atenção', 'Por favor, preencha todos os campos obrigatórios.', 'warning');
     return false;
   }
@@ -348,6 +352,8 @@ async function adicionarProduto() {
   const formData = new FormData();
   formData.append("nome", nome);
   formData.append("codigo", codigo);
+  formData.append("fornecedor", fornecedor);
+  formData.append("precounidade", precounidade);
   formData.append("preco", preco);
   formData.append("categoria", categoria);
   formData.append("estoque", estoque);
@@ -431,6 +437,8 @@ async function confirmarEdicao() {
     productId: parseInt(document.getElementById("codigo-editar").value),
     name: document.getElementById('editar-nome').value,
     barcode: document.getElementById('editar-barcode').value,
+    supplier: document.getElementById('editar-fornecedor').value,
+    price_per_unity: parseFloat(document.getElementById('editar-preço-unidade')).value,
     price: parseFloat(document.getElementById('editar-preco').value),
     category: document.getElementById('editar-categoria').value,
     stock: parseInt(document.getElementById('editar-estoque').value),

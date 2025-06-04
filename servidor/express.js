@@ -96,6 +96,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         const {
             nome,
             codigo,
+            fornecedor,
+            precounidade,
             preco,
             categoria,
             estoque,
@@ -107,13 +109,15 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         } = req.body;
 
         // Verifique se todos os campos necessários estão presentes
-        if (!nome || !codigo || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade) {
+        if (!nome || !codigo || !fornecedor || !precounidade || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade) {
             return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." });
         }
 
         const produto = {
             nome,
             codigo,
+            fornecedor,
+            precounidade: parseFloat(precounidade),
             preco: parseFloat(preco),
             categoria,
             estoque: parseInt(estoque),
@@ -128,6 +132,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         console.log([
             produto.marketId,
             produto.nome,
+            produto.fornecedor,
+            produto.precounidade,
             produto.preco,
             produto.categoria,
             produto.departamento,
@@ -140,12 +146,15 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
         ]);
 
         insert("products", [
-            "marketId", "name", "price", "category","departament",
+            "marketId", "name", "barcode", "supplier", "price_per_unity", "price", "category","departament",
             "stock", "lot", "expirationDate", "manufactureDate",
-            "barcode", "image"
+            "image"
         ], [
             produto.marketId,
             produto.nome,
+            produto.codigo,
+            produto.fornecedor,
+            produto.precounidade,
             produto.preco,
             produto.categoria,
             produto.departamento,
@@ -153,7 +162,6 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.lote,
             produto.validade,
             produto.fabricacao,
-            produto.codigo,
             produto.imagem
         ]);
 

@@ -88,6 +88,18 @@ CREATE TABLE IF NOT EXISTS comprarfornecedor (
 );
 });
 
+db.run(`ALTER TABLE products ADD COLUMN supplier TEXT`, (err) => {
+    if (err && !err.message.includes("duplicate column")) {
+        console.error("Erro ao adicionar coluna 'supplier':", err.message);
+    }
+});
+
+db.run(`ALTER TABLE products ADD COLUMN price_per_unity REAL`, (err) => {
+    if (err && !err.message.includes("duplicate column")) {
+        console.error("Erro ao adicionar coluna 'price_per_unity':", err.message);
+    }
+});
+
 
 function select(table, condition = "", params = []) {
     return new Promise((resolve, reject) => {
@@ -160,3 +172,4 @@ module.exports = {
     insertLink,
     db
 }
+
