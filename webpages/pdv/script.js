@@ -582,6 +582,7 @@ async function finalizarCompra() {
         const product = productsOnScreen[barcode];
         currentInvoice.items.push({
             name: product.productData.name,
+            lot: product.productData.lot,
             barcode: barcode,
             productId: product.productData.productId,
             unitPrice: parseFloat(product.productData.price),
@@ -721,6 +722,7 @@ function printReceipt() {
                     <thead>
                         <tr>
                             <th>Item</th>
+                            <th>Lote</th>
                             <th>Qtd</th>
                             <th>Preço</th>
                         </tr>
@@ -729,6 +731,7 @@ function printReceipt() {
                         ${currentInvoice.items.map(item => `
                             <tr>
                                 <td>${item.name}</td>
+                                <td>${item.lot}</td>
                                 <td>${item.quantity}</td>
                                 <td>R$ ${item.subtotal.toFixed(2)}</td>
                             </tr>
