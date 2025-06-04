@@ -348,6 +348,18 @@ async function adicionarProduto() {
     mostrarNotificacao('Atenção', 'Por favor, preencha todos os campos obrigatórios.', 'warning');
     return false;
   }
+  
+    if (estoque < 0 || preco < 0.00){
+      mostrarNotificacao('Atenção', 'Atribui valores Positivos', 'warning')
+      return false;
+    }
+
+    if(new Date(validade) < new Date()){
+      mostrarNotificacao('Atenção', 'Verifique se a Data de Validade é anterior a Data Atual', 'warning')
+      return false;
+    }else if (new Date(fabricacao) > new Date()){
+      mostrarNotificacao('Atenção', 'Verifique se a Data de Fabricação não é Futura', 'warning')
+    } 
 
   const formData = new FormData();
   formData.append("nome", nome);
