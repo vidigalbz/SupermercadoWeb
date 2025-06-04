@@ -20,6 +20,11 @@ function showToast(message, color = 'danger') {
   toastBootstrap.show();
 }
 
+function validarEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
 // CADASTRO
 document.getElementById("registerButton").addEventListener("click", function (e) {
   e.preventDefault();
@@ -34,12 +39,17 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     return;
   }
 
+  if (!validarEmail(email)) {
+    showToast("E-mail inválido!", "warning");
+    return;
+  }
+
   if (senha !== confirmar) {
     showToast("As senhas não coincidem!", "danger");
     return;
   }
-    
-  fetch(`/cadastro`, {
+
+  fetch('/cadastro', {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
