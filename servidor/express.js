@@ -162,116 +162,15 @@ app.get('/getCarrinho', (req, res) => {
 });
 
 app.post('/finalizarCompra', async (req, res) => {
-    try {
-        const { items, total, paymentMethod, marketId } = req.body;
-        
-        // Validate required fields
-        if (!items || !total || !paymentMethod || !marketId) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
+  try {
+    const { items, total, paymentMethod, marketId } = req.body;
 
-        // 1. Create sale record
-        const saleDate = new Date().toISOString();
-        await insert('sales', [
-            'marketId', 
-            'total', 
-            'paymentMethod',
-            'saleDate'
-        ], [
-            marketId,
-            total,
-            paymentMethod,
-            saleDate
-        ]);
-        
-        // 2. Get the sale ID
-        const sales = await select('sales', 'WHERE saleDate = ? ORDER BY saleId DESC LIMIT 1', [saleDate]);
-        
-        if (!sales || sales.length === 0) {
-            throw new Error('Failed to retrieve sale ID');
-        }
-        
-        const saleId = sales[0].saleId;
-        
-        // 3. Add sale items and update inventory
-        for (const item of items) {
-            // Validate item structure
-            if (!item.productId || !item.quantity || !item.unitPrice || !item.subtotal) {
-                console.warn('Invalid item structure:', item);
-                continue;
-            }
-
-            // Insert sale item
-            await insert('sale_items', [
-                'saleId',
-                'productId',
-                'quantity',
-                'unitPrice',
-                'subtotal'
-            ], [
-                saleId,
-                item.productId,
-                item.quantity,
-                item.unitPrice,
-                item.subtotal
-            ]);
-            
-            // Update product stock
-            const product = await select('products', 'WHERE productId = ?', [item.productId]);
-
-            if (product.length > 0) {
-                const currentProduct = product[0];
-                const currentStock = currentProduct.stock;
-            
-                if (currentStock > 0) {
-                    const newStock = currentStock - item.quantity;
-            
-                    // Atualizar o estoque
-                    await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
-            
-                    // Registrar no histórico
-                    const historyEntry = {
-                        productId: item.productId,
-                        marketId,
-                        type: 'saida',
-                        beforeData: JSON.stringify({ stock: currentStock }),
-                        afterData: JSON.stringify({ stock: newStock }),
-                        date: new Date().toISOString()
-                    };
-            
-                    await insert('history', [
-                        'productId',
-                        'marketId',
-                        'type',
-                        'beforeData',
-                        'afterData',
-                        'date'
-                    ], [
-                        historyEntry.productId,
-                        historyEntry.marketId,
-                        historyEntry.type,
-                        historyEntry.beforeData,
-                        historyEntry.afterData,
-                        historyEntry.date
-                    ]);
-                }
-            } else {
-                console.warn(`Product not found: ${item.productId}`);
-            }
-        }
-        
-        // Clear cart cookie
-        res.clearCookie('carrinho');
-        res.json({ success: true, saleId });
-        
-    } catch (err) {
-        console.error('Error processing sale:', err);
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: err.message 
-        });
+    // Validate required fields
+    if (!items || !total || !paymentMethod || !marketId) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // 1. Create sale record
     const saleDate = new Date().toISOString();
     await insert('sales', [
       'marketId',
@@ -285,17 +184,22 @@ app.post('/finalizarCompra', async (req, res) => {
       saleDate
     ]);
 
+    // 2. Get the sale ID
     const sales = await select('sales', 'WHERE saleDate = ? ORDER BY saleId DESC LIMIT 1', [saleDate]);
     if (!sales || sales.length === 0) {
       throw new Error('Failed to retrieve sale ID');
     }
+
     const saleId = sales[0].saleId;
 
+    // 3. Add sale items and update inventory
     for (const item of items) {
       if (!item.productId || !item.quantity || !item.unitPrice || !item.subtotal) {
         console.warn('Invalid item structure:', item);
         continue;
       }
+
+      // Insert sale item
       await insert('sale_items', [
         'saleId',
         'productId',
@@ -310,20 +214,40 @@ app.post('/finalizarCompra', async (req, res) => {
         item.subtotal
       ]);
 
+      // Update stock and log history
       const product = await select('products', 'WHERE productId = ?', [item.productId]);
       if (product.length > 0) {
         const currentStock = product[0].stock;
         if (currentStock > 0) {
           const newStock = currentStock - item.quantity;
           await update('products', ['stock'], [newStock], `productId = ${item.productId}`);
+
+          // Add to history
+          await insert('history', [
+            'productId',
+            'marketId',
+            'type',
+            'beforeData',
+            'afterData',
+            'date'
+          ], [
+            item.productId,
+            marketId,
+            'saida',
+            JSON.stringify({ stock: currentStock }),
+            JSON.stringify({ stock: newStock }),
+            new Date().toISOString()
+          ]);
         }
       } else {
         console.warn(`Product not found: ${item.productId}`);
       }
     }
 
+    // Clear cart cookie
     res.clearCookie('carrinho');
     res.json({ success: true, saleId });
+
   } catch (err) {
     console.error('Error processing sale:', err);
     res.status(500).json({
@@ -788,6 +712,65 @@ app.post("/verific", async (req, res) => {
     console.log(e);
   }
 });
+
+app.post("/funcionarios", async (req, res) => {
+  const {marketId, userId} = req.body;
+    console.log(marketId);
+  if (marketId && !userId){
+    const funcionarios = await select("user_permissions", "WHERE marketId = ?", [marketId])
+    console.log(funcionarios);
+    if (funcionarios.length > 0){
+      return res.status(200).json({
+        status: "success",
+        message: funcionarios
+      })
+    }
+    else {
+      return res.status(404).json({
+        status: "error",
+        status: "nenhum funcionario encontrado!"
+      })
+    }
+  }
+
+})
+
+app.post("/atualizarFuncionario", async (req, res) => {
+  const {type, userData, marketId} = req.body;
+
+  if (type == "update"){
+    try {
+      await update('user_permissions', ['pdv', 'estoque','fornecedor', 'relatorios', 'alertas', 'rastreamento'], userData.permissoes, `userid = ${userData.userId} AND marketId = '${marketId}'`); 
+      res.status(200).json({
+        status: "success",
+        message: "Permissões Atualizadas!"
+      })
+    }
+    catch {
+      res.status(404).json({
+        status: "error",
+        message: "Erro ao atualizar usuário"
+      })
+    }
+    
+  }
+  else if (type == "delete"){
+    try {
+      await delet("user_permissions", `userId = '${userData.userId}' AND marketId = '${marketId}'`);
+      console.log("usuario removido!")
+      res.status(200).json({
+        status: "success",
+        message: "Erro ao remover Funcionario!"
+      })
+    }
+    catch {
+      res.status(404).json({
+        status: "error",
+        message: "Erro ao remover usuário"
+      })
+    }
+  }
+})
 
 app.get('/users/:userId', async (req, res) => {
   const { userId } = req.params;

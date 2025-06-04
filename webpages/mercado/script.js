@@ -12,6 +12,9 @@ let idMarket = null;
 let total = 0;
 const contador = document.getElementById("contador-mercados");
 
+let edicaoAtual = null;
+let mercadoSelecionado = null;
+
 function getBaseUrl() {
   try {
     const protocolo = window.location.protocol;
@@ -150,6 +153,7 @@ function atualizarContador() {
 
 function selecionarMercado({ id, nome, local, icone }) {
   idMarket = id;
+  mercadoSelecionado = id;
 
   document.getElementById('nome-mercado-info').textContent = nome;
   document.getElementById('endereco-mercado-info').textContent = local;
@@ -163,27 +167,69 @@ function selecionarMercado({ id, nome, local, icone }) {
   btnEditar.setAttribute('data-local', local);
   btnEditar.setAttribute('data-icone', icone);
 
-  renderizarFuncionarios();
+  renderizarFuncionarios(id);
 }
 
-function renderizarFuncionarios() {
+async function getImageURL(rawImagePath) {
+  const response = await fetch('/api/ip');
+  const data = await response.json();
+  const ip = data.ip;
+
+  return rawImagePath
+    ? `http://${ip}:4000/${rawImagePath}`
+    : 'https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';
+}
+
+async function renderizarFuncionarios(marketId) {
   const lista = document.getElementById('lista-funcionarios');
   lista.innerHTML = '';
+
+  const res = await fetch('/funcionarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ marketId })
+  });
+  let data = await res.json();
+  funcionariosData = data.message;
+
+  funcionarios = [];
+
+  for (i = 0; i < funcionariosData.length; i++){
+    userData = await fetch(`/users/${funcionariosData[i].userId}`);
+    user = await userData.json();
+
+    let auxList = [];
+
+    if (funcionariosData[i].pdv) auxList.push("PDV")
+    if (funcionariosData[i].estoque) auxList.push("Estoque")
+    if (funcionariosData[i].fornecedor) auxList.push("Fornecedores")
+    if (funcionariosData[i].relatorios) auxList.push("Relatório")
+    if (funcionariosData[i].alertas) auxList.push("Alertas")
+    if (funcionariosData[i].rastreamento) auxList.push("Rastreamento")
+
+    user.data["permissoes"] = auxList;
+    user.data.profileImage = await getImageURL(user.data.profileImage);
+
+    funcionarios.push(user.data);
+    console.log(user.data.profileImage)
+    console.log(user.data);
+  }
 
   if (funcionarios.length === 0) {
     lista.innerHTML = '<li class="list-group-item text-muted">Nenhum funcionário cadastrado.</li>';
     return;
   }
 
-  funcionarios.forEach((func, idx) => {
+  funcionarios.forEach(async (func, idx) => {
+    console.log(func)
     const permissoesHtml = func.permissoes && func.permissoes.length
       ? func.permissoes.map(p => `<span class="badge bg-primary me-1">${p}</span>`).join(' ')
       : '<span class="text-muted">Nenhuma</span>';
 
     const popoverContent = `
       <div class="text-center mb-2">
-        <img src="${func.foto || 'https://via.placeholder.com/64'}" class="rounded-circle mb-2" width="64" height="64">
-        <div class="fw-bold mt-1">${func.nome}</div>
+        <img src="${func.profileImage || 'https://via.placeholder.com/64'}" class="rounded-circle mb-2" width="64" height="64">
+        <div class="fw-bold mt-1">${func.name}</div>
       </div>
       <div><strong>Status:</strong> ${func.online ? '<span class="text-success">Online</span>' : '<span class="text-secondary">Offline</span>'}</div>
       <div><strong>Tela:</strong> ${func.tela || '<span class="text-muted">Nenhuma</span>'}</div>
@@ -197,8 +243,8 @@ function renderizarFuncionarios() {
 
     item.innerHTML = `
       <div class="d-flex align-items-center">
-        <img src="${func.foto || 'https://via.placeholder.com/32'}" alt="Foto de ${func.nome}" class="rounded-circle me-2" width="32" height="32">
-        <strong>${func.nome}</strong>
+        <img src="${func.profileImage || 'https://via.placeholder.com/32'}" alt="Foto de ${func.name}" class="rounded-circle me-2" width="32" height="32">
+        <strong>${func.name}</strong>
       </div>
       <div class="d-flex align-items-center gap-2 ms-auto">
         <span class="badge bg-light text-dark border me-2">${func.tela || 'Nenhuma'}</span>
@@ -206,7 +252,7 @@ function renderizarFuncionarios() {
           data-bs-toggle="popover"
           data-bs-html="true"
           data-bs-content="${popoverContent}"
-          title="Informações de ${func.nome}">
+          title="Informações de ${func.name}">
           <i class="bi bi-eye"></i>
         </button>
         <button class="btn btn-sm btn-warning" title="Editar" onclick="abrirModalEditarFuncionario(${idx})">
@@ -230,7 +276,9 @@ function toggleCardSelecionado(card) {
 
 function abrirModalEditarFuncionario(idx) {
   const func = funcionarios[idx];
-  document.getElementById('tituloEditarFuncionario').textContent = `Editar Funcionário: ${func.nome}`;
+  edicaoAtual = idx;
+
+  document.getElementById('tituloEditarFuncionario').textContent = `Editar Funcionário: ${func.name}`;
   const permissoes = func.permissoes || [];
   document.querySelectorAll('#modalEditarFuncionario .card-acesso').forEach(card => {
     const input = card.querySelector('input[type=checkbox]');
@@ -239,6 +287,68 @@ function abrirModalEditarFuncionario(idx) {
     card.classList.toggle('card-selecionado', input.checked);
   });
   new bootstrap.Modal(document.getElementById('modalEditarFuncionario')).show();
+}
+
+async function adicionarFuncionario() {
+
+  let funcionarioInput = document.getElementById("cargoFuncionario");
+
+  const permissoesSelecionadas = Array.from(
+    document.querySelectorAll('#modalAdicionarFuncionario .card-acesso')
+  ).filter(card => {
+    const input = card.querySelector('input[type=checkbox]');
+    return input.checked;
+  }).map(card => card.getAttribute('data-permissao'));
+
+  let permissionsBoolList = [];
+  permissionsBoolList.push(permissoesSelecionadas.includes("PDV") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Estoque") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Fornecedores") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Relatório") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
+
+  console.log(funcionarioInput.value);
+  console.log(permissionsBoolList);
+}
+
+async function SalvarPermissoes() {
+  let func = funcionarios[edicaoAtual];
+  let permissionsBoolList = [];
+
+  const permissoesSelecionadas = Array.from(
+    document.querySelectorAll('#modalEditarFuncionario .card-acesso')
+  ).filter(card => {
+    const input = card.querySelector('input[type=checkbox]');
+    return input.checked;
+  }).map(card => card.getAttribute('data-permissao'));
+
+  permissionsBoolList.push(permissoesSelecionadas.includes("PDV") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Estoque") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Fornecedores") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Relatório") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
+  permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
+
+  console.log(func);
+
+  func.permissoes = permissionsBoolList;
+
+  fetch("/atualizarFuncionario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({type: "update", userData: func, marketId: mercadoSelecionado})
+      });
+
+}
+
+async function RemoverFuncionario(){
+  let func = funcionarios[edicaoAtual];
+  fetch("/atualizarFuncionario", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({type: "delete", userData: func, marketId: mercadoSelecionado})
+  })
 }
 
 function irParaTela(tela) {

@@ -35,7 +35,7 @@ async function loginWithCookie() {
     
     if (data.status === "success") {
       if (data.gestor){
-        window.location.href = "/supermercado";
+        window.location.href = "/mercado";
       }
       else {
         window.location.href = "/painel"
@@ -142,7 +142,7 @@ document.getElementById("loginButton").addEventListener("click", async function 
 
       setTimeout(() => {
         if (result.gestor) {
-          window.location.href = `/supermercado`;
+          window.location.href = `/mercado`;
         } else {
           window.location.href = '/painel';
         }
