@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    padding-top: 60px;
+}
+
+/* NAVBAR ESTILIZADA */
+.navbar {
+    background: linear-gradient(to left, #ff6f00, #ffa040);
+}
+
+/* CONTAINER PRINCIPAL (MAIS COMPACTO) */
+.container-principal {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 1300px;
+    /* LARGURA CONTROLADA */
+    margin: 0 auto;
+    /* CENTRALIZADO */
+    height: 500px;
+}
+
+/* ABAS ESTILIZADAS */
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    font-weight: 600;
+    color: #495057;
+    border: none;
+}
+
+.nav-tabs .nav-link.active {
+    color: #ff6f00;
+    border-bottom: 3px solid #ff6f00;
+}
+
+/* ACCORDION COMPACTO */
+.accordion-item {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
+    border-radius: 8px !important;
+}
+
+.accordion-button {
+    padding: 12px 15px;
+    font-weight: 600;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(255, 111, 0, 0.05);
+    color: #ff6f00;
+}
+
+/* ESTILOS DOS DADOS */
+.linha {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+}
+
+.antes {
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 6px;
+    flex: 1;
+}
+
+.depois {
+    background-color: #d4edda;
+    padding: 10px;
+    border-radius: 6px;
+    flex: 1;
+}
+
+.alteracao-comparacao {
+    display: flex;
+    gap: 10px;
+}
+
+.titulo-painel {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+/* SCROLL NAS ÁREAS DE DADOS */
+.scrollable-content {
+    max-height: 400px;
+    /* Ajuste conforme preferir */
+    overflow-y: auto;
+    padding-right: 10px;
+    /* Evita que o conteúdo encoste na barra */
+}
+
+.accordion {
+    max-height: 350px;
+    /* você pode ajustar esse valor como quiser */
+    overflow-y: auto;
+    padding-right: 5px;
+    /* para evitar que a barra de rolagem sobreponha conteúdo */
+}

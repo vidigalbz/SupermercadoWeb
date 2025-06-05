@@ -1,0 +1,92 @@
+:root {
+    --primary-color: #ff6f00;
+    --secondary-color: #ffa040;
+    --chart-primary: #4e73df;
+    --chart-secondary: #1cc88a;
+    --chart-tertiary: #36b9cc;
+}
+
+body {
+    background-color: #f8f9fa;
+    padding-top: 70px;
+    padding-bottom: 70px;
+    font-family: "Poppins", sans-serif;
+}
+
+.navbar {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.15rem 0.5rem rgba(0, 0, 0, 0.05);
+    border: none;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}
+
+.list-container {
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    cursor: pointer;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.btn-export {
+    min-width: 120px;
+}
+
+.comparison-positive {
+    color: #28a745;
+}
+
+.comparison-negative {
+    color: #dc3545;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}

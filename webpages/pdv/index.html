@@ -9,16 +9,20 @@
   <link href="style.css" rel="stylesheet">
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg fixed-top">
-    <div class="container d-flex justify-content-between">
-      <a class="navbar-brand d-flex align-items-center">
-        <h2 class="mb-0">🛒</h2>
-        <span class="ms-2 fw-bold">Super Mercado Didático</span>
-      </a>
-      <button class="btn btn-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-alertas">Caixa</button>
-    </div>
-  </nav>
+<!-- Navbar -->
+    <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-dark" onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
+                <h1 class="ms-3">🏪</h1>
+                <span class="navbar-brand mb-0 h1">Mercado Didático</span>
+            </div>
+            <button class="btn btn-danger fs-3" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#perfilOffcanvas">
+                <i class="bi bi-person-circle"></i>
+            </button>
+        </div>
+    </nav>
 
   <!-- Offcanvas do caixa -->
   <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-alertas">
@@ -170,7 +174,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-arrow-left"></i></button>
           <button type="button" class="btn btn-success" id="confirmCheckoutBtn">
             <i class="bi bi-cart-check-fill"></i> Confirmar
           </button>
@@ -193,7 +197,7 @@
           <div class="text-danger d-none" id="erroSenha">Senha incorreta. Tente novamente.</div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-arrow-left"></i></button>
           <button type="button" class="btn btn-danger" onclick="confirmarCancelamento()">Confirmar Cancelamento</button>
         </div>
       </div>

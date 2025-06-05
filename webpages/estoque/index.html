@@ -1,468 +1,493 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>SuperMercado Didático - Estoque</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="./popups/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>SuperMercado Didático - Estoque</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./popups/style.css">
 </head>
+
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">    
-      <div class="container d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-          <h1>🛒</h1>
-          <span class="navbar-brand mb-0 h1">Super Mercado Didático:</span>  
-        </div>
-        <!-- Botão -->
+  <!-- Navbar -->
+  <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-dark" onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
+        <h1 class="ms-3">🏪</h1>
+        <span class="navbar-brand mb-0 h1">Mercado Didático</span>
+      </div>
+
+      <!-- Botões Inventário e Alertas agrupados -->
+      <div class="d-flex gap-2">
+        <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" onclick="window.location.href='/historico/'" " data-bs-target="#offcanvas-inventario" >
+          <i class="bi bi-table"></i> Inventário
+        </button>
+
         <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-alertas">
           🔔 Alertas (<span id="quantidade-alertas">0</span>)
         </button>
       </div>
-    </nav>
-    
-    <!-- Overlay de fundo borrado -->
-    <div id="overlay" class="popup-overlay" onclick="fecharPopup()"></div>
+    </div>
+  </nav>
 
-    <!-- Campo de Funções -->
-    <div class="container my-4 p-4 bg-white rounded shadow-sm">
-      <!-- Título -->
-      <div class="row mb-3">
-        <div class="col-12">
-          <h4 class="text-primary"><strong>📦 Gerenciamento de Estoque</strong></h4>
-          <h5 class="navbar-brand mb-0 h1" id="supermarket-name">Super Mercado: </h5>
-        </div>
-      </div>
 
-      <!-- Primeira linha: Pesquisa e Ações -->
-      <div class="row g-3 align-items-end">
-        <!-- Pesquisa -->
-        <div class="col-md-4">
-          <label for="pesquisa" class="form-label">Pesquisar (nome ou código)</label>
-          <div class="input-group">
-            <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Produto 12 ou 0012">
-            <button class="btn btn-outline-secondary" type="button" id="btn-pesquisar" title="Pesquisar">
-              🔍
-            </button>
-          </div>
-        </div>
+  <!-- Overlay de fundo borrado -->
+  <div id="overlay" class="popup-overlay" onclick="fecharPopup()"></div>
 
-        <!-- Adicionar -->
-        <div class="col-md-2 col-sm-6">
-          <button class="btn btn-success w-100 mt-2" id="btn-adicionar" onclick="abrirModalAdicionarItem()">
-            ➕ Adicionar
-          </button>
-        </div>
-
-        <!-- Editar -->
-        <div class="col-md-2 col-sm-6">
-          <label for="codigo-editar" class="form-label">Código p/ editar</label>
-          <input type="text" class="form-control" id="codigo-editar" placeholder="Código p/ editar" required>
-          <button class="btn btn-warning w-100 mt-2" onclick="abrirModalEdicao()">✏️ Editar</button>
-        </div>
-
-        <!-- Excluir -->
-        <div class="col-md-2 col-sm-6">
-          <label for="codigo-excluir" class="form-label">Código p/ excluir</label>
-          <input type="text" class="form-control" id="codigo-excluir" placeholder="Código p/ excluir" required>
-          <button class="btn btn-danger w-100 mt-2" onclick="abrirModalExclusao()">🗑️ Excluir</button>
-        </div>
-
-        <div class="col-md-2 col-sm-5">
-          <button class="btn btn-primary w-100 mt-2 text-wrap" onclick="abrirModalDepCat()">
-            ⚙️ Gerenciar Setores
-          </button>
-        </div>        
-      </div>
-
-      <!-- Linha de Filtros -->
-      <div class="row g-3 mt-4">
-        <!-- Categoria -->
-        <div class="col-md-4 col-sm-6">
-          <label for="filtro-categoria" class="form-label">Filtrar por categoria</label>
-          <select class="form-select" id="filtro-categoria">
-            <option value="">Todas</option>
-          </select>
-        </div>
-
-        <!-- Departamento -->
-        <div class="col-md-4 col-sm-6">
-          <label for="filtro-departamento" class="form-label">Filtrar por departamento</label>
-          <select class="form-select" id="filtro-departamento">
-            <option value="">Todos</option>
-          </select>
-        </div>
-
-        <!-- Botão Limpar -->
-        <div class="col-md-4 d-flex align-items-end justify-content-end">
-          <button class="btn btn-outline-secondary w-100" id="btn-limpar-filtros" title="Limpar filtros" onclick="limparFiltros()">
-            🧹 Limpar Filtros
-          </button>
-        </div>
+  <!-- Campo de Funções -->
+  <div class="container my-4 p-4 bg-white rounded shadow-sm">
+    <!-- Título -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <h4 class="text-primary"><strong>📦 Gerenciamento de Estoque</strong></h4>
+        <h5 class="navbar-brand mb-0 h1" id="supermarket-name">Super Mercado: </h5>
       </div>
     </div>
 
-    <!-- Div de produto -->
-    <div class="container my-4">
-      <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-primary text-white">
-        <h4 class="mb-0">📦 Estoque</h4>
-        <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque" onclick="reloadPage()">
-          <i class="bi bi-arrow-clockwise"></i>
+    <div class="row g-3 align-items-end">
+      <!-- Pesquisa -->
+      <div class="col-md-4">
+        <label for="pesquisa" class="form-label">Pesquisar (nome ou código)</label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Produto 12 ou 0012">
+          <button class="btn btn-outline-secondary" type="button" id="btn-pesquisar" title="Pesquisar">
+            🔍
+          </button>
+        </div>
+      </div>
+
+      <!-- Adicionar -->
+      <div class="col-md-2 col-sm-6">
+        <button class="btn btn-success w-100 mt-2" id="btn-adicionar" onclick="abrirModalAdicionarItem()">
+          ➕ Adicionar
         </button>
       </div>
 
-      <div class="grid-produtos" id="produtos-container">
-        <!-- Cards serão inseridos aqui -->
+      <!-- Editar -->
+      <div class="col-md-2 col-sm-6">
+        <input type="text" class="form-control" id="codigo-editar" placeholder="Código p/ editar" required>
+        <button class="btn btn-warning w-100 mt-2" onclick="abrirModalEdicao()">✏️ Editar</button>
       </div>
-    </div>
-    
-    <!-- Modal de Adição de Proutos -->
-    <div class="modal fade" id="modalAdicionarItem" tabindex="-1" aria-labelledby="modalAdicionarItemLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header bg-success text-white">
-            <h5 class="modal-title" id="modalAdicionarItemLabel">Adicionar Produto</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body">
-            <form id="form-adicionar-item">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label for="produto-nome" class="form-label">Nome</label>
-                  <input type="text" class="form-control" id="produto-nome" required>
-                </div>
-                <div class="col-md-6">
-                  <label for="produto-barcode" class="form-label">Código de Barras</label>
-                  <input type="text" class="form-control" id="produto-barcode" required>
-                </div>
-                <div class="col-md-6">
-                  <label for="add-preco" class="form-label">Preço</label>
-                  <div class="input-group">
-                    <span class="input-group-text">R$</span>
-                    <input type="number" class="form-control" id="add-preco" min="0" step="0.01">
-                  </div>
-                </div>                
-                <div class="col-md-6">
-                  <label for="add-categoria" class="form-label">Categoria</label>
-                  <select class="form-select" id="add-categoria">
-                    <option value="">Selecione</option>
-                    <!-- Opções aqui -->
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label for="produto-estoque" class="form-label">Estoque</label>
-                  <input type="number" class="form-control" id="produto-estoque" required>
-                </div>
-                <div class="col-md-6">
-                  <label for="produto-lote" class="form-label">Lote</label>
-                  <input type="text" class="form-control" id="produto-lote">
-                </div>
-                <div class="col-md-6">
-                  <label for="add-departamento" class="form-label">Departamento</label>
-                  <select class="form-select" id="add-departamento">
-                    <option value="">Selecione</option>
-                    <!-- Opções aqui -->
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label for="produto-marketId" class="form-label">ID do Mercado</label>
-                  <input type="text" class="form-control" id="produto-marketId" required disabled>
-                </div>
-                <div class="col-md-6">
-                  <label for="produto-fabricacao" class="form-label">Data de Fabricação</label>
-                  <input type="date" class="form-control" id="produto-fabricacao">
-                </div>
-                <div class="col-md-6">
-                  <label for="produto-validade" class="form-label">Data de Validade</label>
-                  <input type="date" class="form-control" id="produto-validade">
-                </div>
-                <div class="col-12">
-                  <label for="produto-imagem" class="form-label">Imagem do Produto</label>
-                  <input name="imagem" type="file" class="form-control" id="produto-imagem">
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-success" id="btn-confirmar-adicionar">Adicionar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Modal para Gerenciar setores -->
-    <div class="modal fade" id="modal-dep-cat" tabindex="-1" aria-labelledby="modalDepCatLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-primary">
-            <h5 class="modal-title" id="modalDepCatLabel">Gerenciar Departamento / Categoria</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body">
 
-            <!-- Toggle Tipo -->
-            <div class="tipo-toggle mb-3">
-              <span id="label-toggle" class="tipo-label active">Departamento</span>
-              <div class="form-check form-switch m-0">
-                <input class="form-check-input" type="checkbox" id="toggleTipo" onchange="alternarTipo()">
+      <!-- Excluir -->
+      <div class="col-md-2 col-sm-6">
+        <input type="text" class="form-control" id="codigo-excluir" placeholder="Código p/ excluir" required>
+        <button class="btn btn-danger w-100 mt-2" onclick="abrirModalExclusao()">🗑️ Excluir</button>
+      </div>
+
+      <!-- Agrupar Fornecedores e Setores em uma coluna -->
+      <div class="col-md-2 col-sm-6 d-flex flex-column">
+        <!-- Fornecedores em cima -->
+        <a href="../fornecedor/index.html" class="btn btn-dark w-100 mb-2 text-wrap">
+          ⚙️ Fornecedores
+        </a>
+
+        <!-- Gerenciar Setores embaixo -->
+        <button class="btn btn-primary w-100 text-wrap" onclick="abrirModalDepCat()">
+          ⚙️ Setores
+        </button>
+      </div>
+    </div>
+
+    <!-- Linha de Filtros -->
+    <div class="row g-3 mt-4">
+      <!-- Categoria -->
+      <div class="col-md-4 col-sm-6">
+        <label for="filtro-categoria" class="form-label">Filtrar por categoria</label>
+        <select class="form-select" id="filtro-categoria">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <!-- Departamento -->
+      <div class="col-md-4 col-sm-6">
+        <label for="filtro-departamento" class="form-label">Filtrar por departamento</label>
+        <select class="form-select" id="filtro-departamento">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <!-- Botão Limpar -->
+      <div class="col-md-4 d-flex align-items-end justify-content-end">
+        <button class="btn btn-outline-secondary w-100" id="btn-limpar-filtros" title="Limpar filtros"
+          onclick="limparFiltros()">
+          🧹 Limpar Filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Div de produto -->
+  <div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-primary text-white">
+      <h4 class="mb-0">📦 Estoque</h4>
+      <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque" onclick="reloadPage()">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+
+    <div class="grid-produtos" id="produtos-container">
+      <!-- Cards serão inseridos aqui -->
+    </div>
+  </div>
+
+  <!-- Modal de Adição de Proutos -->
+  <div class="modal fade" id="modalAdicionarItem" tabindex="-1" aria-labelledby="modalAdicionarItemLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="modalAdicionarItemLabel">Adicionar Produto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-adicionar-item">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="produto-nome" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="produto-nome" required>
               </div>
-              <span id="label-toggle-2" class="tipo-label">Categoria</span>
+              <div class="col-md-6">
+                <label for="produto-barcode" class="form-label">Código de Barras</label>
+                <input type="text" class="form-control" id="produto-barcode" required>
+              </div>
+              <div class="col-md-6">
+                <label for="add-preco" class="form-label">Preço</label>
+                <div class="input-group">
+                  <span class="input-group-text">R$</span>
+                  <input type="number" class="form-control" id="add-preco" min="0" step="0.01">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="add-categoria" class="form-label">Categoria</label>
+                <select class="form-select" id="add-categoria">
+                  <option value="">Selecione</option>
+                  <!-- Opções aqui -->
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="produto-estoque" class="form-label">Estoque</label>
+                <input type="number" class="form-control" id="produto-estoque" required>
+              </div>
+              <div class="col-md-6">
+                <label for="produto-lote" class="form-label">Lote</label>
+                <input type="text" class="form-control" id="produto-lote">
+              </div>
+              <div class="col-md-6">
+                <label for="add-departamento" class="form-label">Departamento</label>
+                <select class="form-select" id="add-departamento">
+                  <option value="">Selecione</option>
+                  <!-- Opções aqui -->
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="produto-marketId" class="form-label">ID do Mercado</label>
+                <input type="text" class="form-control" id="produto-marketId" required disabled>
+              </div>
+              <div class="col-md-6">
+                <label for="produto-fabricacao" class="form-label">Data de Fabricação</label>
+                <input type="date" class="form-control" id="produto-fabricacao">
+              </div>
+              <div class="col-md-6">
+                <label for="produto-validade" class="form-label">Data de Validade</label>
+                <input type="date" class="form-control" id="produto-validade">
+              </div>
+              <div class="col-12">
+                <label for="produto-imagem" class="form-label">Imagem do Produto</label>
+                <input name="imagem" type="file" class="form-control" id="produto-imagem">
+              </div>
             </div>
-
-            <!-- Tabs -->
-            <ul class="nav nav-tabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab-add-btn" data-bs-toggle="tab" data-bs-target="#tab-add" type="button" role="tab">Adicionar</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-del-btn" data-bs-toggle="tab" data-bs-target="#tab-del" type="button" role="tab">Excluir</button>
-              </li>
-            </ul>
-
-            <!-- Conteúdo -->
-            <div class="tab-content pt-3">
-              <!-- Adicionar -->
-              <div class="tab-pane fade show active" id="tab-add" role="tabpanel">
-                <div class="mb-3">
-                  <label id="label-add" for="input-novo" class="form-label">Novo Departamento</label>
-                  <input type="text" class="form-control" id="input-novo" placeholder="Digite o nome">
-                </div>
-                <button class="btn btn-success w-100" onclick="adicionarDepartamentoCategoria()">Adicionar</button>
-              </div>
-
-              <!-- Excluir -->
-              <div class="tab-pane fade" id="tab-del" role="tabpanel">
-                <div class="mb-3">
-                  <label id="label-select" for="select-del" class="form-label">Departamento</label>
-                  <select class="form-select" id="select-del">
-                    <option value="">Selecione</option>
-                  </select>
-                </div>
-                <button class="btn btn-danger w-100" onclick="excluirDepartamentoCategoria()">Excluir</button>
-              </div>
-            </div>
-
-          </div>
+          </form>
         </div>
-      </div>
-    </div>    
-    
-    <!-- Modal de Edição de Produto -->
-    <div class="modal fade" id="modalEditarProduto" tabindex="-1" aria-labelledby="modalEditarProdutoLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header bg-warning text-dark">
-            <h5 class="modal-title" id="modalEditarProdutoLabel">Editar Produto</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body">
-            <form id="form-editar-item">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label for="editar-nome" class="form-label">Nome</label>
-                  <input type="text" class="form-control" id="editar-nome" required>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-barcode" class="form-label">Código de Barras</label>
-                  <input type="text" class="form-control" id="editar-barcode" required disabled>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-preco" class="form-label">Preço</label>
-                  <div class="input-group">
-                    <span class="input-group-text">R$</span>
-                    <input type="number" class="form-control" id="editar-preco" min="0" step="0.01">
-                  </div>
-                </div>                
-                <div class="col-md-6">
-                  <label for="editar-categoria" class="form-label">Categoria</label>
-                  <select class="form-select" id="editar-categoria">
-                    <option value="">Selecione</option>
-                    <!-- categorias aqui -->
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-estoque" class="form-label">Estoque</label>
-                  <input type="number" class="form-control" id="editar-estoque" required>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-lote" class="form-label">Lote</label>
-                  <input type="text" class="form-control" id="editar-lote" disabled>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-departamento" class="form-label">Departamento</label>
-                  <select class="form-select" id="editar-departamento">
-                    <option value="">Selecione</option>
-                    <!-- departamentos aqui -->
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-marketId" class="form-label">ID do Mercado</label>
-                  <input type="text" class="form-control" id="editar-marketId" required disabled>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-fabricacao" class="form-label">Data de Fabricação</label>
-                  <input type="date" class="form-control" id="editar-fabricacao" disabled>
-                </div>
-                <div class="col-md-6">
-                  <label for="editar-validade" class="form-label">Data de Validade</label>
-                  <input type="date" class="form-control" id="editar-validade" disabled>
-                </div>
-                <div class="col-12">
-                  <label for="editar-imagem" class="form-label">Imagem do Produto</label>
-                  <input type="file" class="form-control" id="editar-imagem">
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button class="btn btn-warning" id="btn-confirmar-edicao" onclick="abrirConfirmarEdicao()">Salvar Alterações</button>
-          </div>
-        </div>
-      </div>
-    </div>    
-
-    <!-- Modal de Exclusão de Produto -->
-    <div class="modal fade" id="modalExcluirProduto" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title" id="modalExcluirLabel">Confirmar Exclusão</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body">
-            <p>Tem certeza que deseja excluir o item abaixo?</p>
-            <ul class="list-unstyled">
-              <li><strong>Nome:</strong> <span id="excluir-nome"></span></li>
-              <li><strong>Código:</strong> <span id="excluir-codigo"></span></li>
-              <li><strong>Categoria:</strong> <span id="excluir-categoria"></span></li>
-              <li><strong>Estoque:</strong> <span id="excluir-estoque"></span></li>
-            </ul>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-danger" id="confirmar-exclusao" onclick="abrirConfirmarExclusao()">Excluir</button>
-          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success" id="btn-confirmar-adicionar">Adicionar</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Offcanvas de Alertas -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-alertas">
-      <div class="offcanvas-header bg-danger text-white">
-        <h5 class="offcanvas-title">Alertas de Estoque</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-      </div>
+  <!-- Modal para Gerenciar setores -->
+  <div class="modal fade" id="modal-dep-cat" tabindex="-1" aria-labelledby="modalDepCatLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title" id="modalDepCatLabel">Gerenciar Departamento / Categoria</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
 
-      <div class="offcanvas-body">
-        <!-- Tabs e Botão de Recarregar -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <ul class="nav nav-tabs" id="tabs-alerta" role="tablist">
+          <!-- Toggle Tipo -->
+          <div class="tipo-toggle mb-3">
+            <span id="label-toggle" class="tipo-label active">Departamento</span>
+            <div class="form-check form-switch m-0">
+              <input class="form-check-input" type="checkbox" id="toggleTipo" onchange="alternarTipo()">
+            </div>
+            <span id="label-toggle-2" class="tipo-label">Categoria</span>
+          </div>
+
+          <!-- Tabs -->
+          <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="tab-unidades-tab" data-bs-toggle="tab" data-bs-target="#tab-unidades" type="button" role="tab">
-                Nível de Estoque
-              </button>
+              <button class="nav-link active" id="tab-add-btn" data-bs-toggle="tab" data-bs-target="#tab-add"
+                type="button" role="tab">Adicionar</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="tab-validade-tab" data-bs-toggle="tab" data-bs-target="#tab-validade" type="button" role="tab">
-                Validade Próxima
-              </button>
+              <button class="nav-link" id="tab-del-btn" data-bs-toggle="tab" data-bs-target="#tab-del" type="button"
+                role="tab">Excluir</button>
             </li>
           </ul>
-          <button class="btn btn-outline-dark btn-sm" id="btn-reload-alerts" type="button" title="Recarregar alertas" onclick="reloadPage()">
-            <i class="bi bi-arrow-clockwise" id="reload-icon"></i>
-          </button>
-        </div>
 
-        <!-- Conteúdo -->
-        <div class="tab-content pt-2">
-          <div class="tab-pane fade show active" id="tab-unidades" role="tabpanel">
-            <div id="alertas-unidades" class="d-flex flex-column gap-2"></div>
+          <!-- Conteúdo -->
+          <div class="tab-content pt-3">
+            <!-- Adicionar -->
+            <div class="tab-pane fade show active" id="tab-add" role="tabpanel">
+              <div class="mb-3">
+                <label id="label-add" for="input-novo" class="form-label">Novo Departamento</label>
+                <input type="text" class="form-control" id="input-novo" placeholder="Digite o nome">
+              </div>
+              <button class="btn btn-success w-100" onclick="adicionarDepartamentoCategoria()">Adicionar</button>
+            </div>
+
+            <!-- Excluir -->
+            <div class="tab-pane fade" id="tab-del" role="tabpanel">
+              <div class="mb-3">
+                <label id="label-select" for="select-del" class="form-label">Departamento</label>
+                <select class="form-select" id="select-del">
+                  <option value="">Selecione</option>
+                </select>
+              </div>
+              <button class="btn btn-danger w-100" onclick="excluirDepartamentoCategoria()">Excluir</button>
+            </div>
           </div>
-          <div class="tab-pane fade" id="tab-validade" role="tabpanel">
-            <div id="alertas-validade" class="d-flex flex-column gap-2"></div>
-          </div>
+
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal de Confirmar Edição -->
-    <div class="modal fade" id="modalConfirmarEdicao" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-warning text-dark">
-            <h5 class="modal-title">Confirmar Edição</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            Tem certeza que deseja editar o produto com esse código?
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button class="btn btn-warning" onclick="confirmarEdicaoFinal()">Sim, editar</button>
-          </div>
+  <!-- Modal de Edição de Produto -->
+  <div class="modal fade" id="modalEditarProduto" tabindex="-1" aria-labelledby="modalEditarProdutoLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title" id="modalEditarProdutoLabel">Editar Produto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-editar-item">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="editar-nome" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="editar-nome" required>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-barcode" class="form-label">Código de Barras</label>
+                <input type="text" class="form-control" id="editar-barcode" required disabled>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-preco" class="form-label">Preço</label>
+                <div class="input-group">
+                  <span class="input-group-text">R$</span>
+                  <input type="number" class="form-control" id="editar-preco" min="0" step="0.01">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-categoria" class="form-label">Categoria</label>
+                <select class="form-select" id="editar-categoria">
+                  <option value="">Selecione</option>
+                  <!-- categorias aqui -->
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-estoque" class="form-label">Estoque</label>
+                <input type="number" class="form-control" id="editar-estoque" required>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-lote" class="form-label">Lote</label>
+                <input type="text" class="form-control" id="editar-lote" disabled>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-departamento" class="form-label">Departamento</label>
+                <select class="form-select" id="editar-departamento">
+                  <option value="">Selecione</option>
+                  <!-- departamentos aqui -->
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-marketId" class="form-label">ID do Mercado</label>
+                <input type="text" class="form-control" id="editar-marketId" required disabled>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-fabricacao" class="form-label">Data de Fabricação</label>
+                <input type="date" class="form-control" id="editar-fabricacao" disabled>
+              </div>
+              <div class="col-md-6">
+                <label for="editar-validade" class="form-label">Data de Validade</label>
+                <input type="date" class="form-control" id="editar-validade" disabled>
+              </div>
+              <div class="col-12">
+                <label for="editar-imagem" class="form-label">Imagem do Produto</label>
+                <input type="file" class="form-control" id="editar-imagem">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-warning" id="btn-confirmar-edicao" onclick="abrirConfirmarEdicao()">Salvar
+            Alterações</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal de Confirmar Exclisão -->
-    <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Confirmar Exclusão</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            Tem certeza que deseja excluir este produto? Essa ação não pode ser desfeita.
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button class="btn btn-danger" onclick="confirmarExclusaoFinal()">Sim, excluir</button>
-          </div>
+  <!-- Modal de Exclusão de Produto -->
+  <div class="modal fade" id="modalExcluirProduto" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="modalExcluirLabel">Confirmar Exclusão</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Tem certeza que deseja excluir o item abaixo?</p>
+          <ul class="list-unstyled">
+            <li><strong>Nome:</strong> <span id="excluir-nome"></span></li>
+            <li><strong>Código:</strong> <span id="excluir-codigo"></span></li>
+            <li><strong>Categoria:</strong> <span id="excluir-categoria"></span></li>
+            <li><strong>Estoque:</strong> <span id="excluir-estoque"></span></li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmar-exclusao"
+            onclick="abrirConfirmarExclusao()">Excluir</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal de Aviso da Ausencia de Codigo -->
-    <div class="modal fade" id="modalCodigoObrigatorio" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-info text-dark">
-            <h5 class="modal-title">Código obrigatório</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            Por favor, insira o código do produto antes de continuar.
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-primary" data-bs-dismiss="modal">Ok</button>
-          </div>
+  <!-- Offcanvas de Alertas -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-alertas">
+    <div class="offcanvas-header bg-danger text-white">
+      <h5 class="offcanvas-title">Alertas de Estoque</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body">
+      <!-- Tabs e Botão de Recarregar -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <ul class="nav nav-tabs" id="tabs-alerta" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-unidades-tab" data-bs-toggle="tab" data-bs-target="#tab-unidades"
+              type="button" role="tab">
+              Nível de Estoque
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-validade-tab" data-bs-toggle="tab" data-bs-target="#tab-validade"
+              type="button" role="tab">
+              Validade Próxima
+            </button>
+          </li>
+        </ul>
+        <button class="btn btn-outline-dark btn-sm" id="btn-reload-alerts" type="button" title="Recarregar alertas"
+          onclick="reloadPage()">
+          <i class="bi bi-arrow-clockwise" id="reload-icon"></i>
+        </button>
+      </div>
+
+      <!-- Conteúdo -->
+      <div class="tab-content pt-2">
+        <div class="tab-pane fade show active" id="tab-unidades" role="tabpanel">
+          <div id="alertas-unidades" class="d-flex flex-column gap-2"></div>
+        </div>
+        <div class="tab-pane fade" id="tab-validade" role="tabpanel">
+          <div id="alertas-validade" class="d-flex flex-column gap-2"></div>
         </div>
       </div>
     </div>
-    
-    <!-- Toast de Notificação -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1200">
-      <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-          <strong class="me-auto" id="toast-title">Notificação</strong>
-          <small>Agora</small>
-          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+  </div>
+
+  <!-- Modal de Confirmar Edição -->
+  <div class="modal fade" id="modalConfirmarEdicao" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title">Confirmar Edição</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="toast-body" id="toast-message">
-          Mensagem aqui
+        <div class="modal-body">
+          Tem certeza que deseja editar o produto com esse código?
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-warning" onclick="confirmarEdicaoFinal()">Sim, editar</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal: Aviso Global -->
+  <!-- Modal de Confirmar Exclisão -->
+  <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">Confirmar Exclusão</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir este produto? Essa ação não pode ser desfeita.
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-danger" onclick="confirmarExclusaoFinal()">Sim, excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Aviso da Ausencia de Codigo -->
+  <div class="modal fade" id="modalCodigoObrigatorio" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-info text-dark">
+          <h5 class="modal-title">Código obrigatório</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          Por favor, insira o código do produto antes de continuar.
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" data-bs-dismiss="modal">Ok</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de Notificação -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1200">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto" id="toast-title">Notificação</strong>
+        <small>Agora</small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      </div>
+      <div class="toast-body" id="toast-message">
+        Mensagem aqui
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Aviso Global -->
   <div class="modal fade" id="globalAlertModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -478,9 +503,10 @@
     </div>
   </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
-    <script src="./popups/script.js"></script>
-    <script src="./link.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
+  <script src="./popups/script.js"></script>
+  <script src="./link.js"></script>
 </body>
+
 </html>
