@@ -116,6 +116,15 @@ async function getImageURL(rawImagePath) {
   }
 }
 
+function abrirRelatorio() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (id) {
+      window.location.href = `/relatorio?id=${id}`;
+    } else {
+      alert("ID do supermercado não encontrado na URL.");
+    }
+}
 
 async function criarCardHTML(produto) {
 

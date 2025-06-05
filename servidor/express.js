@@ -68,6 +68,139 @@ app.get('/api/ip', (req, res) => {
     res.json({ ip });
 });
 
+app.get('/relatorio/:id', (req, res) => {
+  const marketId = req.params.id;
+  res.render('relatorio', { marketId });
+});
+
+app.post('/api/relatorio-data', async (req, res) => {
+    try {
+        const { marketId, filtro = 'saida', tipoRelatorio } = req.body;
+        
+        // 1. Verificar mercado
+        const mercado = await select('supermarkets', 'WHERE marketId = ?', [marketId]);
+        if (!mercado || mercado.length === 0) {
+            return res.status(404).json({ error: 'Mercado não encontrado' });
+        }
+
+        // 2. Obter datas para filtro
+        const hoje = new Date().toISOString().split('T')[0];
+        const umMesAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const umaSemanaAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        // 3. Consulta para produtos com histórico do tipo 'saida'
+        const produtosComSaida = await selectFromRaw(`
+            SELECT 
+                p.productId,
+                p.name as nome,
+                p.barcode as codigo,
+                COUNT(h.historyId) as quantidade,
+                SUM(CASE WHEN h.type = 'saida' THEN JSON_EXTRACT(h.afterData, '$.stock') - JSON_EXTRACT(h.beforeData, '$.stock') ELSE 0 END) as quantidade_saida,
+                SUM(CASE WHEN h.type = 'saida' THEN (JSON_EXTRACT(h.beforeData, '$.stock') - JSON_EXTRACT(h.afterData, '$.stock')) * p.price ELSE 0 END) as valorTotal
+            FROM history h
+            JOIN products p ON h.productId = p.productId AND h.marketId = p.marketId
+            WHERE h.marketId = ? AND h.type = ?
+            AND date(h.createdAt) BETWEEN date(?) AND date(?)
+            GROUP BY p.productId
+            ORDER BY valorTotal DESC
+        `, [marketId, filtro, umMesAtras, hoje]);
+
+        const produtosComSaidaIds = produtosComSaida.map(p => p.productId);
+
+        // 4. Consultas adicionais filtradas por produtos com saída
+        const vendasHoje = await selectFromRaw(`
+            SELECT SUM(total) as total FROM sales 
+            WHERE marketId = ? AND date(saleDate) = date(?)
+            AND saleId IN (
+                SELECT DISTINCT si.saleId 
+                FROM sale_items si
+                WHERE si.productId IN (${produtosComSaidaIds.join(',') || 'NULL'})
+            )
+        `, [marketId, hoje]);
+
+        // 5. Consulta para mais vendidos (apenas produtos com histórico de saída)
+        const maisVendidos = await selectFromRaw(`
+            SELECT 
+                p.name as nome,
+                SUM(si.quantity) as qtd,
+                SUM(si.subtotal) as precoTotal
+            FROM sale_items si
+            JOIN products p ON si.productId = p.productId
+            JOIN sales s ON si.saleId = s.saleId
+            WHERE s.marketId = ? 
+            AND date(s.saleDate) BETWEEN date(?) AND date(?)
+            AND p.productId IN (${idsProdutosVendidos})
+            GROUP BY p.productId
+            ORDER BY qtd DESC
+            LIMIT 10
+        `, [marketId, umMesAtras, hoje]);
+
+        // 6. Consulta para curva ABC (apenas categorias com produtos vendidos)
+        const curvaABC = await selectFromRaw(`
+            SELECT 
+                p.category as categoria,
+                SUM(si.subtotal) as valor
+            FROM sale_items si
+            JOIN products p ON si.productId = p.productId
+            JOIN sales s ON si.saleId = s.saleId
+            WHERE s.marketId = ? 
+            AND date(s.saleDate) BETWEEN date(?) AND date(?)
+            AND p.productId IN (${idsProdutosVendidos})
+            GROUP BY p.category
+            ORDER BY valor DESC
+            LIMIT 5
+        `, [marketId, umMesAtras, hoje]);
+
+        // 7. Produtos encalhados (que não têm histórico de saída recente)
+        const produtosEncalhados = await selectFromRaw(`
+            SELECT 
+                p.name as nome,
+                p.stock as estoque,
+                p.barcode as codigo,
+                p.lot as lote,
+                p.expirationDate as validade,
+                MAX(s.saleDate) as ultimaVenda
+            FROM products p
+            LEFT JOIN sale_items si ON p.productId = si.productId
+            LEFT JOIN sales s ON si.saleId = s.saleId AND s.marketId = p.marketId
+            WHERE p.marketId = ? 
+            AND p.productId NOT IN (
+                SELECT DISTINCT h.productId
+                FROM history h
+                WHERE h.marketId = ? AND h.type = 'saida'
+                AND date(h.createdAt) >= date(?)
+            )
+            GROUP BY p.productId
+            HAVING p.stock > 0
+            ORDER BY ultimaVenda ASC
+            LIMIT 10
+        `, [marketId, marketId, umMesAtras]);
+
+        // Calcular variações percentuais (simplificado)
+        const calcularVariacao = (atual, anterior) => {
+            if (!anterior || anterior === 0) return 100;
+            return ((atual - anterior) / anterior * 100).toFixed(2);
+        };
+
+        // Montar resposta
+        const response = {
+            produtosComSaida,
+            produtosComSaidaIds,
+            vendasHoje: {
+                total: vendasHoje[0]?.total?.toFixed(2) || "0,00",
+                variacao: calcularVariacao(vendasHoje[0]?.total || 0, vendasHoje[1]?.total || 0)
+            },
+            // ... (restante da resposta)
+        };
+
+        res.json(response);
+
+    } catch (error) {
+        console.error('Erro ao gerar dados de relatório:', error);
+        res.status(500).json({ error: 'Erro interno ao gerar relatório' });
+    }   
+});
+
 async function loadPages() {
 
     try {
@@ -823,6 +956,14 @@ app.post('/api/getUserDetails', async (req, res) => {
         res.status(500).json({ success: false, error: "Erro interno ao buscar detalhes do usuário." });
     }
 });
+app.post('/getRelatoriaSaida', async (req, res)=> {
+    const { marketId } = req.body;
+
+    const leavingProducts = await select("history", "WHERE marketId = ? and type = 'saida' ", marketId)
+    for (var productId in leavingProducts) {
+        const product = await select("products", 'WHERE productId = ?' productId.productId)
+    }
+})
 
 app.use((req, res, next) => {
     console.log(`[DEBUG] Rota não encontrada para: ${req.method} ${req.originalUrl}. Redirecionando para /Error404`);

@@ -190,19 +190,26 @@ async function loadCartFromCookie() {
 }
 
 // Modificado para aceitar quantidade inicial do carrinho
-async function recreateProductCard(productData, initialQuantity) {
+async function recreateProductCard(productData) {
+    // If productData is missing essential fields, fetch it from server
+    if (!productData.name || !productData.price) {
+        const response = await fetch('/estoqueData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busca: productData.barcode, marketId: id })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.mensagem && data.mensagem.length > 0) {
+                productData = data.mensagem[0];
+            }
+        }
+    }
+
     const container = document.getElementById("produtos-container");
     const tempDiv = document.createElement("div");
-    
-    // Garante que productData e barcode existem
-    if (!productData || !productData.barcode) {
-        console.error("Dados inválidos para recriar card:", productData);
-        return;
-    }
     const barcode = productData.barcode;
-
-    // Calcula o preço total inicial para este item
-    const initialTotalPrice = (parseFloat(productData.price) * initialQuantity).toFixed(2);
 
     tempDiv.innerHTML = `
         <div id="card(${barcode})" class="card card-produto" style="border: 1px solid #dee2e6;">
@@ -211,35 +218,35 @@ async function recreateProductCard(productData, initialQuantity) {
                     <img src="${getImageUrl(productData.image)}" 
                         class="h-100 w-100" 
                         style="object-fit: cover; object-position: center;"
-                        alt="${productData.name || 'Produto'}"
-                        onerror="this.onerror=null; this.src='https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';">
+                        alt="${productData.name}"
+                        onerror="this.src='https://via.placeholder.com/150?text=Produto'">
                 </div>
                 <div class="col-md-8 p-0">
-                    <div class="card-body h-100 d-flex flex-column"> {/* d-flex e flex-column */}
-                        <h6 class="card-title">${productData.name || 'Nome Indisponível'}</h6>
-                        <p class="card-text">Preço Total: R$ ${initialTotalPrice}</p>
-                        <p class="card-text">Qtd: ${initialQuantity}</p>
-                        <div class="card-actions mt-auto"> {/* mt-auto para empurrar para baixo */}
+                    <div class="card-body h-100">
+                        <h6 class="card-title">${productData.name}</h6>
+                        <p class="card-text">Preço Total: R$ ${productsOnScreen[barcode].totalPrice.toFixed(2)}</p>
+                        <p class="card-text">Qtd: ${productsOnScreen[barcode].quant}</p>
+                        <div class="card-actions">
                             <button type="button" class="btn btn-sm btn-outline-secondary btn-popover m-1" 
                                     data-bs-toggle="popover" 
                                     data-bs-html="true"
                                     data-bs-content="
-                                        <strong>Nome:</strong> ${productData.name || '-'}<br>
+                                        <strong>Nome:</strong> ${productData.name}<br>
                                         <strong>Cód. Barras:</strong> ${barcode}<br>
-                                        <strong>Preço Unit.:</strong> R$ ${productData.price ? parseFloat(productData.price).toFixed(2) : '-'}<br>
-                                        <strong>Categoria:</strong> ${productData.category || '-'}<br>
-                                        <strong>Estoque Disp.:</strong> ${productData.stock != null ? productData.stock : '-'} unid.<br>
-                                        <strong>Lote:</strong> ${productData.lot || '-'}<br>
-                                        <strong>Depto:</strong> ${productData.departament || '-'}<br>
-                                        <strong>Validade:</strong> ${productData.expirationDate || '-'}<br>
-                                        <strong>Fabricação:</strong> ${productData.manufactureDate || '-'}"
-                                    title="Detalhes do Produto">
+                                        <strong>Preço:</strong> R$ ${productData.price}<br>
+                                        <strong>Categoria:</strong> ${productData.category}<br>
+                                        <strong>Estoque:</strong> ${productData.stock} unidades<br>
+                                        <strong>Lote:</strong> ${productData.lot}<br>
+                                        <strong>Departamento:</strong> ${productData.departament}<br>
+                                        <strong>Validade:</strong> ${productData.expirationDate}<br>
+                                        <strong>Fabricação:</strong> ${productData.manufactureDate}"
+                                    title="Detalhes">
                                 <i class="bi bi-info-square"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-warning m-1" data-bs-toggle="tooltip" data-bs-title="Remover 1 unidade" onclick="removerUnidade('${barcode}')">
+                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover 1 unidade" onclick="removerUnidade('${barcode}')">
                                 <i class="bi bi-dash-circle"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover todas as unidades" onclick="removerProduto('${barcode}')">
+                            <button class="btn btn-sm btn-outline-danger m-1" data-bs-toggle="tooltip" data-bs-title="Remover do estoque" onclick="removerProduto('${barcode}')">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -248,11 +255,12 @@ async function recreateProductCard(productData, initialQuantity) {
             </div>
         </div>
     `;
+
     const cardElement = tempDiv.firstElementChild;
-    if (container) container.appendChild(cardElement);
+    container.appendChild(cardElement);
 
     const btnPopover = cardElement.querySelector('.btn-popover');
-    if (btnPopover) new bootstrap.Popover(btnPopover, { trigger: 'focus' });
+    new bootstrap.Popover(btnPopover, { trigger: 'focus' });
 
     const tooltips = cardElement.querySelectorAll('[data-bs-toggle="tooltip"]');
     tooltips.forEach(btn => new bootstrap.Tooltip(btn));
