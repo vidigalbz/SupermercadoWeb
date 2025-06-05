@@ -5,11 +5,21 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
         console.error("Erro ao abrir o banco:", err.message);
         return;
     }
-    db.run("PRAGMA foreign_keys = ON");
+    // Ensure PRAGMA foreign_keys is effective for every connection if needed,
+    // but db.serialize runs this for the setup connection.
+    // For runtime, it's good practice to ensure it's on for each connection if they are separate.
+    // Here, 'db' is a single, persistent connection, so this initial PRAGMA should suffice.
+    db.run("PRAGMA foreign_keys = ON", (pragmaErr) => {
+        if (pragmaErr) {
+            console.error("Erro ao habilitar foreign keys:", pragmaErr.message);
+        }
+    });
+    console.log("Conectado ao banco de dados SQLite com foreign keys ON.");
 });
 
 // Criação das tabelas na ordem correta
 db.serialize(() => {
+    // This PRAGMA here ensures it's on before table creation for this sequence of operations.
     db.run("PRAGMA foreign_keys = ON");
 
     db.exec(`
@@ -17,12 +27,12 @@ db.serialize(() => {
         userId INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
+        password TEXT NOT NULL -- Store hashed passwords
     );
 
     CREATE TABLE IF NOT EXISTS supermarkets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        marketId TEXT UNIQUE NOT NULL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT, -- Internal SQLite rowid alias
+        marketId TEXT UNIQUE NOT NULL,     -- Public facing unique ID for the market
         createdAt TEXT NOT NULL,
         name TEXT NOT NULL,
         local TEXT NOT NULL,
@@ -35,7 +45,7 @@ db.serialize(() => {
         keyId INTEGER PRIMARY KEY AUTOINCREMENT,
         key TEXT NOT NULL UNIQUE,
         marketId TEXT NOT NULL,
-        type TEXT NOT NULL,
+        type TEXT NOT NULL, -- e.g., 'pdv', 'estoque'
         FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE
     );
 
@@ -50,7 +60,7 @@ db.serialize(() => {
         lot TEXT,
         expirationDate TEXT,
         manufactureDate TEXT,
-        barcode TEXT NOT NULL,
+        barcode TEXT NOT NULL, -- Should this be unique per marketId or globally? Consider constraints.
         image TEXT,
         FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE
     );
@@ -72,33 +82,36 @@ db.serialize(() => {
         unitPrice REAL NOT NULL,
         subtotal REAL NOT NULL,
         FOREIGN KEY (saleId) REFERENCES sales(saleId) ON DELETE CASCADE,
-        FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE CASCADE
+        FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE CASCADE -- Or SET NULL / RESTRICT depending on desired behavior
     );
 
     CREATE TABLE IF NOT EXISTS setors (
-        itemId INTEGER PRIMARY KEY AUTOINCREMENT,
+        itemId INTEGER PRIMARY KEY AUTOINCREMENT, -- Consider renaming to setorId for clarity
         name TEXT NOT NULL,
-        type TEXT NOT NULL,
+        type TEXT NOT NULL, -- 'cat' or 'dept'
         marketId TEXT NOT NULL,
-        FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE
+        FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE,
+        UNIQUE(name, type, marketId) -- Ensure sector names are unique within a type and market
     );
 
     CREATE TABLE IF NOT EXISTS history (
         historyId INTEGER PRIMARY KEY AUTOINCREMENT,
-        productId INTEGER NOT NULL,
+        productId INTEGER, -- Nullable if product can be deleted but history retained without ON DELETE CASCADE
         marketId TEXT NOT NULL,
         userId INTEGER NOT NULL,
-        type TEXT NOT NULL,
-        beforeData TEXT,
-        afterData TEXT,
+        type TEXT NOT NULL, -- 'entrada', 'saida', 'edicao', 'remocao'
+        beforeData TEXT,    -- JSON string
+        afterData TEXT,     -- JSON string
         createdAt TEXT NOT NULL,
-        FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE CASCADE,
+        FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE SET NULL, -- Changed from CASCADE to SET NULL to keep history if product is deleted
         FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE,
         FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
     );
     `, (err) => {
         if (err) {
             console.error("Erro ao criar tabelas:", err.message);
+        } else {
+            console.log("Tabelas verificadas/criadas com sucesso.");
         }
     });
 });
@@ -109,7 +122,7 @@ function select(table, where = '', params = []) {
         const query = `SELECT * FROM ${table} ${where}`;
         db.all(query, params, (err, rows) => {
             if (err) {
-                console.error(`Erro na consulta SELECT: ${err.message}`);
+                console.error(`Erro na consulta SELECT (${table}): ${err.message}`);
                 reject(err);
             } else {
                 resolve(rows || []);
@@ -129,27 +142,30 @@ function insert(table, columns, values) {
 
         db.run(query, values, function(err) {
             if (err) {
-                console.error(`Erro na inserção: ${err.message}`);
+                console.error(`Erro na inserção (${table}): ${err.message}`);
                 reject(err);
             } else {
-                resolve({ id: this.lastID });
+                resolve({ id: this.lastID, changes: this.changes });
             }
         });
     });
 }
 
-function update(table, columns, values, condition = "") {
+function update(table, columns, values, condition, conditionParams = []) {
     return new Promise((resolve, reject) => {
         if (!columns || !values || columns.length !== values.length) {
             return reject(new Error("Colunas e valores devem ter o mesmo tamanho"));
         }
 
         const setClause = columns.map(col => `${col} = ?`).join(', ');
+        // Condition should be a parameterized string, e.g., "productId = ?"
+        // Values for setClause come first, then values for conditionParams
         const query = `UPDATE ${table} SET ${setClause} ${condition ? "WHERE " + condition : ""}`;
+        const allParams = [...values, ...conditionParams];
 
-        db.run(query, values, function(err) {
+        db.run(query, allParams, function(err) {
             if (err) {
-                console.error(`Erro na atualização: ${err.message}`);
+                console.error(`Erro na atualização (${table}): ${err.message}`);
                 reject(err);
             } else {
                 resolve({ changes: this.changes });
@@ -163,12 +179,12 @@ function delet(table, condition, params = []) {
         if (!condition) {
             return reject(new Error("Condição de exclusão não fornecida"));
         }
-
+        // Condition should be a parameterized string, e.g., "productId = ?"
         const query = `DELETE FROM ${table} WHERE ${condition}`;
         
         db.run(query, params, function(err) {
             if (err) {
-                console.error(`Erro na exclusão: ${err.message}`);
+                console.error(`Erro na exclusão (${table}): ${err.message}`);
                 reject(err);
             } else {
                 resolve({ changes: this.changes });
@@ -177,6 +193,7 @@ function delet(table, condition, params = []) {
     });
 }
 
+// Generic query execution (for potentially complex queries not covered by helpers)
 function query(queryText, params = []) {
     return new Promise((resolve, reject) => {
         db.run(queryText, params, function(err) {
@@ -190,6 +207,7 @@ function query(queryText, params = []) {
     });
 }
 
+// Generic select raw query execution
 function selectFromRaw(queryText, params = []) {
     return new Promise((resolve, reject) => {
         db.all(queryText, params, (err, rows) => {
@@ -203,22 +221,25 @@ function selectFromRaw(queryText, params = []) {
     });
 }
 
+// This function seems specific and might be better placed in a service layer
+// if your application grows, but it's fine here for now.
 async function insertLink(key, marketId, type) {
     try {
         const result = await insert('accessKeys', ['key', 'marketId', 'type'], [key, marketId, type]);
         return result.id;
     } catch (err) {
-        throw err;
+        console.error(`Erro ao inserir link de acesso: ${err.message}`);
+        throw err; // Re-throw to be handled by the caller
     }
 }
 
 module.exports = {
-    insert,
+    db, // Exporting the db instance directly can be useful but also risky if not handled carefully.
     select,
+    insert,
     update,
     delet,
     query,
     insertLink,
     selectFromRaw,
-    db
 };

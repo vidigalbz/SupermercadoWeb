@@ -29,23 +29,53 @@ function getQueryParam(paramName) {
   }
   return null;
 }
-async function verificUser(){
-  fetch("/verific", {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({busca: id, column: "userId", tableSelect :"users"})
-  }).then( res => res.json())
-  .then( data => {
-    if (Object.keys(data.mensagem).length === 0){
-      window.location.href = '/Error404'
+
+async function verificUser() {
+    const userIdFromUrl = getQueryParam('userID'); // Pega o userID da URL
+
+    if (!userIdFromUrl) {
+        console.error("userID não encontrado na URL para verificUser.");
+        document.getElementById('userName').textContent = "Usuário Desconhecido";
+        document.getElementById('userEmail').textContent = "-";
+        document.getElementById('userRole').textContent = "-";
+        // Considere redirecionar para uma página de erro ou login se o userID for essencial
+        // window.location.href = '/login'; // Exemplo
+        return;
     }
-    else {
-        document.getElementById('userName').textContent = data.mensagem[0].name;
-        document.getElementById('userEmail').textContent = data.mensagem[0  ].email;
-        document.getElementById('userRole').textContent = "Gerente";
+
+    try {
+        const response = await fetch("/api/getUserDetails", { // Chama a nova rota
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userIdFromUrl }) // Envia o userId corretamente
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}` }));
+            throw new Error(errorData.error || `Erro ${response.status} ao buscar dados do usuário.`);
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.mensagem && data.mensagem.length > 0) {
+            const userInfo = data.mensagem[0];
+            document.getElementById('userName').textContent = userInfo.name || "Nome não disponível";
+            document.getElementById('userEmail').textContent = userInfo.email || "Email não disponível";
+            document.getElementById('userRole').textContent = "Gerente"; // Defina o cargo como necessário
+        } else {
+            console.error("Usuário não encontrado ou resposta inválida do servidor:", data.error || "Dados de usuário não retornados.");
+            // Decide o que fazer se o usuário não for encontrado (ex: redirecionar)
+            document.getElementById('userName').textContent = "Usuário Inválido";
+            // window.location.href = '/Error404'; // Exemplo
+        }
+    } catch (err) {
+        console.error("Erro na função verificUser:", err);
+        document.getElementById('userName').textContent = "Erro ao carregar";
+        document.getElementById('userEmail').textContent = "-";
+        document.getElementById('userRole').textContent = "-";
+        // Exibir uma notificação de erro para o usuário também seria uma boa prática
+        // showToast(`Erro ao carregar dados do usuário: ${err.message}`, 'error');
     }
-  }
-  )
 }
 
 const id = getQueryParam('userID');
@@ -244,20 +274,54 @@ function alternarVisibilidade(botao) {
     count();
   }
 
-  function carregarSupermercados(){
-    
-    fetch('/supermercadoData', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ busca: JSON.stringify(id)})
-    })
-    .then(res => res.json())
-    .then(data => {
-      currentData = data.mensagem;
+function carregarSupermercados() {
+    // 'id' já deve ser o userID obtido da URL (ex: "1", "23")
+    if (!id) {
+        console.error("UserID (id) não está definido para carregar supermercados.");
+        container.innerHTML = "<p class='alert alert-danger'>Não foi possível identificar o usuário.</p>";
+        return;
+    }
 
-      renderizarSupermercados(currentData);
+    fetch('/supermercadoData', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ busca: id }) // Envie o 'id' (userID) diretamente
     })
-  };
+    .then(res => {
+        if (!res.ok) {
+            // Tenta extrair uma mensagem de erro do JSON, se houver
+            return res.json().then(errData => {
+                throw new Error(errData.erro || `Erro ${res.status} do servidor.`);
+            }).catch(() => { // Se o corpo do erro não for JSON
+                throw new Error(`Erro ${res.status} do servidor.`);
+            });
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.mensagem) { // O backend retorna os supermercados na chave 'mensagem'
+            currentData = data.mensagem;
+            renderizarSupermercados(currentData);
+        } else if (data.erro) {
+            console.error("Erro ao carregar supermercados:", data.erro);
+            container.innerHTML = `<p class='alert alert-warning'>${data.erro}</p>`;
+            currentData = []; // Limpa dados antigos
+            renderizarSupermercados(currentData); // Atualiza a contagem para 0
+        } else {
+            // Se não tem nem 'mensagem' nem 'erro', a resposta é inesperada
+            console.error("Resposta inesperada do servidor:", data);
+            container.innerHTML = "<p class='alert alert-warning'>Não foi possível carregar os supermercados. Formato de resposta inesperado.</p>";
+            currentData = [];
+            renderizarSupermercados(currentData);
+        }
+    })
+    .catch(err => {
+        console.error('Erro crítico ao carregar supermercados:', err);
+        container.innerHTML = `<p class='alert alert-danger'>Erro crítico ao conectar com o servidor para carregar supermercados: ${err.message}</p>`;
+        currentData = []; // Limpa para não mostrar dados antigos em caso de erro
+        renderizarSupermercados(currentData); // Atualiza a contagem e interface
+    });
+}
 
   document.addEventListener('DOMContentLoaded', function(){ //Carregar os Modal de Acordo com os dados
     const modalEditar = document.getElementById("modalEditar")
