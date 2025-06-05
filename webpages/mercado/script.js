@@ -192,6 +192,7 @@ async function renderizarFuncionarios(marketId) {
   let data = await res.json();
   funcionariosData = data.message;
 
+  document.getElementById("funcionarioCount").textContent = funcionariosData.length;
   funcionarios = [];
 
   for (i = 0; i < funcionariosData.length; i++){
@@ -310,6 +311,21 @@ async function adicionarFuncionario() {
 
   console.log(funcionarioInput.value);
   console.log(permissionsBoolList);
+
+  let func = {userId: funcionarioInput.value, permissoes: permissionsBoolList}
+
+  let res = await fetch("/atualizarFuncionario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({type: "insert", userData: func, marketId: mercadoSelecionado})
+      });
+  data = await res.json();
+  /*TODO:
+    Popup para Feedback de Adição de Usuário!
+    data.message contém a mensagem (ok, erro, usuário já cadastrado....)
+    Fechar modal de usuário
+  */
+ renderizarFuncionarios(mercadoSelecionado);
 }
 
 async function SalvarPermissoes() {
@@ -339,7 +355,11 @@ async function SalvarPermissoes() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({type: "update", userData: func, marketId: mercadoSelecionado})
       });
-
+  /*
+    TODO:
+    Popup para Feedback de Alteração nas permissões de usuário!
+  */
+ renderizarFuncionarios(mercadoSelecionado);
 }
 
 async function RemoverFuncionario(){
@@ -349,6 +369,11 @@ async function RemoverFuncionario(){
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({type: "delete", userData: func, marketId: mercadoSelecionado})
   })
+  /*
+    TODO:
+    Popup para Feedback de remoção de Usuário!
+  */
+  renderizarFuncionarios(mercadoSelecionado);
 }
 
 function irParaTela(tela) {

@@ -47,6 +47,8 @@ app.use('/servidor/uploads', express.static(path.resolve(__dirname, './uploads')
 app.use('/uploads', express.static(path.join(__dirname, "uploads")));
 
 const os = require('os');
+const status = require("statuses");
+const { table } = require("console");
 
 function getRealWirelessIP() {
   const interfaces = os.networkInterfaces();
@@ -694,7 +696,6 @@ app.post('/addCarrinho', async (req, res) => {
 
 app.post('/getMarketId', async (req, res) => {
   const code = req.body;
-  console.log(code);
   query(`SELECT marketd FROM superMarkets WHERE marketid == '${code}'`);
 });
 
@@ -715,10 +716,8 @@ app.post("/verific", async (req, res) => {
 
 app.post("/funcionarios", async (req, res) => {
   const {marketId, userId} = req.body;
-    console.log(marketId);
   if (marketId && !userId){
     const funcionarios = await select("user_permissions", "WHERE marketId = ?", [marketId])
-    console.log(funcionarios);
     if (funcionarios.length > 0){
       return res.status(200).json({
         status: "success",
@@ -769,6 +768,36 @@ app.post("/atualizarFuncionario", async (req, res) => {
         message: "Erro ao remover usuário"
       })
     }
+  }
+  else if (type == "insert") {
+    try {
+      tableData = await select("user_permissions", "WHERE userId = ? AND marketId = ?", [userData.userId, marketId])
+      if (tableData.length > 0) {
+        console.log("Usuário já cadastrado!")
+        return res.status(409).json({
+          status: "error",
+          message: "Usuário já cadastrado!"
+        });
+      }
+      else {
+        insert(
+          "user_permissions", 
+          ["userId", "marketId", "pdv", "estoque", "fornecedor", "relatorios", "alertas", "rastreamento"], 
+          [userData.userId, marketId, userData.permissoes[0], userData.permissoes[1], userData.permissoes[2], userData.permissoes[3], userData.permissoes[4], userData.permissoes[5]]
+        );
+
+        return res.status(200).json({
+          status: "success",
+          message: "Funcionário cadastrado com sucesso!"
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao adicionar usuário:", err);
+        return res.status(500).json({
+          status: "error",
+          message: "Erro interno ao adicionar funcionário"
+        });
+      }
   }
 })
 
