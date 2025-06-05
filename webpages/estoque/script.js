@@ -42,12 +42,10 @@ function verificSuper(){
 const id = getQueryParam('id');
 document.getElementById("produto-marketId").value = id;
 verificSuper()
-console.log(id);
 
 
 filterCategoria.addEventListener("change", () => {
   categoriaValue = filterCategoria.value;
-  console.log(categoriaValue);
   const valorBusca = document.getElementById("pesquisa").value.trim();
   fetch('/estoqueData', {
     method: 'POST',
@@ -63,7 +61,6 @@ filterCategoria.addEventListener("change", () => {
 
 filterDepartamento.addEventListener("change", () => {
   categoriaValue = filterCategoria.value;
-  console.log(categoriaValue);
   const valorBusca = document.getElementById("pesquisa").value.trim();
   fetch('/estoqueData', {
     method: 'POST',
@@ -72,7 +69,6 @@ filterDepartamento.addEventListener("change", () => {
   })
     .then(res => res.json())
     .then(data => {
-      console.log(data.mensagem)
       renderizarProdutos(data.mensagem);
     })
     .catch(err => console.error('Erro:', err));
@@ -225,9 +221,7 @@ function carregarProdutos() {
     .then(res => res.json())
     .then(data => {
       currentData = data.mensagem;
-      console.log(data.mensagem)
       renderizarProdutos(data.mensagem);
-      console.log(`${data.mensagem.image}`)
     })
     .catch(err => console.error('Erro ao carregar produtos:', err));
 }
@@ -282,8 +276,6 @@ async function adicionarProduto() {
   formData.append("marketId", marketId);
   formData.append("fabricacao", fabricacao);
   formData.append("validade", validade);
-
-  console.log(categoria)
 
   // Verifique se a imagem foi selecionada antes de anexar
   if (imagemInput.files.length > 0) {
@@ -437,7 +429,6 @@ async function gerarCodigo() {
       if (data.mensagem != codigo) {
         return codigo;
       } else {
-        console.log('ja existe este market id');
         gerarCodigo();
       }
     })

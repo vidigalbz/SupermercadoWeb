@@ -23,14 +23,42 @@
                 <strong>Informações do Usuário</strong>
               </div>
               <div class="card-body text-center">
-                <i class="bi bi-person-circle" style="font-size: 9.5rem; color: #6c757d;"></i>
+                <!-- Imagem de perfil ou placeholder -->
+                <img
+                  id="profileImage"
+                  src="https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1"
+                  alt="Foto do usuário"
+                  class="rounded-circle border"
+                  style="width: 9.5rem; height: 9.5rem; object-fit: cover;"
+                />
                 <hr>
                 <p class="text-start"><strong>Nome:</strong> <span id="userName">[Nome]</span></p>
                 <p class="text-start"><strong>Matrícula:</strong> <span id="userEnrollment">[Matrícula]</span></p>
-                <p class="text-start"><strong>Cargo:</strong> <span id="userRole">[Cargo]</span></p>
+
+                <!-- Input de arquivo oculto e botões -->
+                <input
+                  type="file"
+                  id="fileInput"
+                  accept="image/*"
+                  style="display: none;"
+                />
+                <button
+                  id="btnChangeImage"
+                  class="btn btn-primary w-100 mb-2"
+                  type="button"
+                >
+                  Alterar Imagem
+                </button>
+                <button
+                  id="btnRemoveImage"
+                  class="btn btn-outline-danger w-100"
+                  type="button"
+                >
+                  Remover Imagem
+                </button>
               </div>
-              <button class="btn btn-secondary m-2 mt-0" type="button">
-                 Copiar codigo
+              <button class="btn btn-secondary m-2 mt-0" type="button" onclick="navigator.clipboard.writeText(document.getElementById('userEnrollment').textContent)">
+                 Copiar código
               </button>
             </div>
           </div>

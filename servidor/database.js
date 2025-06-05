@@ -19,11 +19,8 @@ CREATE TABLE IF NOT EXISTS users (
     userId INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     password TEXT NOT NULL,
-    gestor BOOL NOT NULL,
-    pdv BOOL NOT NULL DEFAULT 0,
-    estoque BOOL NOT NULL DEFAULT 0,
-    fornecedor BOOL NOT NULL DEFAULT 0,
-    relatorios BOOL NOT NULL DEFAULT 0
+    profileImage TEXT NULL,
+    gestor BOOL NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -151,8 +148,24 @@ CREATE TABLE IF NOT EXISTS relatorio_abc (
     FOREIGN KEY (productId) REFERENCES products(productId),
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );
+
+CREATE TABLE IF NOT EXISTS user_permissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    userId INTEGER NOT NULL,
+    marketId TEXT NOT NULL,
+    pdv BOOL NOT NULL DEFAULT 0,
+    estoque BOOL NOT NULL DEFAULT 0,
+    fornecedor BOOL NOT NULL DEFAULT 0,
+    relatorios BOOL NOT NULL DEFAULT 0,
+    alertas BOOL NOT NULL DEFAULT 0,
+    rastreamento BOOL NOT NULL DEFAULT 0,
+    FOREIGN KEY (userId) REFERENCES users(userId),
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId),
+    UNIQUE(userId, marketId)
+);
 `);
 });
+
 
 function select(table, condition = "", params = []) {
     return new Promise((resolve, reject) => {

@@ -88,7 +88,6 @@ async function verificSuper(){
 }
   const id = getQueryParam('id');
   verificSuper()
-  console.log(id);
 
 // Initialize the application
 function init() {
