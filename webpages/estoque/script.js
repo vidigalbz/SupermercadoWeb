@@ -33,16 +33,51 @@ function debounceSearch(func, delay) {
   debounceTimerSearch = setTimeout(func, delay);
 }
 
+async function verificarUser() {
+  try {
+    if (!userIdGlobal) {
+          window.location.href = "/error403";
+          return;
+    }''
+    const res = await fetch('/users/' + userIdGlobal);
+    const data = await res.json();
+
+    console.log(data);
+
+    const funcionarios =  await fetch('/funcionarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ marketIdGlobal })
+    });
+
+    console.log("a");
+
+    let funcData = await funcionarios.json();
+    funcionariosData = funcData.message;
+
+    if (data.data.gestor){
+      return;
+    }
+    if (!data.data) {
+      window.location.href = "/error403";
+    }
+  } catch (err) {
+    console.error("Erro ao verificar usuário:", err);
+ //   window.location.href = "/error403";
+  }
+}
+
 // Ao carregar o DOM
 document.addEventListener('DOMContentLoaded', async function() {
   // Recupera IDs
   marketIdGlobal = getQueryParam('id');
-  userIdGlobal = localStorage.getItem("userId");
+  userIdGlobal = getCookie("user");
+  document.cookie = `marketId=${marketIdGlobal}; path=/`;
+
+  verificarUser();
 
   // Preenche campo oculto no modal de adicionar, se existir
-  if (produtoMarketIdInputModal) {
-    produtoMarketIdInputModal.value = marketIdGlobal;
-  }
+  produtoMarketIdInputModal.value = marketIdGlobal;
 
   // Validações iniciais
   if (!marketIdGlobal) {
@@ -53,14 +88,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     return;
   }
   if (!userIdGlobal) {
-    console.error("ESTOQUE SCRIPT: User ID não encontrado no localStorage! Redirecionando para login.");
-    alert("Sua sessão expirou ou você não está logado. Redirecionando para login.");
-    window.location.href = "/login";
+    window.location.href = "/error403";
     return;
   }
 
   console.log(`ESTOQUE SCRIPT: Market ID = ${marketIdGlobal}, User ID = ${userIdGlobal}`);
-  localStorage.setItem("marketId", marketIdGlobal);
 
   // Verifica supermercado e carrega dados
   await verificSuper(marketIdGlobal);
@@ -196,8 +228,14 @@ async function getImageURL(rawImagePath) {
 }
 
 async function criarCardHTML(produto) {
-  if (!produto || typeof produto.productId === 'undefined') return;
-  const imagemURL = await getImageURL(produto.image);
+
+  console.log("CRIAR CARD HTML (Botões Editar/Excluir Removidos do Card) - Recebendo produto:", JSON.stringify(produto, null, 2));
+  if (!produto || typeof produto.productId === 'undefined' || produto.productId === null) {
+    console.warn("CRIAR CARD HTML: productId inválido ou ausente. Produto:", produto, "O card não será renderizado.");
+    return;
+  }
+
+  const imagemURL = await getImageURL(produto.image); // Sua função getImageURL
 
   const productName = produto.name || "Nome Indisponível";
   const barcode = produto.barcode || "-";
@@ -209,97 +247,113 @@ async function criarCardHTML(produto) {
   const department = produto.departament || "-";
   const expirationDate = produto.expirationDate ? new Date(produto.expirationDate + 'T00:00:00').toLocaleDateString('pt-BR') : "-";
   const manufactureDate = produto.manufactureDate ? new Date(produto.manufactureDate + 'T00:00:00').toLocaleDateString('pt-BR') : "-";
+  const supplier = produto.supplier || "-";
+  const pricePerUnity = typeof produto.price_per_unity === 'number' ? produto.price_per_unity.toFixed(2) : "-";
 
-  const cardWrapper = document.createElement('div');
-  cardWrapper.className = 'col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-4';
+  const tempDiv = document.createElement('div');
 
-  cardWrapper.innerHTML = `
-    <div class="card h-100 shadow-sm card-produto" data-id="${productId}">
-      <div style="height: 180px; overflow: hidden; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; border-top-left-radius: calc(0.375rem - 1px); border-top-right-radius: calc(0.375rem - 1px);">
-          <img src="${imagemURL}" class="card-img-top produto-imagem-card" alt="${productName}" 
-               style="max-height: 100%; max-width: 100%; object-fit: contain;"
-               onerror="this.onerror=null; this.src='https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';">
+
+  tempDiv.innerHTML = `
+    <div class="card-produto d-flex mb-3" data-id="${productId}" style="border-radius: 10px; overflow: hidden; border: 1px solid #ccc; background-color: #fff;">
+      <div class="imagem-produto" style="background-image: url('${imagemURL}'); width: 120px; height: 150px; background-size: cover; background-position: center; border-top-left-radius: 9px; border-bottom-left-radius: 9px;">
+        <img src="${imagemURL}" style="display:none;" onerror="this.parentElement.style.backgroundImage='url(https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1)'; this.style.display='none';"/>
       </div>
-      <div class="card-body d-flex flex-column">
-        <h5 class="card-title" title="${productName}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${productName}</h5>
-        <p class="card-text mb-1 small"><strong>Cód. Barras:</strong> <span class="text-muted">${barcode}</span></p>
-        <p class="card-text mb-1"><strong>Preço:</strong> R$ ${price}</p>
-        <p class="card-text mb-2"><strong>Estoque:</strong> ${stock} unidades</p>
-        <div class="mt-auto d-flex justify-content-start flex-wrap gap-1">
-          <button type="button" class="btn btn-sm btn-outline-secondary btn-copiar" 
-                  data-productid-copiar="${productId}" title="Copiar ID do Sistema (${productId})">
+      <div class="info-produto p-2 text-white d-flex flex-column justify-content-between" style="background-color: #007bff; flex: 1; font-size: 0.85rem;">
+        <div>
+            <h6 class="card-title text-white" title="${productName}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem;">${productName}</h6>
+            <p class="card-text mb-1 small"><strong>Cód. Barras:</strong> ${barcode}</p>
+            <p class="card-text mb-1 small"><strong>Preço:</strong> R$ ${price}</p>
+            <p class="card-text small"><strong>Estoque:</strong> ${stock} unid.</p>
+        </div>
+        <div class="mt-2 d-flex justify-content-start flex-wrap gap-1">
+          <button type="button" class="btn btn-light btn-sm btn-copiar"
+                  data-productid-copiar="${productId}" 
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Copiar ID Sistema (${productId})">
             <i class="bi bi-clipboard"></i> ID
           </button>
-          <button type="button" class="btn btn-sm btn-outline-primary btn-editar-card" 
-                  data-productid-editar="${productId}" title="Editar Produto">
-            <i class="bi bi-pencil-square"></i> Editar
-          </button>
-          <button type="button" class="btn btn-sm btn-outline-info btn-detalhes-card"
-                  title="Mais Detalhes"
+          <button type="button" class="btn btn-light btn-sm btn-detalhes-card" 
                   data-bs-toggle="popover" data-bs-html="true" data-bs-trigger="hover focus"
+                  title="Detalhes do Produto"
                   data-bs-content="
+                    <strong>Nome:</strong> ${productName}<br>
+                    <strong>Cód. Barras:</strong> ${barcode}<br>
                     <strong>ID Sistema:</strong> ${productId}<br>
+                    <strong>Fornecedor:</strong> ${supplier}<br>
+                    <strong>Preço/Unid.:</strong> R$ ${pricePerUnity}<br>
+                    <strong>Preço Total:</strong> R$ ${price}<br>
                     <strong>Categoria:</strong> ${category}<br>
-                    <strong>Departamento:</strong> ${department}<br>
+                    <strong>Estoque:</strong> ${stock} unidades<br>
                     <strong>Lote:</strong> ${lot}<br>
-                    <strong>Fabricação:</strong> ${manufactureDate}<br>
-                    <strong>Validade:</strong> ${expirationDate}">
+                    <strong>Departamento:</strong> ${department}<br>
+                    <strong>Validade:</strong> ${expirationDate}<br>
+                    <strong>Fabricação:</strong> ${manufactureDate}">
             <i class="bi bi-info-circle"></i> Detalhes
           </button>
-           <button type="button" class="btn btn-sm btn-outline-danger btn-excluir-card"
-                  data-productid-excluir="${productId}" title="Excluir Produto">
-            <i class="bi bi-trash"></i> Excluir
+          <button type="button" class="btn btn-light btn-sm btn-codigoBar"
+                  data-barcode-imprimir="${barcode}" title="Imprimir Código de Barras" 
+                  onclick="typeof impressao === 'function' ? impressao('${barcode}') : console.warn('Função impressao() não definida.')">
+            <i class="bi bi-upc"></i> Barras
           </button>
-        </div>
+          </div>
       </div>
-    </div>`;
+    </div>
+  `;
+  
+  const cardElement = tempDiv.firstElementChild; 
+  if (container && cardElement) {
+      container.appendChild(cardElement);
 
-  if (container) container.appendChild(cardWrapper);
+      // Adiciona listener APENAS para o botão de copiar DESTE card
+      const btnCopiar = cardElement.querySelector('.btn-copiar');
+      if (btnCopiar) {
+          new bootstrap.Tooltip(btnCopiar);
+          btnCopiar.addEventListener('click', function() {
+              const idParaCopiar = this.getAttribute('data-productid-copiar');
+              if (idParaCopiar && idParaCopiar !== "null" && idParaCopiar !== "undefined") {
+                navigator.clipboard.writeText(idParaCopiar).then(() => {
+                    const originalHTML = '<i class="bi bi-clipboard"></i> ID';
+                    this.innerHTML = '<i class="bi bi-check-lg"></i> Copiado';
+                    const tooltipInstance = bootstrap.Tooltip.getInstance(this);
+                    if (tooltipInstance) { 
+                        tooltipInstance.setContent({ '.tooltip-inner': 'ID Copiado!' });
+                        tooltipInstance.show(); 
+                    } else { new bootstrap.Tooltip(this, {title: 'ID Copiado!'}).show(); }
 
-  // Botões do card
-  const btnCopiar = cardWrapper.querySelector('.btn-copiar');
-  if (btnCopiar) {
-    new bootstrap.Tooltip(btnCopiar);
-    btnCopiar.addEventListener('click', function() {
-      const idParaCopiar = this.getAttribute('data-productid-copiar');
-      navigator.clipboard.writeText(idParaCopiar).then(() => {
-        const originalHTML = this.innerHTML;
-        this.innerHTML = '<i class="bi bi-check-lg"></i> Copiado';
-        setTimeout(() => { this.innerHTML = originalHTML; }, 2000);
-        if (typeof showAlert === 'function') showAlert("ID Copiado!", `ID ${idParaCopiar} copiado.`, "success");
-      }).catch(err => {
-        console.error('Falha ao copiar ID:', err);
-        if (typeof showAlert === 'function') showAlert("Falha ao Copiar", "Não foi possível copiar o ID.", "error");
-      });
-    });
-  }
+                    setTimeout(() => {
+                        this.innerHTML = originalHTML;
+                        if (tooltipInstance) tooltipInstance.setContent({ '.tooltip-inner': `Copiar ID Sistema (${idParaCopiar})` });
+                    }, 2000);
+                    if(typeof showAlert === 'function') showAlert("ID Copiado!", `ID ${idParaCopiar} copiado.`, "success");
+                    else console.log("ID Copiado!", `ID ${idParaCopiar} copiado.`);
+                }).catch(err => {
+                    console.error('Falha ao copiar ID:', err);
+                    if(typeof showAlert === 'function') showAlert("Falha ao Copiar", "Não foi possível copiar o ID.", "error");
+                    else console.error("Falha ao copiar ID, showAlert não definida.");
+                });
+              } else {
+                  console.error('ID para copiar é inválido:', idParaCopiar);
+                  if(typeof showAlert === 'function') showAlert("Erro ao Copiar", "ID do produto inválido para cópia.", "error");
+                  else console.error("Erro ao copiar: ID do produto inválido.");
+              }
+          });
+      }
 
-  const btnEditarCard = cardWrapper.querySelector('.btn-editar-card');
-  if (btnEditarCard) {
-    btnEditarCard.addEventListener('click', function() {
-      const productIdParaEditar = this.getAttribute('data-productid-editar');
-      const codigoEditarInput = document.getElementById('codigo-editar');
-      if (codigoEditarInput) codigoEditarInput.value = productIdParaEditar;
-      if (typeof abrirModalEdicao === 'function') {
-        abrirModalEdicao();
-      } else { console.error("Função abrirModalEdicao não encontrada."); }
-    });
-  }
+      // Listener para o botão de Detalhes (Popover)
+      const btnDetalhesCard = cardElement.querySelector('.btn-detalhes-card');
+      if (btnDetalhesCard) {
+          new bootstrap.Popover(btnDetalhesCard, { trigger: 'hover focus' });
+      }
+      
+      // Listener para o botão de Código de Barras
+      const btnCodigoBar = cardElement.querySelector('.btn-codigoBar');
+      if (btnCodigoBar) {
+          new bootstrap.Tooltip(btnCodigoBar);
+          // O onclick já está no HTML.
+      }
 
-  const btnExcluirCard = cardWrapper.querySelector('.btn-excluir-card');
-  if (btnExcluirCard) {
-    btnExcluirCard.addEventListener('click', function() {
-      const productIdParaExcluir = this.getAttribute('data-productid-excluir');
-      const codigoExcluirInput = document.getElementById('codigo-excluir');
-      if (codigoExcluirInput) codigoExcluirInput.value = productIdParaExcluir;
-      if (typeof abrirModalExclusao === 'function') {
-        abrirModalExclusao();
-      } else { console.error("Função abrirModalExclusao não encontrada."); }
-    });
-  }
-  const btnDetalhesCard = cardWrapper.querySelector('.btn-detalhes-card');
-  if (btnDetalhesCard) {
-    new bootstrap.Popover(btnDetalhesCard);
+  } else {
+      console.error("ESTOQUE SCRIPT: Container de produtos (variável 'container') não encontrado para adicionar card ou cardElement não foi criado.");
   }
 }
 
@@ -394,64 +448,147 @@ function searchEstoque() {
     });
 }
 
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for (let c of ca) {
+    c = c.trim();
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length);
+    }
+  }
+  return "";
+}
+
 async function adicionarProduto() {
-  const userId = userIdGlobal;
+  console.log("ESTOQUE SCRIPT: Função adicionarProduto() chamada.");
+
+  // Usando as variáveis globais definidas no DOMContentLoaded
+  const currentUserId = userIdGlobal;
   const currentMarketId = marketIdGlobal;
 
-  if (!userId) {
-    if (typeof showAlert === 'function') showAlert('Erro de Autenticação', 'ID do usuário não encontrado. Faça login novamente.', 'error');
-    return false;
+  if (!currentUserId) {
+      if (typeof showAlert === 'function') showAlert('Erro de Autenticação', 'ID do usuário não encontrado. Faça login novamente.', 'error');
+      else alert('Erro de Autenticação: ID do usuário não encontrado.');
+      return false; // Indica falha
   }
   if (!currentMarketId) {
-    if (typeof showAlert === 'function') showAlert('Erro de Contexto', 'ID do Mercado não identificado.', 'error');
-    return false;
+      if (typeof showAlert === 'function') showAlert('Erro de Contexto', 'ID do Mercado não identificado. Recarregue a página.', 'error');
+      else alert('Erro de Contexto: ID do Mercado não identificado.');
+      return false; // Indica falha
   }
 
   const form = document.getElementById("form-adicionar-item");
   if (!form) {
-    console.error("Formulário de adicionar item não encontrado.");
-    return false;
+      console.error("ESTOQUE SCRIPT: Formulário #form-adicionar-item não encontrado.");
+      if (typeof showAlert === 'function') showAlert('Erro Interno', 'Formulário de adição não encontrado no HTML.', 'error');
+      return false;
   }
 
-  const nome = document.getElementById("produto-nome").value.trim();
-  const codigo = document.getElementById("produto-barcode").value.trim();
-  const precoStr = document.getElementById("add-preco").value;
-  const categoria = document.getElementById("add-categoria").value;
-  const estoqueStr = document.getElementById("produto-estoque").value;
-  const departamento = document.getElementById("add-departamento").value;
-  const fabricacao = document.getElementById("produto-fabricacao").value;
-  const validade = document.getElementById("produto-validade").value;
+  // Coleta de dados do formulário
+  const nome = document.getElementById("produto-nome")?.value.trim();
+  const codigo = document.getElementById("produto-barcode")?.value.trim(); // Este é o 'barcode'
+  const precoStr = document.getElementById("add-preco")?.value;
+  const categoria = document.getElementById("add-categoria")?.value;
+  const estoqueStr = document.getElementById("produto-estoque")?.value;
+  const lote = document.getElementById("produto-lote")?.value.trim();
+  const departamento = document.getElementById("add-departamento")?.value;
+  // marketId já temos em currentMarketId
+  const fabricacao = document.getElementById("produto-fabricacao")?.value;
+  const validade = document.getElementById("produto-validade")?.value;
+  const imagemInput = document.getElementById("produto-imagem");
 
-  if (!nome || !codigo || !precoStr || !categoria || !estoqueStr || !departamento || !fabricacao || !validade) {
-    if (typeof showAlert === 'function') showAlert('Atenção', 'Preencha todos os campos obrigatórios do produto.', 'warning');
-    return false;
+  // Validação Frontend COMPLETA (para corresponder à validação do backend)
+  // O backend /adicionarProduto espera: nome, codigo, preco, categoria, estoque, lote, departamento, marketId, fabricacao, validade, userId
+  if (!nome || !codigo || !precoStr || !categoria || !estoqueStr || !lote || !departamento || !fabricacao || !validade) {
+      let camposFaltantesArray = [];
+      if (!nome) camposFaltantesArray.push("Nome");
+      if (!codigo) camposFaltantesArray.push("Código de Barras");
+      if (!precoStr) camposFaltantesArray.push("Preço");
+      if (!categoria) camposFaltantesArray.push("Categoria (selecione uma opção)");
+      if (!estoqueStr) camposFaltantesArray.push("Estoque");
+      if (!lote) camposFaltantesArray.push("Lote");
+      if (!departamento) camposFaltantesArray.push("Departamento (selecione uma opção)");
+      if (!fabricacao) camposFaltantesArray.push("Data de Fabricação");
+      if (!validade) camposFaltantesArray.push("Data de Validade");
+      
+      const msgErro = "Campos obrigatórios estão ausentes: " + camposFaltantesArray.join(', ') + ".";
+      if (typeof showAlert === 'function') showAlert('Atenção', msgErro, 'warning');
+      else alert(msgErro);
+      return false;
   }
+
   const preco = parseFloat(precoStr);
   const estoque = parseInt(estoqueStr);
-  if (isNaN(preco) || isNaN(estoque)) {
-    if (typeof showAlert === 'function') showAlert('Atenção', 'Preço e Estoque devem ser números válidos.', 'warning');
-    return false;
+
+  if (isNaN(preco) || preco <= 0) {
+      if (typeof showAlert === 'function') showAlert('Atenção', 'Preço deve ser um número válido e maior que zero.', 'warning');
+      else alert('Preço deve ser um número válido e maior que zero.');
+      return false;
+  }
+  if (isNaN(estoque) || estoque < 0) { // Estoque pode ser 0
+      if (typeof showAlert === 'function') showAlert('Atenção', 'Estoque deve ser um número válido (0 ou mais).', 'warning');
+      else alert('Estoque deve ser um número válido (0 ou mais).');
+      return false;
+  }
+  if (fabricacao && validade && new Date(fabricacao) > new Date(validade)) {
+      if(typeof showAlert === 'function') showAlert('Data Inválida', 'A data de fabricação não pode ser posterior à data de validade!', 'warning');
+      else alert('A data de fabricação não pode ser posterior à data de validade!');
+      return false;
   }
 
-  const formData = new FormData(form);
-  formData.append("userId", userId);
-  formData.append("marketId", currentMarketId);
+  // Monta o FormData para enviar (incluindo o arquivo de imagem)
+  const formData = new FormData();
+  formData.append("userId", currentUserId);       // userId é obrigatório para o histórico no backend
+  formData.append("marketId", currentMarketId);   // marketId é obrigatório
+  formData.append("nome", nome);
+  formData.append("codigo", codigo);              // 'codigo' no backend é o barcode
+  formData.append("preco", preco.toString());
+  formData.append("categoria", categoria);
+  formData.append("estoque", estoque.toString());
+  formData.append("lote", lote);
+  formData.append("departamento", departamento);
+  formData.append("fabricacao", fabricacao);
+  formData.append("validade", validade);
+
+  if (imagemInput && imagemInput.files.length > 0) {
+      formData.append("imagem", imagemInput.files[0]);
+  } else {
+      formData.append("imagem", ""); // Envia string vazia se não houver imagem (backend deve tratar)
+  }
+
+  console.log("ESTOQUE SCRIPT: Enviando para /adicionarProduto (FormData):");
+  for (let pair of formData.entries()) {
+      console.log(`  ${pair[0]}: ${pair[1]}`);
+  }
 
   try {
-    const res = await fetch("/adicionarProduto", { method: "POST", body: formData });
-    const resultado = await res.json();
+      const res = await fetch("/adicionarProduto", {
+          method: "POST",
+          body: formData // Com FormData, o browser define o Content-Type automaticamente para multipart/form-data
+      });
 
-    if (res.ok && resultado.mensagem && resultado.mensagem.includes("sucesso")) {
-      if (typeof showAlert === 'function') showAlert('Sucesso', resultado.mensagem, 'success');
-      form.reset();
-      carregarProdutos(currentMarketId);
-      return true;
-    } else {
-      throw new Error(resultado.erro || "Erro desconhecido ao adicionar produto.");
-    }
+      const resultado = await res.json(); // Tenta parsear a resposta como JSON
+
+      if (res.ok && resultado.mensagem && resultado.mensagem.includes("sucesso")) {
+          if (typeof showAlert === 'function') showAlert('Sucesso!', resultado.mensagem, 'success');
+          else alert(resultado.mensagem);
+          
+          form.reset(); // Limpa os campos do formulário
+          // O modal será escondido pela função em popups.js que chamou esta.
+          
+          await carregarProdutos(currentMarketId); // Recarrega a lista de produtos para mostrar o novo
+          return true; // Indica sucesso
+      } else {
+          // Usa a mensagem de erro do backend ou uma padrão
+          throw new Error(resultado.erro || resultado.message || "Erro desconhecido do servidor ao adicionar produto.");
+      }
   } catch (err) {
-    if (typeof showAlert === 'function') showAlert('Erro Adição', err.message, 'error');
-    return false;
+      console.error("ESTOQUE SCRIPT: Erro na função adicionarProduto:", err);
+      if (typeof showAlert === 'function') showAlert('Erro ao Adicionar Produto', err.message, 'error');
+      else alert(`Erro ao Adicionar Produto: ${err.message}`);
+      return false;
   }
 }
 

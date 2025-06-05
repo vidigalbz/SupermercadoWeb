@@ -170,6 +170,7 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             !nome || !codigo || !preco || !categoria || !estoque ||
             !lote || !departamento || !marketId || !fabricacao || !validade || !userId
         ) {
+          console.log(`${nome} || ${codigo} || ${preco} || ${categoria} || ${estoque} || ${lote} || ${departamento} || ${marketId} || ${fabricacao} || ${validade} || ${userId}`)
             return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." });
         }
 
@@ -945,7 +946,7 @@ app.post("/funcionarios", async (req, res) => {
     }
   }
 
-});
+})
 
 /**
  * Rota para gerenciar funcionários (insert, update e delete em user_permissions)

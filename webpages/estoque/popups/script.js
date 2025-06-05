@@ -1,12 +1,8 @@
-// webpages/estoque/popups/script.js
-// (O conteúdo que você me forneceu na pergunta anterior, que começa com "let categoriasGlobais = [];",
-// já é a base correta. Apenas revisei e adicionei uns console.warn para debug)
 
 let categoriasGlobais = [];
 let departamentosGlobais = [];
 let tipoAtualSetor = "Departamento";
 
-// Assumindo que showAlert está aqui ou é global
 function showAlert(message, title = 'Aviso', type = 'info') {
   let container = document.querySelector('.toast-wrapper');
   if (!container) {
@@ -15,12 +11,12 @@ function showAlert(message, title = 'Aviso', type = 'info') {
     document.body.appendChild(container);
   }
   const toastEl = document.createElement('div');
-  toastEl.className = `toast show`; // Removido toast-${type} daqui, será adicionado abaixo
+  toastEl.className = `toast show`;
   toastEl.setAttribute('role', 'alert');
   toastEl.setAttribute('aria-live', 'assertive');
   toastEl.setAttribute('aria-atomic', 'true');
 
-  const tiposAlert = { // Renomeado para não conflitar com o parâmetro 'type'
+  const tiposAlert = {
     success: { bg: 'bg-success', text: 'text-white', icon: '✔️' },
     error: { bg: 'bg-danger', text: 'text-white', icon: '❌' },
     warning: { bg: 'bg-warning', text: 'text-dark', icon: '⚠️' },
@@ -50,14 +46,27 @@ function showAlert(message, title = 'Aviso', type = 'info') {
 }
 
 
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for (let c of ca) {
+    c = c.trim();
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length);
+    }
+  }
+  return "";
+}
+
 function getMarketIdParaPopups() {
-    const id = localStorage.getItem("marketId") || new URLSearchParams(window.location.search).get("id");
-    // console.log("POPUP SCRIPT: getMarketIdParaPopups() returning:", id);
+    const id = getCookie("marketId") || new URLSearchParams(window.location.search).get("id");
+
     return id;
 }
 function getUserIdParaPopups() {
-    const uid = localStorage.getItem("userId");
-    // console.log("POPUP SCRIPT: getUserIdParaPopups() returning:", uid);
+    const uid = getCookie("userId");
+
     return uid;
 }
 
@@ -68,7 +77,7 @@ async function carregarSetoresGlobais(currentMarketId) {
     departamentosGlobais = [];
     preencherCombosAdicao();
     preencherCombosEdicao();
-    preencherComboExcluirSetor(); // Atualiza o combo de exclusão também
+    preencherComboExcluirSetor();
     return;
   }
   try {
@@ -90,7 +99,7 @@ async function carregarSetoresGlobais(currentMarketId) {
   }
   preencherCombosAdicao();
   preencherCombosEdicao();
-  preencherComboExcluirSetor(); // Atualiza o combo de exclusão após carregar
+  preencherComboExcluirSetor();
 }
 
 function preencherCombosAdicao() {
@@ -129,19 +138,19 @@ function abrirModalAdicionarItem() {
         showAlert("ID do Mercado não identificado.", "Erro", "error");
         return;
     }
-    // Garante que os setores estejam carregados/atualizados para este marketId
+
     carregarSetoresGlobais(currentMarketId).then(() => {
-        // preencherCombosAdicao(); // Já é chamado no final de carregarSetoresGlobais
+
 
         const modalEl = document.getElementById('modalAdicionarItem');
         if (!modalEl) { console.error("Modal #modalAdicionarItem não encontrado."); return; }
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
 
-        // Listener do botão de confirmar adição (adicionarProduto é do estoque/script.js)
+
         const btnConfirmar = document.getElementById('btn-confirmar-adicionar');
         if(btnConfirmar) {
-            const novoBtn = btnConfirmar.cloneNode(true); // Evita múltiplos listeners
+            const novoBtn = btnConfirmar.cloneNode(true);
             btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
             novoBtn.onclick = async () => {
                 if (typeof adicionarProduto === 'function') {
@@ -162,7 +171,6 @@ function abrirModalEditarProduto() {
         return;
     }
 
-    // Garante que currentData (de estoque/script.js) esteja acessível
     if (typeof window.currentData === 'undefined' || !Array.isArray(window.currentData)) {
         showAlert("Lista de produtos não disponível. Recarregue a página.", "Erro de Dados", "error");
         return;
@@ -176,16 +184,14 @@ function abrirModalEditarProduto() {
     console.log("POPUP SCRIPT (Editar): Produto encontrado para abrir modal:", produto);
 
     carregarSetoresGlobais(currentMarketId).then(() => {
-        // preencherCombosEdicao(); // Já é chamado no final de carregarSetoresGlobais
 
-        // Preenche o campo oculto de productId
         const elProductIdHidden = document.getElementById('editar-productId');
         if (elProductIdHidden) {
             elProductIdHidden.value = produto.productId;
         } else {
             console.error("POPUP SCRIPT: Campo oculto #editar-productId não encontrado no modal!");
             showAlert("Erro de interface: campo ID do produto ausente no formulário.", "Erro", "error");
-            return; // Não continuar se este campo crítico estiver faltando
+            return;
         }
 
         const camposParaPreencher = {
@@ -241,7 +247,7 @@ function abrirModalDepCat() {
         if (toggleTipoEl) toggleTipoEl.checked = false;
         tipoAtualSetor = "Departamento";
         atualizarLabelTipoSetor();
-        preencherComboExcluirSetor(); // Preenche após carregar setores
+        preencherComboExcluirSetor();
 
         const modalEl = document.getElementById("modal-dep-cat");
         if (!modalEl) { console.error("Modal #modal-dep-cat não encontrado."); return; }
@@ -304,9 +310,9 @@ async function adicionarDepartamentoCategoria() {
 
     showAlert(data.message || "Setor adicionado!", "Sucesso", "success");
     valorInput.value = "";
-    await carregarSetoresGlobais(currentMarketId); // Recarrega
-    // Atualizar os selects na página principal também
-    if (typeof carregarSetoresEstoque === 'function') { // Função do estoque/script.js
+    await carregarSetoresGlobais(currentMarketId);
+
+    if (typeof carregarSetoresEstoque === 'function') {
         carregarSetoresEstoque(currentMarketId);
     }
   } catch(err) {
@@ -342,8 +348,8 @@ async function excluirDepartamentoCategoria() {
     if (!response.ok) throw new Error(data.erro || "Erro ao excluir setor.");
 
     showAlert(data.mensagem || "Setor excluído!", "Sucesso", "success");
-    await carregarSetoresGlobais(currentMarketId); // Recarrega
-    if (typeof carregarSetoresEstoque === 'function') { // Função do estoque/script.js
+    await carregarSetoresGlobais(currentMarketId);
+    if (typeof carregarSetoresEstoque === 'function') {
         carregarSetoresEstoque(currentMarketId);
     }
   } catch(err) {
@@ -352,11 +358,6 @@ async function excluirDepartamentoCategoria() {
   }
 }
 
-// --- Funções de Alerta de Estoque e Validade ---
-// (LIMITES_ESTOQUE, LIMITES_VALIDADE, diasParaVencer, atualizarAlertas, renderizarAlertasUI, 
-//  criarAlertaEstoque, criarAlertaValidade - como na sua última versão, já corrigidas para aceitar currentMarketId)
-
-// Função principal para atualizar alertas (já corrigida para aceitar currentMarketId)
 async function atualizarAlertas(currentMarketId) {
   const reloadBtn = document.getElementById('btn-reload-alerts');
   const reloadIcon = reloadBtn ? reloadBtn.querySelector('i') : null;
@@ -477,6 +478,73 @@ function criarAlertaValidade(produto, dias, tipoClasse, titulo) {
     </div><div class="mt-1"><span class="urgencia" style="font-size: 0.8em;">${titulo}</span><br>
     <small style="font-size: 0.75em;">${diasMsg} (${produto.expirationDate ? new Date(produto.expirationDate + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A'})</small></div>`;
   return alerta;
+}
+
+function abrirModalExclusaoProduto() {
+  // Pega o productId do input principal da página (que deve ter sido preenchido pelo clique no botão do card)
+  const productIdParaExcluirInput = document.getElementById("codigo-excluir");
+  if (!productIdParaExcluirInput) {
+      console.error("POPUP SCRIPT: Input #codigo-excluir não encontrado na página.");
+      showAlert("Erro de Interface", "Campo para código de exclusão não encontrado.", "error");
+      return;
+  }
+  const productIdParaExcluir = productIdParaExcluirInput.value.trim();
+
+  if (!productIdParaExcluir) {
+      showAlert("Por favor, insira ou selecione o código do produto que deseja excluir.", "Código Necessário", "warning");
+      productIdParaExcluirInput.focus(); // Foca no input para o usuário preencher
+      return;
+  }
+
+  // Assume que 'window.currentData' é a lista de produtos carregada pelo script principal (estoque/script.js)
+  if (typeof window.currentData === 'undefined' || !Array.isArray(window.currentData)) {
+      showAlert("Lista de produtos não carregada. Não é possível obter detalhes para exclusão.", "Erro de Dados", "error");
+      console.error("POPUP SCRIPT (Excluir): window.currentData não está disponível ou não é um array.");
+      return;
+  }
+
+  const produto = window.currentData.find(p => String(p.productId) === String(productIdParaExcluir));
+
+  if (!produto) {
+      showAlert(`Produto com código "${productIdParaExcluir}" não encontrado na lista de estoque atual.`, "Produto Não Encontrado", "error");
+      return;
+  }
+
+  console.log("POPUP SCRIPT (Excluir): Produto encontrado para preencher modal de exclusão:", produto);
+
+  // Preenche os spans de informação no modal #modalExcluirProduto
+  // Certifique-se que os IDs no HTML do modal de exclusão correspondem a estes:
+  const elNomeExcluir = document.getElementById("excluir-nome");
+  const elCodigoExcluirDisplay = document.getElementById("excluir-codigo"); // Para exibir o ID do produto
+  const elCategoriaExcluir = document.getElementById("excluir-categoria");
+  const elEstoqueExcluir = document.getElementById("excluir-estoque");
+
+  if (elNomeExcluir) elNomeExcluir.textContent = produto.name || 'Nome não informado';
+  else console.warn("POPUP SCRIPT: Elemento #excluir-nome não encontrado no modal de exclusão.");
+
+  if (elCodigoExcluirDisplay) elCodigoExcluirDisplay.textContent = produto.productId || '—';
+  else console.warn("POPUP SCRIPT: Elemento #excluir-codigo (display) não encontrado no modal de exclusão.");
+  
+  if (elCategoriaExcluir) elCategoriaExcluir.textContent = produto.category || '—';
+  else console.warn("POPUP SCRIPT: Elemento #excluir-categoria não encontrado no modal de exclusão.");
+
+  if (elEstoqueExcluir) elEstoqueExcluir.textContent = (typeof produto.stock === 'number' ? produto.stock.toString() : '—') + ' unidades';
+  else console.warn("POPUP SCRIPT: Elemento #excluir-estoque não encontrado no modal de exclusão.");
+
+  // Mostra o modal de "detalhes do produto a ser excluído"
+  const modalExcluirEl = document.getElementById("modalExcluirProduto");
+  if (!modalExcluirEl) {
+      console.error("POPUP SCRIPT (Excluir): Modal #modalExcluirProduto não encontrado no HTML!");
+      showAlert("Erro Crítico de Interface", "O modal de detalhes da exclusão não pode ser encontrado.", "error");
+      return;
+  }
+  const modalExcluirInstancia = bootstrap.Modal.getOrCreateInstance(modalExcluirEl);
+  modalExcluirInstancia.show();
+  
+  // O botão "Excluir" dentro do modal #modalExcluirProduto no HTML já tem:
+  // onclick="abrirConfirmarExclusao()"
+  // Essa função abrirConfirmarExclusao() está no seu link.js e abre o SEGUNDO modal de confirmação.
+  // Portanto, não precisamos adicionar um event listener para o botão de confirmação aqui.
 }
 
 // Inicialização no DOMContentLoaded
