@@ -587,6 +587,7 @@ function carregarProdutoParaEdicao(produto) {
   document.getElementById("editar-marketId").value = produto.marketId;
   document.getElementById("editar-fabricacao").value = produto.manufactureDate;
   document.getElementById("editar-validade").value = produto.expirationDate;
+  document.getElementById("editar-valor-total").value = produto.precototal
 
   // 👇 Aqui calcula o valor total e exibe
   calcularValorTotalEdicao();

@@ -396,6 +396,7 @@ app.post("/editarProduto", (req, res) => {
     const {
         productId,
         name,
+        price_per_unity,
         price,
         category,
         departament,
@@ -404,17 +405,18 @@ app.post("/editarProduto", (req, res) => {
         expirationDate,
         manufactureDate,
         barcode,
+        valortotal,
         marketId
     } = req.body;
 
     const columns = [
-        "name", "price", "category", "departament", "stock",
-        "lot", "expirationDate", "manufactureDate", "barcode", "marketId"
+        "name", "price_per_unity", "price", "category", "departament", "stock",
+        "lot", "expirationDate", "manufactureDate", "barcode", "valortotal", "marketId"
     ];
 
     const values = [
-        name, price, category, departament, stock,
-        lot, expirationDate, manufactureDate, barcode, marketId
+        name, price_per_unity, price, category, departament, stock,
+        lot, expirationDate, manufactureDate, barcode, valortotal, marketId
     ];
 
     const condition = `productId = ${productId}`;
