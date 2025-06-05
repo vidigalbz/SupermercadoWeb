@@ -1,9 +1,25 @@
+
+
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
 const cookieParser = require('cookie-parser');
 const { exec } = require('child_process');
+
+exec('npm update && npm upgrade && $env:Path += ";C:/Users/1009852/AppData/Roaming/npm"   && npm install cookie-parser multer sqlite3 express pkg', (error, stdout, stderr) => {
+  if (error) {
+    console.error('Erro ao executar os comandos:', error);
+    return;
+  }
+  if (stderr) {
+    console.error('Stderr:', stderr);
+  }
+  console.log('Saída:', stdout);
+});
+
+
+
 
 const { select, insert, update, delet, query} = require("./database.js");
 
