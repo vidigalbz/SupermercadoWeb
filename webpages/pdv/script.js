@@ -582,6 +582,11 @@ async function finalizarCompra() {
     
     const paymentMethod = document.getElementById("paymentMethodInModal").value;
     const cpfCliente = document.getElementById("cpfNotinha").value;
+
+    if (cpfCliente != '' & cpfCliente.length != 11){
+        showAlert("O CPF inserido está inválido", "CPF inválido", "warning")
+        return
+    }
     currentInvoice = {
         date: new Date().toLocaleString(),
         items: [],
