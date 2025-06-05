@@ -6,6 +6,11 @@ const estoqueInput = document.getElementById("produto-estoque");
 const valorTotalInput = document.getElementById("valor-total-compra");
 
 
+
+
+
+
+
 var categoriaValue = "Todos";
 
 function reloadPage() {
@@ -328,7 +333,6 @@ function search() {
     })
     .catch(err => console.error('Erro:', err));
 }
-
 async function adicionarProduto() {
   const nome = document.getElementById("produto-nome").value.trim();
   const codigo = document.getElementById("produto-barcode").value.trim();
@@ -344,24 +348,32 @@ async function adicionarProduto() {
   const validade = document.getElementById("produto-validade").value;
   const imagemInput = document.getElementById("produto-imagem");
 
+  const formData = new FormData();
+
+  // Atualiza o valor total antes de capturar
+  calcularTotalCompra();
+  const valor_total_str = document.getElementById("valor-total-compra").value;
+  const valor_total = parseFloat(valor_total_str) || 0;
+
   if (!nome || !codigo || !fornecedor || isNaN(precounidade) || isNaN(preco) || isNaN(estoque) || !marketId) {
     mostrarNotificacao('Atenção', 'Por favor, preencha todos os campos obrigatórios.', 'warning');
     return false;
   }
-  
-    if (estoque < 0 || preco < 0.00){
-      mostrarNotificacao('Atenção', 'Atribui valores Positivos', 'warning')
-      return false;
-    }
 
-    if(new Date(validade) < new Date()){
-      mostrarNotificacao('Atenção', 'Verifique se a Data de Validade é anterior a Data Atual', 'warning')
-      return false;
-    }else if (new Date(fabricacao) > new Date()){
-      mostrarNotificacao('Atenção', 'Verifique se a Data de Fabricação não é Futura', 'warning')
-    } 
+  if (estoque < 0 || preco < 0.00) {
+    mostrarNotificacao('Atenção', 'Atribua valores positivos', 'warning');
+    return false;
+  }
 
-  const formData = new FormData();
+  if (new Date(validade) < new Date()) {
+    mostrarNotificacao('Atenção', 'Verifique se a Data de Validade é anterior à Data Atual', 'warning');
+    return false;
+  } else if (new Date(fabricacao) > new Date()) {
+    mostrarNotificacao('Atenção', 'Verifique se a Data de Fabricação não é futura', 'warning');
+    return false;
+  }
+
+  // Preenche o formData com os dados
   formData.append("nome", nome);
   formData.append("codigo", codigo);
   formData.append("fornecedor", fornecedor);
@@ -374,15 +386,13 @@ async function adicionarProduto() {
   formData.append("marketId", marketId);
   formData.append("fabricacao", fabricacao);
   formData.append("validade", validade);
+  formData.append("valortotal", valor_total);
 
-  console.log(categoria)
-
-  // Verifique se a imagem foi selecionada antes de anexar
+  // Adiciona a imagem se existir
   if (imagemInput.files.length > 0) {
     formData.append("imagem", imagemInput.files[0]);
-  }
-  else{
-    formData.append("imagem", '')
+  } else {
+    formData.append("imagem", '');
   }
 
   try {
@@ -406,6 +416,7 @@ async function adicionarProduto() {
     mostrarNotificacao('Erro', `Erro na requisição: ${err.message}`, 'error');
   }
 }
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date();
@@ -450,7 +461,7 @@ async function confirmarEdicao() {
     name: document.getElementById('editar-nome').value,
     barcode: document.getElementById('editar-barcode').value,
     supplier: document.getElementById('editar-fornecedor').value,
-    price_per_unity: parseFloat(document.getElementById('editar-preço-unidade')).value,
+    price_per_unity: parseFloat(document.getElementById('editar-preço-unidade').value),
     price: parseFloat(document.getElementById('editar-preco').value),
     category: document.getElementById('editar-categoria').value,
     stock: parseInt(document.getElementById('editar-estoque').value),
@@ -458,7 +469,8 @@ async function confirmarEdicao() {
     departament: document.getElementById('editar-departamento').value,
     marketId: document.getElementById('editar-marketId').value,
     manufactureDate: document.getElementById('editar-fabricacao').value,
-    expirationDate: document.getElementById('editar-validade').value
+    expirationDate: document.getElementById('editar-validade').value,
+    valortotal: document.getElementById('editar-valor-total').value,
   };
 
   try {
@@ -562,13 +574,42 @@ modalAdicionar.addEventListener('show.bs.modal', () => {
   carregarFornecedores()
 })
 
+function carregarProdutoParaEdicao(produto) {
+  document.getElementById("editar-nome").value = produto.name;
+  document.getElementById("editar-barcode").value = produto.barcode;
+  document.getElementById("editar-fornecedor").value = produto.supplier;
+  document.getElementById("editar-preço-unidade").value = produto.price_per_unity;
+  document.getElementById("editar-preco").value = produto.price;
+  document.getElementById("editar-categoria").value = produto.category;
+  document.getElementById("editar-estoque").value = produto.stock;
+  document.getElementById("editar-lote").value = produto.lot;
+  document.getElementById("editar-departamento").value = produto.departament;
+  document.getElementById("editar-marketId").value = produto.marketId;
+  document.getElementById("editar-fabricacao").value = produto.manufactureDate;
+  document.getElementById("editar-validade").value = produto.expirationDate;
+
+  // 👇 Aqui calcula o valor total e exibe
+  calcularValorTotalEdicao();
+}
+
 
 function calcularTotalCompra() {
-  const preco = parseFloat(precoInput.value) || 0;
-  const estoque = parseInt(estoqueInput.value) || 0;
-  const total = preco * estoque;
-  valorTotalInput.value = `R$ ${total.toFixed(2)}`;
+  const precounidade = parseFloat(document.getElementById("add-unidade").value);
+  const estoque = parseInt(document.getElementById("produto-estoque").value);
+  const preco = precounidade * estoque;
+
+  valorTotalInput.value = preco.toFixed(2);
 }
+
+function calcularValorTotalEdicao() {
+  const precoUnidade = parseFloat(document.getElementById('editar-preço-unidade').value) || 0;
+  const estoque = parseInt(document.getElementById('editar-estoque').value) || 0;
+  const total = precoUnidade * estoque;
+
+  document.getElementById('editar-valor-total').value = total.toFixed(2).replace('.', ',');
+}
+
+
 
 // Atualiza o valor total sempre que o preço ou o estoque mudar
 precoInput.addEventListener("input", calcularTotalCompra);

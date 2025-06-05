@@ -106,10 +106,11 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             marketId,
             fabricacao,
             validade,
+            valortotal,
         } = req.body;
 
         // Verifique se todos os campos necessários estão presentes
-        if (!nome || !codigo || !fornecedor || !precounidade || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade) {
+        if (!nome || !codigo || !fornecedor || !precounidade || !preco || !categoria || !estoque || !lote || !departamento || !marketId || !fabricacao || !validade ) {
             return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." });
         }
 
@@ -126,7 +127,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             marketId,
             fabricacao,
             validade,
-            imagem: imagempath
+            imagem: imagempath,
+            valortotal: parseFloat(valortotal),
         };
 
         console.log([
@@ -142,13 +144,14 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.validade,
             produto.fabricacao,
             produto.codigo,
-            produto.imagem
+            produto.imagem,
+            produto.valortotal,
         ]);
 
         insert("products", [
             "marketId", "name", "barcode", "supplier", "price_per_unity", "price", "category","departament",
             "stock", "lot", "expirationDate", "manufactureDate",
-            "image"
+            "image", "valortotal"
         ], [
             produto.marketId,
             produto.nome,
@@ -162,7 +165,8 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
             produto.lote,
             produto.validade,
             produto.fabricacao,
-            produto.imagem
+            produto.imagem,
+            produto.valortotal,
         ]);
 
         res.status(200).json({ mensagem: "Produto adicionado com sucesso!" });

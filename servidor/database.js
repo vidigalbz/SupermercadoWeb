@@ -100,6 +100,12 @@ db.run(`ALTER TABLE products ADD COLUMN price_per_unity REAL`, (err) => {
     }
 });
 
+db.run(`ALTER TABLE products ADD COLUMN valortotal REAL`, (err) => {
+    if (err && !err.message.includes("duplicate column")) {
+        console.error("Erro ao adicionar coluna 'valortotal':", err.message);
+    }
+});
+
 
 function select(table, condition = "", params = []) {
     return new Promise((resolve, reject) => {

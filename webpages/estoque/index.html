@@ -206,7 +206,7 @@
                 </div>
                 <div class="col-12">
                   <label for="valor-total-compra" class="form-label">Valor Total da Compra</label>
-                  <input type="text" class="form-control" id="valor-total-compra" disabled>
+                  <input type="text" class="form-control" id="valor-total-compra" required desabled>
                 </div>
                 <div class="col-12">
                   <label for="produto-imagem" class="form-label">Imagem do Produto</label>
@@ -310,7 +310,7 @@
                   <label for="add-preco" class="form-label">Preço pago por unidade</label>
                   <div class="input-group">
                     <span class="input-group-text">R$</span>
-                    <input type="number" class="form-control" id="editar-preço-unidade" min="0" step="0.01">
+                    <input type="number" class="form-control" id="editar-preço-unidade" oninput="calcularValorTotalEdicao()">
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -329,7 +329,7 @@
                 </div>
                 <div class="col-md-6">
                   <label for="editar-estoque" class="form-label">Estoque</label>
-                  <input type="number" class="form-control" id="editar-estoque" required>
+                  <input type="number" class="form-control" id="editar-estoque" oninput="calcularValorTotalEdicao()">
                 </div>
                 <div class="col-md-6">
                   <label for="editar-lote" class="form-label">Lote</label>
@@ -356,7 +356,7 @@
                 </div>
                 <div class="col-12">
                   <label for="valor-total-compra" class="form-label">Valor Total da Compra</label>
-                  <input type="text" class="form-control" id="valor-total-compra" disabled>
+                  <input type="text" class="form-control" id="editar-valor-total" disabled>
                 </div>
                 <div class="col-12">
                   <label for="editar-imagem" class="form-label">Imagem do Produto</label>
