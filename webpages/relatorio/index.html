@@ -24,16 +24,25 @@
                 <h1>🏪</h1>
                 <span class="navbar-brand mb-0 h1">Mercado Didático</span>
             </div>
+            <div>
+                <button class="btn btn-danger fs-3" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#perfilOffcanvas">
+                    <i class="bi bi-person-circle"></i>
+                </button>
+            </div>
         </div>
     </nav>
 
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-primary text-white">
-            <h4 class="mb-0">🧻 Relatórios</h4>
-            <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque"
-                onclick="location.reload()">
-                <i class="bi bi-arrow-clockwise"></i>
-            </button>
+            <h4 class="mb-0"><i class="bi bi-clipboard-data-fill"></i> Relatórios</h4>
+            <div>
+                <button class="btn btn-dark fs-4" data-bs-toggle="modal" data-bs-target="#loadingModal" onclick="gerarRelatorios()">Gerar Relatórios</button>
+                <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque"
+                    onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
         </div>
 
         <!-- Seção de Resumo -->
@@ -215,8 +224,46 @@
         </div>
     </div>
 
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-4">
+            <div id="spinnerSection">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p>Processando os Dados, por favor aguarde...</p>
+            </div>
+            <div id="okSection" class="d-none">
+                <p>Processo concluído com sucesso!</p>
+                <button class="btn btn-success" data-bs-dismiss="modal">OK!</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-end bg-warning" tabindex="-1" id="perfilOffcanvas">
+        <div class="offcanvas-header">
+            <h5 class="fw-bold">Perfil</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="perfil-box mb-3 bg-light rounded p-2">
+                <i class="bi bi-person-circle"></i>
+                <div class="d-flex flex-column">
+                    <p class="mb-0 fw-bold" id="userName"></p>
+                    <small class="text-muted" id="userRole"></small>
+                    <small class="text-muted"><strong>Email:</strong> <span id="userEmail"></span></small>
+                </div>
+            </div>
+            <div>
+                <a href=""><button class="btn btn-danger w-100">Encerrar Sessão</button></a>
+            </div>
+        </div>
+    </div>
     <!-- Scripts -->
-    <script src="script.js"></script>
+    <script src="frontEnd.js"></script>
+    <script src="modal.js"></script>
+    <script src="backEnd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
