@@ -192,6 +192,12 @@ async function renderizarFuncionarios(marketId) {
   let data = await res.json();
   funcionariosData = data.message;
 
+  if (!funcionariosData || funcionariosData.length === 0) {
+    lista.innerHTML = '<li class="list-group-item text-muted">Nenhum funcionário cadastrado.</li>';
+    document.getElementById("funcionarioCount").textContent = "0";
+    return;
+  }
+
   document.getElementById("funcionarioCount").textContent = funcionariosData.length;
   funcionarios = [];
 
@@ -291,8 +297,41 @@ function abrirModalEditarFuncionario(idx) {
 }
 
 async function adicionarFuncionario() {
-
+  let idUserError = true;
   let funcionarioInput = document.getElementById("cargoFuncionario");
+
+  if (!funcionarioInput.value.trim()) {
+    showToast("Por favor, Insira o codigo do Funionario", "error");
+    return;
+  }
+
+  fetch("/verific", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      busca: funcionarioInput.value.trim(),
+      column: "userId",
+      tableSelect: "users"
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Mensagem do servidor:", data.mensagem);
+
+      if (!data.mensagem || data.mensagem.length === 0) {
+        showToast("Funcionário não encontrado", "error");
+        idUserError = true;
+        return;
+      }
+    })
+    .catch(err => {
+      console.error("Erro na requisição:", err);
+      showToast("Erro ao verificar funcionário", "error");
+  });
+
+  if (idUserError) {
+    return;
+  }
 
   const permissoesSelecionadas = Array.from(
     document.querySelectorAll('#modalAdicionarFuncionario .card-acesso')
@@ -319,13 +358,19 @@ async function adicionarFuncionario() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({type: "insert", userData: func, marketId: mercadoSelecionado})
       });
+  
   data = await res.json();
-  /*TODO:
-    Popup para Feedback de Adição de Usuário!
-    data.message contém a mensagem (ok, erro, usuário já cadastrado....)
-    Fechar modal de usuário
-  */
- renderizarFuncionarios(mercadoSelecionado);
+
+  if (data.status == "error") {
+    showToast(data.message, "error");
+    return;
+  } else if (data.status == "sucess") {
+    showToast(data.message, "sucess");
+  }
+
+  document.getElementById("cargoFuncionario").value = ""; // Limpa o campo de input após adicionar
+  bootstrap.Modal.getInstance(document.getElementById('modalAdicionarFuncionario')).hide();
+  renderizarFuncionarios(mercadoSelecionado);
 }
 
 async function SalvarPermissoes() {
@@ -355,10 +400,9 @@ async function SalvarPermissoes() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({type: "update", userData: func, marketId: mercadoSelecionado})
       });
-  /*
-    TODO:
-    Popup para Feedback de Alteração nas permissões de usuário!
-  */
+    
+  showToast("Permissões do Usuário Alteradas", "success");
+  bootstrap.Modal.getInstance(document.getElementById('modalEditarFuncionario')).hide();
  renderizarFuncionarios(mercadoSelecionado);
 }
 
@@ -369,10 +413,9 @@ async function RemoverFuncionario(){
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({type: "delete", userData: func, marketId: mercadoSelecionado})
   })
-  /*
-    TODO:
-    Popup para Feedback de remoção de Usuário!
-  */
+  
+  showToast("Usuario Removido com sucesso!", "success");
+  bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusaoFuncionario')).hide();
   renderizarFuncionarios(mercadoSelecionado);
 }
 
@@ -502,6 +545,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!idMarket) {
       showToast("Nenhum mercado selecionado para excluir", "warning");
+      return;
+    }
+
+    if (confirma.toLowerCase() !== `${document.getElementById("nome-mercado-info").textContent}`.toLowerCase()) {
+      showToast("Confirmação incorreta. Digite o nome do mercado para excluir.", "error");
       return;
     }
 
