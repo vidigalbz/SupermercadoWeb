@@ -5,10 +5,7 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
         console.error("Erro ao abrir o banco:", err.message);
         return;
     }
-    // Ensure PRAGMA foreign_keys is effective for every connection if needed,
-    // but db.serialize runs this for the setup connection.
-    // For runtime, it's good practice to ensure it's on for each connection if they are separate.
-    // Here, 'db' is a single, persistent connection, so this initial PRAGMA should suffice.
+
     db.run("PRAGMA foreign_keys = ON", (pragmaErr) => {
         if (pragmaErr) {
             console.error("Erro ao habilitar foreign keys:", pragmaErr.message);
@@ -19,7 +16,6 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
 
 // Criação das tabelas na ordem correta
 db.serialize(() => {
-    // This PRAGMA here ensures it's on before table creation for this sequence of operations.
     db.run("PRAGMA foreign_keys = ON");
 
     db.exec(`
@@ -96,14 +92,14 @@ db.serialize(() => {
 
     CREATE TABLE IF NOT EXISTS history (
         historyId INTEGER PRIMARY KEY AUTOINCREMENT,
-        productId INTEGER, -- Nullable if product can be deleted but history retained without ON DELETE CASCADE
+        productId INTEGER,                 -- ALTERADO: Removido o NOT NULL
         marketId TEXT NOT NULL,
         userId INTEGER NOT NULL,
-        type TEXT NOT NULL, -- 'entrada', 'saida', 'edicao', 'remocao'
-        beforeData TEXT,    -- JSON string
-        afterData TEXT,     -- JSON string
+        type TEXT NOT NULL,
+        beforeData TEXT,
+        afterData TEXT,
         createdAt TEXT NOT NULL,
-        FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE SET NULL, -- Changed from CASCADE to SET NULL to keep history if product is deleted
+        FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE SET NULL, -- << ALTERADO AQUI
         FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE,
         FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
     );
@@ -158,8 +154,7 @@ function update(table, columns, values, condition, conditionParams = []) {
         }
 
         const setClause = columns.map(col => `${col} = ?`).join(', ');
-        // Condition should be a parameterized string, e.g., "productId = ?"
-        // Values for setClause come first, then values for conditionParams
+
         const query = `UPDATE ${table} SET ${setClause} ${condition ? "WHERE " + condition : ""}`;
         const allParams = [...values, ...conditionParams];
 
@@ -179,7 +174,7 @@ function delet(table, condition, params = []) {
         if (!condition) {
             return reject(new Error("Condição de exclusão não fornecida"));
         }
-        // Condition should be a parameterized string, e.g., "productId = ?"
+
         const query = `DELETE FROM ${table} WHERE ${condition}`;
         
         db.run(query, params, function(err) {
@@ -193,7 +188,6 @@ function delet(table, condition, params = []) {
     });
 }
 
-// Generic query execution (for potentially complex queries not covered by helpers)
 function query(queryText, params = []) {
     return new Promise((resolve, reject) => {
         db.run(queryText, params, function(err) {
@@ -207,7 +201,6 @@ function query(queryText, params = []) {
     });
 }
 
-// Generic select raw query execution
 function selectFromRaw(queryText, params = []) {
     return new Promise((resolve, reject) => {
         db.all(queryText, params, (err, rows) => {
@@ -221,20 +214,18 @@ function selectFromRaw(queryText, params = []) {
     });
 }
 
-// This function seems specific and might be better placed in a service layer
-// if your application grows, but it's fine here for now.
 async function insertLink(key, marketId, type) {
     try {
         const result = await insert('accessKeys', ['key', 'marketId', 'type'], [key, marketId, type]);
         return result.id;
     } catch (err) {
         console.error(`Erro ao inserir link de acesso: ${err.message}`);
-        throw err; // Re-throw to be handled by the caller
+        throw err;
     }
 }
 
 module.exports = {
-    db, // Exporting the db instance directly can be useful but also risky if not handled carefully.
+    db,
     select,
     insert,
     update,

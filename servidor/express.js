@@ -19,15 +19,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- MOVEMOS O STATIC PARA CÁ ---
-// Deve vir antes da definição de rotas dinâmicas se houver conflito de nomes,
-// ou se você quiser que arquivos estáticos tenham prioridade.
-// Para servir arquivos como CSS, JS, imagens das páginas HTML carregadas dinamicamente.
 app.use(express.static(webpages_dir));
-// Se suas páginas (ex: login/index.html) referenciam assets (css/js)
-// dentro de suas próprias pastas (ex: login/style.css),
-// você pode precisar de um static mais específico para cada página ou ajustar os caminhos nos HTMLs.
-// OU, se todos os assets globais estão na raiz de webpages_dir, o static acima já cobre.
 
 const uploadsDir = path.join(__dirname, 'servidor/uploads');
 if (!fs.existsSync(uploadsDir)){
@@ -77,7 +69,7 @@ app.get('/api/ip', (req, res) => {
 });
 
 async function loadPages() {
-    // app.use(express.static(webpages_dir)); // Removido daqui, já definido globalmente
+
     try {
         if (!fs.existsSync(webpages_dir)) {
             console.error(`[DEBUG] ERRO CRÍTICO: O diretório de páginas web NÃO EXISTE: ${webpages_dir}`);
@@ -192,28 +184,53 @@ app.post("/adicionarProduto", upload.single("imagem"), async (req, res) => {
 
 app.post('/deletarProduto', async (req, res) => {
     const { productId, userId, marketId } = req.body;
+
     if (!productId || !userId || !marketId) {
         return res.status(400).json({ erro: "Parâmetros obrigatórios ausentes (productId, userId, marketId)." });
     }
+
+    const productIdInt = parseInt(productId);
+    const userIdInt = parseInt(userId);
+
+    if (isNaN(productIdInt) || isNaN(userIdInt)) {
+        return res.status(400).json({ erro: "productId e userId devem ser números válidos." });
+    }
+
     try {
-        const produtos = await select("products", "WHERE productId = ? AND marketId = ?", [productId, marketId]);
+
+        const produtos = await select("products", "WHERE productId = ? AND marketId = ?", [productIdInt, marketId]);
+
         if (!produtos || produtos.length === 0) {
-            return res.status(404).json({ erro: "Produto não encontrado neste mercado." });
+            return res.status(404).json({ erro: "Produto não encontrado neste mercado ou ID inválido." });
         }
         const produtoDeletado = produtos[0];
+        
         await insert("history", [
             "productId", "marketId", "userId", "type",
             "beforeData", "afterData", "createdAt"
         ], [
-            produtoDeletado.productId, produtoDeletado.marketId, parseInt(userId),
-            "remocao", JSON.stringify(produtoDeletado), null,
+            produtoDeletado.productId,
+            produtoDeletado.marketId,
+            userIdInt,
+            "remocao",
+            JSON.stringify(produtoDeletado),
+            null,
             new Date().toISOString()
         ]);
-        await delet("products", "productId = ? AND marketId = ?", [productId, marketId]);
-        res.status(200).json({ mensagem: "Produto deletado com sucesso!" });
+
+        const deleteResult = await delet("products", "productId = ? AND marketId = ?", [productIdInt, marketId]);
+
+        if (deleteResult.changes > 0) {
+            res.status(200).json({ mensagem: "Produto deletado com sucesso e histórico de remoção registrado!" });
+        } else {
+
+            console.warn(`/deletarProduto: Produto ${productIdInt} encontrado mas 0 linhas afetadas na deleção.`);
+            res.status(404).json({ erro: "Produto encontrado, mas não pôde ser deletado. Tente novamente." });
+        }
+
     } catch (err) {
-        console.error("Erro ao deletar produto:", err);
-        res.status(500).json({ erro: "Erro interno ao deletar produto.", detalhes: err.message });
+        console.error("BACKEND: Erro ao deletar produto:", err);
+        res.status(500).json({ erro: "Erro interno no servidor ao tentar deletar o produto.", detalhes: err.message });
     }
 });
 
@@ -530,30 +547,28 @@ app.post("/adicionarSupermercado", async (req, res) => {
             return res.status(400).json({ erro: "Você já possui um supermercado com este nome." });
         }
 
-        const marketId = await generateMarketId(); // Sua função generateMarketId
+        const marketId = await generateMarketId();
         const createdAt = new Date().toISOString();
 
-        // A função `insert` do seu database.js já usa placeholders, o que é bom.
-        // Apenas garanta que ownerId seja passado como número.
         await insert("supermarkets",
             ["marketId", "name", "local", "ownerId", "icon", "createdAt"],
-            [marketId, nome.trim(), local.trim(), ownerId, icon, createdAt] // ownerId já é um número aqui
+            [marketId, nome.trim(), local.trim(), ownerId, icon, createdAt]
         );
 
         // Monta os links de forma mais dinâmica
         const protocol = req.protocol;
         const host = req.get('host');
-        const baseUrl = `<span class="math-inline">\{protocol\}\://</span>{host}`; // Ex: http://localhost:4000
+        const baseUrl = `<span class="math-inline">\{protocol\}\://</span>{host}`;
 
-        const pdvLink = `<span class="math-inline">\{baseUrl\}/pdv/?id\=</span>{marketId}`; // Adicionado ?id=
-        const estoqueLink = `<span class="math-inline">\{baseUrl\}/estoque/?id\=</span>{marketId}`; // Adicionado ?id=
+        const pdvLink = `<span class="math-inline">\{baseUrl\}/pdv/?id\=</span>{marketId}`;
+        const estoqueLink = `<span class="math-inline">\{baseUrl\}/estoque/?id\=</span>{marketId}`;
 
         res.status(201).json({
             success: true,
-            message: "Supermercado adicionado com sucesso!", // Adiciona uma mensagem de sucesso
+            message: "Supermercado adicionado com sucesso!",
             data: {
                 marketId,
-                name: nome.trim(), // Retorna os dados criados
+                name: nome.trim(),
                 local: local.trim(),
                 icon,
                 ownerId,
@@ -582,7 +597,7 @@ app.post('/listarSupermercados', async (req, res) => {
         if (isNaN(userIdInt)) {
             return res.status(400).json({ success: false, error: "Formato de userId inválido." });
         }
-        const supermarkets = await select("supermarkets", "WHERE ownerId = ?", [userIdInt]); // 'ownerId' é a coluna no DB
+        const supermarkets = await select("supermarkets", "WHERE ownerId = ?", [userIdInt]);
         res.status(200).json({ success: true, data: supermarkets });
     } catch (err) {
         console.error("HISTORICO - Erro ao listar supermercados (backend):", err);
@@ -609,10 +624,10 @@ app.post('/deletarSupermercado', async (req, res) => {
 });
 
 app.post('/supermercadoData', async (req, res) => {
-    const { busca } = req.body; // 'busca' agora deve ser o ownerId (userID) como string ou número
+    const { busca } = req.body;
 
     if (!busca) {
-        // Se 'busca' (ownerId) não for fornecido, pode retornar um erro ou uma lista vazia.
+
         console.log("Tentativa de buscar supermercados sem um ownerId (busca).");
         return res.status(400).json({ erro: "ID do proprietário (busca) é obrigatório.", mensagem: [] });
     }

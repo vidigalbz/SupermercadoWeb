@@ -11,18 +11,18 @@
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f8f9fa;
-      padding-top: 70px; /* Increased padding for fixed navbar */
+      padding-top: 70px;
     }
 
     .navbar {
       background: linear-gradient(to left, #ff6f00, #ffa040);
-      /* position: fixed; /* Consider if navbar should be fixed */
-      /* top: 0; */
-      /* width: 100%; */
-      /* z-index: 1030; */
+       position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1030;
     }
     .navbar-brand {
-        color: white !important; /* Ensure text is visible */
+        color: white !important;
     }
 
     .container-principal {
@@ -31,8 +31,8 @@
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
       padding: 20px;
       max-width: 1300px; 
-      margin: 20px auto; /* Added top/bottom margin */
-      /* height: 500px; /* Removed fixed height, let content define it */
+      margin: 20px auto;
+
     }
 
     .nav-tabs {
@@ -51,7 +51,7 @@
     .accordion-item {
       border: 1px solid rgba(0, 0, 0, 0.1);
       margin-bottom: 8px;
-      border-radius: 8px !important; /* Ensure !important is necessary */
+      border-radius: 8px !important;
     }
     .accordion-button {
       padding: 12px 15px;
@@ -61,7 +61,7 @@
       background-color: rgba(255, 111, 0, 0.05);
       color: #ff6f00;
     }
-    .accordion-button.collapsed .badge { /* Hide badge when collapsed if too cluttered */
+    .accordion-button.collapsed .badge {
         display: none;
     }
 
@@ -72,7 +72,7 @@
       align-items: center;
       border-bottom: 1px solid #eee;
       padding: 8px 0;
-      flex-wrap: wrap; /* Allow wrapping on small screens */
+      flex-wrap: wrap;
     }
     .linha strong {
         margin-right: 5px;
@@ -82,8 +82,8 @@
       padding: 10px;
       border-radius: 6px;
       flex: 1;
-      min-width: 200px; /* Minimum width before wrapping */
-      margin-bottom: 5px; /* Space if they stack */
+      min-width: 200px;
+      margin-bottom: 5px;
     }
     .antes { background-color: #f8d7da; }
     .depois { background-color: #d4edda; }
@@ -91,7 +91,7 @@
     .alteracao-comparacao {
       display: flex;
       gap: 10px;
-      flex-wrap: wrap; /* Allow wrapping */
+      flex-wrap: wrap;
     }
     .titulo-painel {
       font-weight: bold;
@@ -99,17 +99,17 @@
       margin-bottom: 15px;
     }
 
-    .scrollable-content { /* Applied to accordion body's parent if needed, or accordion itself */
-      max-height: 350px; /* Adjust as needed */
+    .scrollable-content {
+      max-height: 350px;
       overflow-y: auto;
       padding-right: 10px; 
     }
     .accordion {
-        max-height: 350px; /* Already in .scrollable-content */
+        max-height: 350px;
         overflow-y: auto;
         padding-right: 5px; 
     }
-    /* Top controls container */
+
     .controls-container {
         background-color: #ffffff;
         padding: 20px;
@@ -123,8 +123,8 @@
     .form-label {
         font-weight: 500;
     }
-    #resultado-pesquisa { /* This div seems unused, content goes into accordions */
-        display: none; /* Or remove if not needed */
+    #resultado-pesquisa {
+        display: none;
     }
   </style>
 </head>
@@ -238,10 +238,10 @@
     const userId = localStorage.getItem("userId");
     if (!userId) {
       alert("Você precisa estar logado para acessar o histórico.");
-      window.location.href = "/login"; // Assuming login page is at /login
+      window.location.href = "/login";
       return;
     }
-    carregarSupermercados(); // Load supermarkets first, then history if a market is selected
+    carregarSupermercados();
   });
 
   async function carregarSupermercados() {
@@ -251,7 +251,7 @@
     if (!userId) {
       console.error("HISTORICO: Usuário não logado. userId não encontrado no localStorage.");
       if (selectEl) selectEl.innerHTML = `<option value="">Usuário não identificado</option>`;
-      // Limpar área de histórico
+
       clearAllHistoryAccordions("Faça login para ver o histórico ou selecionar um supermercado.");
       return;
     }
@@ -291,7 +291,7 @@
         if (selectEl) selectEl.innerHTML = `<option value="">Nenhum supermercado encontrado</option>`;
         localStorage.removeItem("marketId");
         clearAllHistoryAccordions("Nenhum supermercado encontrado para este usuário.");
-        if (typeof carregarHistorico === 'function') carregarHistorico(); // Tenta carregar (mostrará msg de nenhum mercado)
+        if (typeof carregarHistorico === 'function') carregarHistorico();
         return;
       }
 
@@ -404,14 +404,12 @@
 
         if (result.data.length === 0) {
             const emptyMsg = `<div class="alert alert-info mt-3"><i class="bi bi-info-circle"></i> Nenhum registro encontrado com os filtros atuais.</div>`;
-            // Show this message in all tabs if global search yields nothing, or handle per tab based on filtering.
-            // For simplicity, if 'categoriaFiltro' is active, only that tab gets the message. Otherwise, all.
+
             if (categoriaFiltro && accordions[getTypeNameTarget(categoriaFiltro)]) {
                  accordions[getTypeNameTarget(categoriaFiltro)].innerHTML = emptyMsg;
-            } else if (!categoriaFiltro) { // No specific filter, show in all (or active)
+            } else if (!categoriaFiltro) {
                  Object.values(accordions).forEach(el => { if (el) el.innerHTML = emptyMsg; });
             }
-            // Ensure other tabs show a generic "no items for this type" if a specific filter is active.
             if (categoriaFiltro) {
                 renderHistoricoItems([], accordions.entradas, 'entrada');
                 renderHistoricoItems([], accordions.saidas, 'saida');
@@ -443,7 +441,7 @@
 
 function renderHistoricoItems(items, container, typeKey) {
     if (!container) return;
-    container.innerHTML = ''; // Clear previous items
+    container.innerHTML = '';
 
     if (!items || items.length === 0) {
         container.innerHTML = `<p class="text-muted py-3"><i class="bi bi-database-exclamation"></i> Nenhum registro de ${getTypeNameDisplay(typeKey)} encontrado.</p>`;
@@ -454,7 +452,7 @@ function renderHistoricoItems(items, container, typeKey) {
         const before = item.beforeData || {};
         const after = item.afterData || {};
         const dataFormatada = item.date ? formatDate(item.date) : 'Data desconhecida';
-        // Product name can be tricky if product was deleted. The backend tries to get it from JSON.
+
         const productName = item.name || (typeKey === 'remocao' && before.name) || (typeKey === 'entrada' && after.name) || `Produto ID: ${item.productId || 'N/A'}`;
 
 
@@ -480,11 +478,10 @@ function renderHistoricoItems(items, container, typeKey) {
     });
 }
 
-// Helper Functions
-function getTypeNameTarget(type) { // For targeting accordion elements
+function getTypeNameTarget(type) {
   return { entrada: 'entradas', saida: 'saidas', alteracao: 'alteracoes', remocao: 'remocoes' }[type] || type;
 }
-function getTypeNameDisplay(typeKey) { // For display in messages
+function getTypeNameDisplay(typeKey) {
   return { entrada: 'entrada', saida: 'saída', edicao: 'alteração', remocao: 'remoção' }[typeKey] || typeKey;
 }
 function getTypeIcon(typeKey) {
@@ -511,8 +508,8 @@ function getTypeDetails(typeKey, before, after) {
     details += `<div class="linha"><strong>Nome:</strong> ${formatValue(after.name)}</div>`;
     details += `<div class="linha"><strong>Quantidade Adicionada:</strong> ${formatValue(after.stock)}</div>`;
     details += `<div class="linha"><strong>Preço de Entrada:</strong> ${formatValue(after.price, 'R$ ')}</div>`;
-  } else if (typeKey === 'saida') { // Typically stock change
-    details += `<div class="linha"><strong>Nome:</strong> ${formatValue(before.name || after.name)}</div>`; // Name might be in before or after
+  } else if (typeKey === 'saida') {
+    details += `<div class="linha"><strong>Nome:</strong> ${formatValue(before.name || after.name)}</div>`;
     details += `<div class="linha"><strong>Estoque Anterior:</strong> ${formatValue(before.stock)}</div>`;
     details += `<div class="linha"><strong>Estoque Atual:</strong> ${formatValue(after.stock)}</div>`;
     details += `<div class="linha"><strong>Quantidade Retirada:</strong> ${formatValue(before.stock - after.stock)}</div>`;
@@ -520,7 +517,7 @@ function getTypeDetails(typeKey, before, after) {
     details += `<div class="linha"><strong>Produto Removido:</strong> ${formatValue(before.name)}</div>`;
     details += `<div class="linha"><strong>Estoque no momento da remoção:</strong> ${formatValue(before.stock)}</div>`;
     details += `<div class="linha"><strong>Preço no momento da remoção:</strong> ${formatValue(before.price, 'R$ ')}</div>`;
-    // Add other fields from 'before' if needed
+
   } else if (typeKey === 'edicao') {
     details += `
       <div class="alteracao-comparacao mt-2">
@@ -541,7 +538,7 @@ function getTypeDetails(typeKey, before, after) {
           }).join('')}
         </div>
       </div>`;
-      // Check if any changes were actually listed
+
       if (!details.includes('<div class="linha">')) {
         details = '<div class="alert alert-light mt-2">Nenhuma alteração significativa nos campos principais foi registrada (ou os valores permaneceram os mesmos).</div>';
       }
@@ -555,7 +552,7 @@ function trocarSupermercado() {
     localStorage.setItem("marketId", novoMarketId);
     carregarHistorico();
   } else {
-    localStorage.removeItem("marketId"); // Clear if no market is selected
+    localStorage.removeItem("marketId");
     clearAllHistoryAccordions("Nenhum supermercado selecionado.");
   }
 }
