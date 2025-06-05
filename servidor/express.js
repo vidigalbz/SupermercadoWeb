@@ -286,7 +286,6 @@ app.post('/finalizarCompra', async (req, res) => {
 // Endpoint para listar produtos
 app.post('/estoqueData', async (req, res) => {
     const { busca, category, marketId } = req.body;
-    
     if (!marketId) {
         return res.status(400).json({ erro: "marketId é obrigatório" });
     }
@@ -314,7 +313,18 @@ app.post('/estoqueData', async (req, res) => {
 
     try {
         const results = await select("products", condicao);
-        res.status(200).json({ mensagem: results });
+        if(req.body.quant)
+        {
+            var quantidadeEstoque = results[0]["stock"];
+            if(req.body.quant > quantidadeEstoque) {
+                return res.status(200).json({erro: "A quantidade solicitada excede o estoque disponível"})
+            }
+            else{
+                var quantidadeEstoque = quantidadeEstoque - (req.body.quant)
+                update("products", ["stock"], [quantidadeEstoque], `marketId = '${marketIdSafe}'`)
+            }
+        }
+        return res.status(200).json({ mensagem: results });
     } catch (err) {
         console.error(err);
         res.status(500).json({ erro: "Erro ao consultar estoque." });

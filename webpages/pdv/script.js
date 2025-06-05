@@ -5,6 +5,7 @@ let totalQuantity = 0;
 let currentInvoice = null;
 let modalInstance = null;
 const codigoInput = document.getElementById("codigoProdutoInput");
+const quantidadeInput = document.getElementById("quantidadeInput");
 let currentMarketId = 1;
 
 const labelPrice = document.getElementById("preco-total");
@@ -316,25 +317,36 @@ function searchProducts(query) {
 
 function AdicionarProdutoNovo() {
     const code = codigoInput.value.trim();
+    const quant = parseInt(quantidadeInput.value) > 0 ? parseInt(quantidadeInput.value) : 1
     if (!code) {
         showAlert("Por favor, insira um código de produto", "Campo obrigatório", "warning");
+        return;
+    }
+    if (quant < 0){
+        showAlert("Por favor, insira a quantidade positiva do produto", "Campo obrigatório", "warning")
         return;
     }
     
     fetch('/estoqueData', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ busca: code, marketId: id })
+        body: JSON.stringify({ busca: code, marketId: id, quant: quant})
     })
     .then(res => res.json())
     .then(data => {
+        
         if (data.mensagem && data.mensagem.length > 0) {
             data.mensagem.forEach(produto => {
                 criarCardEstoque(produto);
             });
             codigoInput.value = "";
+            quantidadeInput.value = "";
             focusCodigoInput();
-        } else {
+        } else if(data.erro){
+            showAlert(data.erro, "Atenção", "warning")
+            focusCodigoInput()
+        } 
+        else {
             showAlert("Produto não encontrado.", "Erro", "error");
             focusCodigoInput();
         }
@@ -349,9 +361,11 @@ function AdicionarProdutoNovo() {
 function criarCardEstoque(produto) {
     const barcode = produto.barcode;
     const price = parseFloat(produto.price);
+    const quantidade = parseInt(quantidadeInput.value) > 0 ? parseInt(quantidadeInput.value) : 1
+
 
     if (productsOnScreen[barcode]) {
-        productsOnScreen[barcode].quant += 1;
+        productsOnScreen[barcode].quant += quantidade;
         productsOnScreen[barcode].totalPrice = price * productsOnScreen[barcode].quant;
         
         const existingCard = document.getElementById(`card(${barcode})`);
@@ -366,8 +380,8 @@ function criarCardEstoque(produto) {
         }
     } else {
         productsOnScreen[barcode] = {
-            "totalPrice": price,
-            "quant": 1,
+            "totalPrice": price * quantidade,
+            "quant": quantidade,
             "productData": {
                 ...produto,
                 productId: produto.productId // Ensure productId is included
@@ -471,7 +485,12 @@ function removerUnidade(barcode) {
         } else {
             removerProduto(barcode);
         }
-        
+        fetch("/estoqueData", { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busca: barcode, marketId: id, quant: -1})
+
+        })
         updateTotals();
         saveCartToCookie();
     }
@@ -483,6 +502,12 @@ function removerProduto(barcode) {
         if (card) {
             card.remove();
         }
+        fetch("/estoqueData", { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busca: barcode, marketId: id, quant: -(productsOnScreen[barcode].quant)})
+
+        })
         delete productsOnScreen[barcode];
         updateTotals();
         saveCartToCookie();
