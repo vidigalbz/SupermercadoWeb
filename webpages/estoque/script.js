@@ -162,6 +162,16 @@ async function criarCardHTML(produto) {
   });
 }
 
+function abrirRelatorio() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (id) {
+      window.location.href = `/relatorio?id=${id}`;
+    } else {
+      alert("ID do supermercado não encontrado na URL.");
+    }
+}
+
 function mostrarNotificacao(titulo, mensagem, tipo = 'info') {
   const toastEl = document.getElementById('liveToast');
   const toastTitle = document.getElementById('toast-title');

@@ -25,13 +25,18 @@
 
       <!-- Botões Inventário e Alertas agrupados -->
       <div class="d-flex gap-2">
-        <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" onclick="window.location.href='/historico/'" " data-bs-target="#offcanvas-inventario" >
+        <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" onclick="window.location.href='/historico/'" data-bs-target="#offcanvas-inventario" >
           <i class="bi bi-table"></i> Inventário
+        </button>
+
+        <button class="btn btn-danger" type="button" onclick="abrirRelatorio()">
+          <i class="bi bi-table"></i> Relatórios
         </button>
 
         <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-alertas">
           🔔 Alertas (<span id="quantidade-alertas">0</span>)
         </button>
+
       </div>
     </div>
   </nav>

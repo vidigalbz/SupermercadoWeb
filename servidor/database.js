@@ -76,6 +76,14 @@ CREATE TABLE IF NOT EXISTS history (
   FOREIGN KEY (productId) REFERENCES products(productId),
   FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
 );
+
+CREATE TABLE IF NOT EXISTS vendas (
+  vendaID INTEGER PRIMARY KEY AUTOINCREMENT,
+  marketId INTEGER NOT NULL,
+  produto TEXT NOT NULL,
+  quantidade INTEGER NOT NULL,
+  FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
+  )
 `);
 });
 

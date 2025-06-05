@@ -57,7 +57,13 @@ app.get('/api/ip', (req, res) => {
     const ip = getRealWirelessIP();
     res.json({ ip });
 });
-  
+
+app.get('/relatorio/:id', (req, res) => {
+  const marketId = req.params.id;
+  res.render('relatorio', { marketId });
+});
+
+
 // Carregamento de páginas
 async function loadPages() {
     app.use(express.static(webpages_dir));
