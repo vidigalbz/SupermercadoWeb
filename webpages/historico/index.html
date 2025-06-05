@@ -224,6 +224,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+
+  function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let c of ca) {
+      c = c.trim();
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length);
+      }
+    }
+    return "";
+  }
+
   let debounceTimer;
   function debounce(func, delay) {
     return function() {
@@ -235,10 +249,11 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    const userId = localStorage.getItem("userId");
+    const userId = getCookie("user");
+    console.log(userId)
     if (!userId) {
-      alert("Você precisa estar logado para acessar o histórico.");
-      window.location.href = "/login"; // Assuming login page is at /login
+      //alert("Você precisa estar logado para acessar o histórico.");
+      //window.location.href = "/login"; // Assuming login page is at /login
       return;
     }
     carregarSupermercados(); // Load supermarkets first, then history if a market is selected
@@ -246,15 +261,7 @@
 
   async function carregarSupermercados() {
     const selectEl = document.getElementById("select-market");
-    const userId = localStorage.getItem("userId");
-
-    if (!userId) {
-      console.error("HISTORICO: Usuário não logado. userId não encontrado no localStorage.");
-      if (selectEl) selectEl.innerHTML = `<option value="">Usuário não identificado</option>`;
-      // Limpar área de histórico
-      clearAllHistoryAccordions("Faça login para ver o histórico ou selecionar um supermercado.");
-      return;
-    }
+    const userId = getCookie("user");
 
     console.log("HISTORICO: Tentando carregar supermercados para userId:", userId);
     if (selectEl) selectEl.innerHTML = `<option value="">Carregando supermercados...</option>`;
@@ -289,7 +296,7 @@
 
       if (!result.data || result.data.length === 0) {
         if (selectEl) selectEl.innerHTML = `<option value="">Nenhum supermercado encontrado</option>`;
-        localStorage.removeItem("marketId");
+        document.cookie = "marketId =; path = /"
         clearAllHistoryAccordions("Nenhum supermercado encontrado para este usuário.");
         if (typeof carregarHistorico === 'function') carregarHistorico(); // Tenta carregar (mostrará msg de nenhum mercado)
         return;
@@ -298,22 +305,22 @@
       if (selectEl) {
         selectEl.innerHTML = result.data.map(m =>
             // ***** LINHA CORRIGIDA ABAIXO *****
-            `<option value="${m.marketId}" ${m.marketId === localStorage.getItem("marketId") ? "selected" : ""}>
+            `<option value="${m.marketId}" ${m.marketId === getCookie("marketId") ? "selected" : ""}>
                 ${m.name} (${m.marketId})
             </option>`
             // ***** FIM DA LINHA CORRIGIDA *****
         ).join("");
 
-        let currentMarketIdInStorage = localStorage.getItem("marketId");
+        let currentMarketIdInStorage = getCookie("marketId");
         const isValidMarketIdStored = result.data.some(m => m.marketId === currentMarketIdInStorage);
 
         if ((!currentMarketIdInStorage || !isValidMarketIdStored) && result.data.length > 0) {
             currentMarketIdInStorage = result.data[0].marketId;
-            localStorage.setItem("marketId", currentMarketIdInStorage);
+            document.cookie = `marketId = ${currentMarketIdInStorage}`;
         }
-        // Garante que o valor do select reflita o que está no localStorage ou o primeiro da lista
-        if (localStorage.getItem("marketId")) {
-            selectEl.value = localStorage.getItem("marketId");
+
+        if (getCookie("marketId")) {
+            selectEl.value = getCookie("marketId");
         } else if (result.data.length > 0) {
              selectEl.value = result.data[0].marketId; // Fallback para o primeiro se nada estiver selecionado
         }
@@ -349,8 +356,8 @@
 
 
   async function carregarHistorico() {
-    const marketId = localStorage.getItem("marketId");
-    const userId = localStorage.getItem("userId");
+    const marketId = getCookie("marketId");
+    const userId = getCookie("user");
     const busca = document.getElementById("pesquisa")?.value || "";
     const categoriaFiltro = document.getElementById("filtro-categoria")?.value || ""; // Renamed to avoid conflict
 
@@ -552,10 +559,10 @@ function getTypeDetails(typeKey, before, after) {
 function trocarSupermercado() {
   const novoMarketId = document.getElementById("select-market").value;
   if (novoMarketId) {
-    localStorage.setItem("marketId", novoMarketId);
+    document.cookie = `marketId = ${novoMarketId}; path = /`
     carregarHistorico();
   } else {
-    localStorage.removeItem("marketId"); // Clear if no market is selected
+    document.cookie = "marketId =; path=/"
     clearAllHistoryAccordions("Nenhum supermercado selecionado.");
   }
 }
