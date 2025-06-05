@@ -549,6 +549,15 @@ function prepareCheckoutModal() {
                         </table>
                     </div>
                     <div class="mt-3">
+                        <label for="cpfNotinha" class="form-label">CPF do Cliente (opcional)</label>
+                        <input type="text" 
+                            class="form-control mb-3" 
+                            id="cpfNotinha" 
+                            placeholder="000.000.000-00"
+                            data-mask="000.000.000-00"
+                            >
+                        </div>
+                    <div class="mt-3">
                         <label for="paymentMethod" class="form-label">Método de Pagamento</label>
                         <select class="form-select" id="paymentMethodInModal">
                             <option value="cash">Dinheiro</option>
@@ -572,10 +581,11 @@ async function finalizarCompra() {
     }
     
     const paymentMethod = document.getElementById("paymentMethodInModal").value;
-    
+    const cpfCliente = document.getElementById("cpfNotinha").value;
     currentInvoice = {
         date: new Date().toLocaleString(),
         items: [],
+        cpf: cpfCliente,
         total: totalPrice,
         quantity: totalQuantity,
         paymentMethod: paymentMethod,
@@ -701,67 +711,71 @@ function printReceipt() {
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
         <html>
-            <head>
-                <title>Recibo</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-                <style>
-                    body { padding: 20px; font-size: 14px; }
-                    .receipt-header { text-align: center; margin-bottom: 20px; }
-                    .receipt-title { font-weight: bold; font-size: 18px; }
-                    .receipt-date { font-size: 12px; color: #666; }
-                    table { width: 100%; margin-bottom: 15px; }
-                    th { text-align: left; border-bottom: 1px solid #ddd; }
-                    td { padding: 3px 0; }
-                    .total-row { font-weight: bold; border-top: 1px solid #ddd; }
-                    .thank-you { text-align: center; margin-top: 20px; font-style: italic; }
-                </style>
-            </head>
-            <body>
-                <div class="receipt-header">
-                    <div class="receipt-title">Super Mercado Didático</div>
-                    <div class="receipt-date">${currentInvoice.date}</div>
-                </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Lote</th>
-                            <th>Qtd</th>
-                            <th>Preço</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${currentInvoice.items.map(item => `
-                            <tr>
-                                <td>${item.name}</td>
-                                <td>${item.lot}</td>
-                                <td>${item.quantity}</td>
-                                <td>R$ ${item.subtotal.toFixed(2)}</td>
-                            </tr>
-                        `).join('')}
-                        <tr class="total-row">
-                            <td colspan="2">Total</td>
-                            <td>R$ ${currentInvoice.total.toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">Pagamento</td>
-                            <td>${getPaymentMethodName(currentInvoice.paymentMethod)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <div class="thank-you">Obrigado pela sua compra!</div>
-                
-                <script>
-                    setTimeout(() => {
-                        window.print();
-                        setTimeout(() => window.close(), 500);
-                    }, 200);
-                </script>
-            </body>
-        </html>
-    `);
+    <head>
+        <title>Recibo</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body { padding: 20px; font-size: 14px; }
+            .receipt-header { text-align: center; margin-bottom: 20px; }
+            .receipt-title { font-weight: bold; font-size: 18px; }
+            .receipt-date { font-size: 12px; color: #666; }
+            .client-info { margin-bottom: 15px; }
+            table { width: 100%; margin-bottom: 15px; }
+            th { text-align: left; border-bottom: 1px solid #ddd; }
+            td { padding: 3px 0; }
+            .total-row { font-weight: bold; border-top: 1px solid #ddd; }
+            .thank-you { text-align: center; margin-top: 20px; font-style: italic; }
+        </style>
+    </head>
+    <body>
+        <div class="receipt-header">
+            <div class="receipt-title">Super Mercado Didático</div>
+            <div class="receipt-date">${currentInvoice.date}</div>
+        </div>
+        
+        <div class="client-info">
+            <div><strong>Cliente:</strong> ${currentInvoice.cpf || 'Não informado'}</div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Lote</th>
+                    <th>Qtd</th>
+                    <th>Preço</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${currentInvoice.items.map(item => `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.lot}</td>
+                        <td>${item.quantity}</td>
+                        <td>R$ ${item.subtotal.toFixed(2)}</td>
+                    </tr>
+                `).join('')}
+                <tr class="total-row">
+                    <td colspan="2">Total</td>
+                    <td>R$ ${currentInvoice.total.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td colspan="2">Pagamento</td>
+                    <td>${getPaymentMethodName(currentInvoice.paymentMethod)}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="thank-you">Obrigado pela sua compra!</div>
+        
+        <script>
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => window.close(), 500);
+            }, 200);
+        </script>
+    </body>
+</html>`);
     printWindow.document.close();
 }
 
