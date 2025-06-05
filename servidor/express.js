@@ -69,6 +69,7 @@ const profileStorage = multer.diskStorage({
     }
 });
 const uploadProfile = multer({ storage: profileStorage });
+app.use('/uploads/profiles', express.static(path.join(__dirname, 'uploads', 'profiles')));
 
 /**
  * Função para obter o IP real na rede local (Wi-Fi ou LAN)
@@ -518,153 +519,176 @@ app.post("/editarProduto", async (req, res) => {
  * Rota de cadastro de usuário
  */
 app.post("/cadastro", async (req, res) => {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-        return res.status(400).json({ erro: "Todos os campos (nome, email, senha) são obrigatórios." });
+  const { name, password, gestor } = req.body;
+  if (!name || !password) {
+    return res.status(400).json({
+      status: "error",
+      message: "Todos os campos são obrigatórios."
+    });
+  }
+  try {
+    const existingAccount = await select("users", "WHERE name = ?", [name]);
+    if (existingAccount.length > 0) {
+      return res.status(409).json({
+        status: "error",
+        message: "Usuário já existente!"
+      });
     }
-    try {
-        const existingAccounts = await select("users", "WHERE email = ?", [email.toLowerCase().trim()]);
-        if (existingAccounts.length !== 0) {
-            return res.status(409).json({ erro: "Já existe uma conta com este email." });
-        }
-        await insert("users", ["name", "email", "password"], [name.trim(), email.toLowerCase().trim(), password]);
-        return res.status(201).json({ mensagem: "Usuário cadastrado com sucesso." });
-    } catch (err) {
-        console.error("Erro ao cadastrar usuário:", err);
-        return res.status(500).json({ erro: "Erro interno ao cadastrar usuário.", detalhes: err.message });
-    }
+    insert("users", ["name","password","gestor"], [name,password,gestor]);
+    const users = await select("users", "WHERE name = ?", [name]);
+    const user = users[0];
+    res.status(200).json({
+      status: "success",
+      message: "Usuário cadastrado com sucesso.",
+      userId: user.userId,
+      name: user.name,
+      gestor: user.gestor
+    });
+  } catch (err) {
+    console.error("Erro no cadastro:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Erro ao cadastrar usuário."
+    });
+  }
 });
 
 /**
  * Rota de login por e-mail
  */
 app.post('/login', async (req, res) => {
-    let { email, senha: plainPasswordFromUser } = req.body;
-    if (!email || !plainPasswordFromUser) {
-        return res.status(400).json({ status: "error", message: "Email e senha são obrigatórios." });
+  let { name, senha } = req.body;
+  try {
+    const users = await select("users", "WHERE name = ?", [name]);
+    if (users.length === 0) {
+      return res.status(401).json({
+        status: "error",
+        message: "Usuário não cadastrado!"
+      });
     }
-    email = email.toLowerCase().trim();
-    try {
-        const users = await select("users", "WHERE email = ?", [email]);
-        if (users.length === 0) {
-            return res.status(401).json({ status: "error", message: "E-mail não cadastrado ou senha incorreta." });
-        }
-        const user = users[0];
-        if (plainPasswordFromUser !== user.password) {
-            return res.status(401).json({ status: "error", message: "E-mail não cadastrado ou senha incorreta." });
-        }
-        return res.status(200).json({
-            status: "success",
-            message: "Login bem-sucedido!",
-            name: user.name,
-            email: user.email,
-            userId: user.userId
-        });
-    } catch (err) {
-        console.error("Erro no login (API):", err);
-        return res.status(500).json({ status: "error", message: "Erro interno no servidor durante o login.", detalhes: err.message });
+    const user = users[0];
+    if (senha !== user.password) {
+      return res.status(401).json({
+        status: "error",
+        message: "Senha incorreta!"
+      });
     }
+    res.status(200).json({
+      status: "success",
+      id: user.userId,
+      name: user.name,
+      userId: user.userId,
+      gestor: user.gestor,
+      profileImage: user.profileImage || null
+    });
+  } catch (err) {
+    console.error("Erro no login:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Erro no servidor."
+    });
+  }
 });
 
 /**
  * Rota de login por ID (cliente interno)
  */
 app.post("/loginWithId", async (req, res) => {
-    let { id } = req.body;
-    try {
-        let user = await select("users", "WHERE userId = ?", [id]);
-        if (!user || user.length === 0) {
-            return res.status(404).json({
-                status: "error",
-                message: "User not found"
-            });
-        }
-        user = user[0];
-        return res.status(200).json({
-            status: "success",
-            id: user.userId,
-            name: user.name,
-            gestor: user.gestor,
-            profileImage: user.profileImage || null
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({
-            status: "error",
-            message: "Internal server error"
-        });
+  let { id } = req.body;
+  try {
+    let user = await select("users", "WHERE userId = ?", [id]);
+    if (!user || user.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found"
+      });
     }
+    user = user[0];
+    res.status(200).json({
+      status: "success",
+      id: user.userId,
+      name: user.name,
+      gestor: user.gestor,
+      profileImage: user.profileImage || null
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error"
+    });
+  }
 });
 
 /**
  * Rota para upload de imagem de perfil
  */
 app.post(
-    "/uploadProfileImage",
-    uploadProfile.single("profileImage"),
-    async (req, res) => {
-        try {
-            const userId = req.body.userId;
-            if (!userId) {
-                return res.status(400).json({ status: "error", message: "UserId não fornecido" });
-            }
-            if (!req.file) {
-                return res.status(400).json({ status: "error", message: "Nenhum arquivo enviado" });
-            }
+  "/uploadProfileImage",
+  uploadProfile.single("profileImage"),
+  async (req, res) => {
+    try {
+      const userId = req.body.userId;
+      if (!userId) {
+        return res.status(400).json({ status: "error", message: "UserId não fornecido" });
+      }
+      if (!req.file) {
+        return res.status(400).json({ status: "error", message: "Nenhum arquivo enviado" });
+      }
 
-            const rows = await select("users", "WHERE userId = ?", [userId]);
-            if (rows && rows.length > 0) {
-                const oldPath = rows[0].profileImage;
-                if (oldPath) {
-                    const fullOldPath = path.join(__dirname, oldPath);
-                    if (fs.existsSync(fullOldPath)) {
-                        fs.unlinkSync(fullOldPath);
-                    }
-                }
-            }
-
-            const relativePath = path.relative(__dirname, req.file.path).replace(/\\/g, "/");
-            await update("users", ["profileImage"], [relativePath], "userId = ?", [userId]);
-
-            return res.status(200).json({
-                status: "success",
-                profileImage: relativePath
-            });
-        } catch (err) {
-            console.error("Erro em /uploadProfileImage:", err);
-            return res.status(500).json({ status: "error", message: "Erro interno no servidor" });
+      const rows = await select("users", "WHERE userId = ?", [userId]);
+      if (rows && rows.length > 0) {
+        const oldPath = rows[0].profileImage;
+        if (oldPath) {
+          const fullOldPath = path.join(__dirname, oldPath);
+          if (fs.existsSync(fullOldPath)) {
+            fs.unlinkSync(fullOldPath);
+          }
         }
+      }
+
+      const relativePath = path.relative(__dirname, req.file.path).replace(/\\/g, "/");
+      await update("users", ["profileImage"], [relativePath], `userId = '${userId}'`);
+
+      return res.status(200).json({
+        status: "success",
+        profileImage: relativePath
+      });
+    } catch (err) {
+      console.error("Erro em /uploadProfileImage:", err);
+      return res.status(500).json({ status: "error", message: "Erro interno no servidor" });
     }
+  }
 );
 
 /**
  * Rota para remover imagem de perfil
  */
+
 app.post("/removeProfileImage", async (req, res) => {
-    try {
-        const userId = req.body.userId;
-        if (!userId) {
-            return res.status(400).json({ status: "error", message: "UserId não fornecido" });
-        }
-
-        const rows = await select("users", "WHERE userId = ?", [userId]);
-        if (rows && rows.length > 0) {
-            const oldPath = rows[0].profileImage;
-            if (oldPath) {
-                const fullOldPath = path.join(__dirname, oldPath);
-                if (fs.existsSync(fullOldPath)) {
-                    fs.unlinkSync(fullOldPath);
-                }
-            }
-        }
-
-        await update("users", ["profileImage"], [null], "userId = ?", [userId]);
-        return res.status(200).json({ status: "success", message: "Imagem removida" });
-    } catch (err) {
-        console.error("Erro em /removeProfileImage:", err);
-        return res.status(500).json({ status: "error", message: "Erro interno no servidor" });
+  try {
+    const userId = req.body.userId;
+    if (!userId) {
+      return res.status(400).json({ status: "error", message: "UserId não fornecido" });
     }
+
+    const rows = await select("users", "WHERE userId = ?", [userId]);
+    if (rows && rows.length > 0) {
+      const oldPath = rows[0].profileImage;
+      if (oldPath) {
+        const fullOldPath = path.join(__dirname, oldPath);
+        if (fs.existsSync(fullOldPath)) {
+          fs.unlinkSync(fullOldPath);
+        }
+      }
+    }
+
+    await update("users", ["profileImage"], [null], `userId = '${userId}'`);
+    return res.status(200).json({ status: "success", message: "Imagem removida" });
+  } catch (err) {
+    console.error("Erro em /removeProfileImage:", err);
+    return res.status(500).json({ status: "error", message: "Erro interno no servidor" });
+  }
 });
 
 /**
@@ -904,146 +928,125 @@ app.post('/verific', async (req, res) => {
  * Rota para listar funcionários por marketId (quando userId não é fornecido)
  */
 app.post("/funcionarios", async (req, res) => {
-    const { marketId, userId } = req.body;
-    if (marketId && !userId) {
-        try {
-            const funcionarios = await select("user_permissions", "WHERE marketId = ?", [marketId]);
-            if (funcionarios.length > 0) {
-                return res.status(200).json({
-                    status: "success",
-                    message: funcionarios
-                });
-            } else {
-                return res.status(404).json({
-                    status: "error",
-                    message: "Nenhum funcionário encontrado!"
-                });
-            }
-        } catch (err) {
-            console.error("Erro em /funcionarios:", err);
-            return res.status(500).json({ status: "error", message: "Erro interno ao listar funcionários.", detalhes: err.message });
-        }
-    } else {
-        return res.status(400).json({ status: "error", message: "marketId é obrigatório e userId não deve ser fornecido." });
+  const {marketId, userId} = req.body;
+  if (marketId && !userId){
+    const funcionarios = await select("user_permissions", "WHERE marketId = ?", [marketId])
+    if (funcionarios.length > 0){
+      return res.status(200).json({
+        status: "success",
+        message: funcionarios
+      })
     }
+    else {
+      return res.status(404).json({
+        status: "error",
+        status: "nenhum funcionario encontrado!"
+      })
+    }
+  }
+
 });
 
 /**
  * Rota para gerenciar funcionários (insert, update e delete em user_permissions)
  */
 app.post("/atualizarFuncionario", async (req, res) => {
-    const { type, userData, marketId } = req.body;
+  const {type, userData, marketId} = req.body;
 
-    if (type === "update") {
-        try {
-            await update(
-                'user_permissions',
-                ['pdv', 'estoque', 'fornecedor', 'relatorios', 'alertas', 'rastreamento'],
-                userData.permissoes,
-                "userId = ? AND marketId = ?",
-                [userData.userId, marketId]
-            );
-            return res.status(200).json({
-                status: "success",
-                message: "Permissões atualizadas!"
-            });
-        } catch (err) {
-            console.error("Erro ao atualizar usuário:", err);
-            return res.status(404).json({
-                status: "error",
-                message: "Erro ao atualizar usuário"
-            });
-        }
+  if (type == "update"){
+    try {
+      await update('user_permissions', ['pdv', 'estoque','fornecedor', 'relatorios', 'alertas', 'rastreamento'], userData.permissoes, `userid = ${userData.userId} AND marketId = '${marketId}'`); 
+      res.status(200).json({
+        status: "success",
+        message: "Permissões Atualizadas!"
+      })
     }
-    else if (type === "delete") {
-        try {
-            await delet("user_permissions", "userId = ? AND marketId = ?", [userData.userId, marketId]);
-            console.log("Usuário removido!");
-            return res.status(200).json({
-                status: "success",
-                message: "Funcionário removido com sucesso!"
-            });
-        } catch (err) {
-            console.error("Erro ao remover usuário:", err);
-            return res.status(404).json({
-                status: "error",
-                message: "Erro ao remover usuário"
-            });
-        }
+    catch {
+      res.status(404).json({
+        status: "error",
+        message: "Erro ao atualizar usuário"
+      })
     }
-    else if (type === "insert") {
-        try {
-            const tableData = await select("user_permissions", "WHERE userId = ? AND marketId = ?", [userData.userId, marketId]);
-            if (tableData.length > 0) {
-                console.log("Usuário já cadastrado!");
-                return res.status(409).json({
-                    status: "error",
-                    message: "Usuário já cadastrado!"
-                });
-            } else {
-                await insert(
-                    "user_permissions",
-                    ["userId", "marketId", "pdv", "estoque", "fornecedor", "relatorios", "alertas", "rastreamento"],
-                    [
-                        userData.userId,
-                        marketId,
-                        userData.permissoes[0],
-                        userData.permissoes[1],
-                        userData.permissoes[2],
-                        userData.permissoes[3],
-                        userData.permissoes[4],
-                        userData.permissoes[5]
-                    ]
-                );
+    
+  }
+  else if (type == "delete"){
+    try {
+      await delet("user_permissions", `userId = '${userData.userId}' AND marketId = '${marketId}'`);
+      console.log("usuario removido!")
+      res.status(200).json({
+        status: "success",
+        message: "Erro ao remover Funcionario!"
+      })
+    }
+    catch {
+      res.status(404).json({
+        status: "error",
+        message: "Erro ao remover usuário"
+      })
+    }
+  }
+  else if (type == "insert") {
+    try {
+      tableData = await select("user_permissions", "WHERE userId = ? AND marketId = ?", [userData.userId, marketId])
+      if (tableData.length > 0) {
+        console.log("Usuário já cadastrado!")
+        return res.status(409).json({
+          status: "error",
+          message: "Usuário já cadastrado!"
+        });
+      }
+      else {
+        insert(
+          "user_permissions", 
+          ["userId", "marketId", "pdv", "estoque", "fornecedor", "relatorios", "alertas", "rastreamento"], 
+          [userData.userId, marketId, userData.permissoes[0], userData.permissoes[1], userData.permissoes[2], userData.permissoes[3], userData.permissoes[4], userData.permissoes[5]]
+        );
 
-                return res.status(200).json({
-                    status: "success",
-                    message: "Funcionário cadastrado com sucesso!"
-                });
-            }
-        } catch (err) {
-            console.error("Erro ao adicionar usuário:", err);
-            return res.status(500).json({
-                status: "error",
-                message: "Erro interno ao adicionar funcionário"
-            });
-        }
-    }
-    else {
-        return res.status(400).json({ status: "error", message: "Tipo inválido para atualização de funcionário." });
-    }
+        return res.status(200).json({
+          status: "success",
+          message: "Funcionário cadastrado com sucesso!"
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao adicionar usuário:", err);
+        return res.status(500).json({
+          status: "error",
+          message: "Erro interno ao adicionar funcionário"
+        });
+      }
+  }
 });
 
 /**
  * Rota para buscar usuário por userId (GET)
  */
 app.get('/users/:userId', async (req, res) => {
-    const { userId } = req.params;
-    try {
-        const users = await select("users", "WHERE userId = ?", [userId]);
-        if (users.length === 0) {
-            return res.status(404).json({
-                status: "error",
-                message: "User not found"
-            });
-        }
-        const user = users[0];
-        return res.status(200).json({
-            status: "success",
-            data: {
-                userId: user.userId,
-                name: user.name,
-                gestor: user.gestor,
-                profileImage: user.profileImage || null
-            }
-        });
-    } catch (err) {
-        console.error("Error fetching user:", err);
-        return res.status(500).json({
-            status: "error",
-            message: "Server error"
-        });
+  const { userId } = req.params;
+  try {
+    const users = await select("users", "WHERE userId = ?", [userId]);
+    if (users.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found"
+      });
     }
+    const user = users[0];
+    res.status(200).json({
+      status: "success",
+      data: {
+        userId: user.userId,
+        name: user.name,
+        gestor: user.gestor,
+        profileImage: user.profileImage || null
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Server error"
+    });
+  }
 });
 
 /**

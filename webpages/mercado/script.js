@@ -41,26 +41,18 @@ function getCookie(cname) {
 
 async function verificarUser() {
   try {
-    const res = await fetch("/verific", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ busca: userId, column: "userId", tableSelect: "users" })
-    });
-    const data = await res.json();
-    if (!data.mensagem || data.mensagem.length === 0) {
-      window.location.href = '/Error404';
-      return;
+    if (!userId) {
+          window.location.href = "/error403";
+          return;
     }
-    document.getElementById('userName').textContent = data.mensagem[0].name;
+    const res = await fetch('/users/' + userId);
+    const data = await res.json();
+
+    console.log(data);
+    document.getElementById('userName').textContent = data.data.name;
     document.getElementById('userRole').textContent = "Gerente";
 
-    if (!userId) {
-      window.location.href = "/error403";
-      return;
-    }
-    const resp = await fetch('/users/' + userId);
-    const info = await resp.json();
-    if (info.status === "success" && !info.data.gestor) {
+    if (data.status === "success" && !data.data.gestor) {
       window.location.href = "/error403";
     }
   } catch (err) {

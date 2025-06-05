@@ -144,7 +144,7 @@ function toggleCard(id, habilitado) {
 async function loadUserData() {
   userId = getCookie("user");
   if (userId == "") {
-    // window.location.href = "http://localhost:4000/error404";
+     window.location.href = "http://localhost:4000/error403";
     return;
   } else {
     try {

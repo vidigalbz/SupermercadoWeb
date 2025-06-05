@@ -1,4 +1,4 @@
-const API = 'http://localhost:4000'; // Esta variável API não parece estar sendo usada nos fetchs. Pode remover se não for usar.
+const API = 'http://localhost:4000';
 
 const container = document.getElementById('container');
 const signUpButton = document.getElementById('signUp');
@@ -48,35 +48,24 @@ async function loginWithCookie() {
 
 
 // Alterna entre login e cadastro
-if (signUpButton && signInButton && container) { // Adiciona verificação se os elementos existem
-    signUpButton.addEventListener('click', () => container.classList.add("right-panel-active"));
-    signInButton.addEventListener('click', () => container.classList.remove("right-panel-active"));
-}
-
+signUpButton.addEventListener('click', () => container.classList.add("right-panel-active"));
+signInButton.addEventListener('click', () => container.classList.remove("right-panel-active"));
 
 // Função para mostrar toast com mensagem e cor
 function showToast(message, color = 'danger') {
   const toast = document.getElementById('liveToast');
   const toastMessage = document.getElementById('toastMessage');
 
-  if (toast && toastMessage) { // Verifica se os elementos do toast existem
-    toast.className = `toast align-items-center text-white bg-${color} border-0`;
-    toastMessage.textContent = message;
+  toast.className = `toast align-items-center text-white bg-${color} border-0`;
+  toastMessage.textContent = message;
 
-    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast); // Usa getOrCreateInstance para segurança
-    toastBootstrap.show();
-  } else {
-    console.warn("Elementos do Toast não encontrados no DOM. Mensagem:", message);
-    // Fallback para alert se o toast não estiver disponível
-    // alert(`${color.toUpperCase()}: ${message}`);
-  }
+  const toastBootstrap = new bootstrap.Toast(toast);
+  toastBootstrap.show();
 }
 
 // CADASTRO
-const registerButton = document.getElementById("registerButton");
-if (registerButton) {
-    registerButton.addEventListener("click", function (e) {
-    e.preventDefault();
+document.getElementById("registerButton").addEventListener("click", function (e) {
+  e.preventDefault();
 
   const nome = document.getElementById("nomeCadastro").value;
   const senha = document.getElementById("senhaCadastro").value;
@@ -124,10 +113,8 @@ if (registerButton) {
 
 
 // LOGIN
-const loginButton = document.getElementById("loginButton");
-if (loginButton) {
-    loginButton.addEventListener("click", async function (e) {
-    e.preventDefault();
+document.getElementById("loginButton").addEventListener("click", async function (e) {
+  e.preventDefault();
 
   const name = document.getElementById("nameLogin").value;
   const senha = document.getElementById("senhaLogin").value;
@@ -170,42 +157,12 @@ if (loginButton) {
   }
 });
 
-    try {
-        const response = await fetch(`/login`, { // Removido API daqui
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha })
-        });
-
-        const result = await response.json();
-
-        if (result.status === "success") {
-        showToast(`Bem-vindo, ${result.name || 'Usuário'}!`, "success");
-
-        localStorage.setItem("userId", result.userId); // Salva o userId corretamente
-        
-        setTimeout(() => {
-            // ***** CORREÇÃO APLICADA AQUI *****
-            // Usar result.userId em vez de result.id
-            window.location.href = `/supermercado/?userID=${result.userId}`;
-        }, 1500);
-        } else {
-        showToast(result.message || "Email ou senha incorretos!", "danger");
-        }
-    } catch (error) {
-        console.error("Erro ao fazer login:", error);
-        showToast("Erro na conexão com o servidor.", "danger");
-    }
-    };
-}
-
-// Ativar painel de cadastro se URL tiver ?cadastro=1
 document.addEventListener("DOMContentLoaded", function () {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get("cadastro") === "1") {
-    const signUpButtonInit = document.getElementById("signUp"); // Renomeado para evitar conflito de escopo
-    if (signUpButtonInit && container) { // Verifica container também
-      container.classList.add("right-panel-active"); // Mostra painel de cadastro diretamente
+    const signUpButton = document.getElementById("signUp");
+    if (signUpButton) {
+      signUpButton.click();
     }
   }
 });
