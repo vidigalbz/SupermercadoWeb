@@ -208,6 +208,106 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" class="btn btn-success" id="btn-confirmar-adicionar">Adicionar</button>
+      </div>
+    </div>    
+    
+    <!-- Modal de Edição de Produto -->
+    <div class="modal fade" id="modalEditarProduto" tabindex="-1" aria-labelledby="modalEditarProdutoLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title" id="modalEditarProdutoLabel">Editar Produto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="form-editar-item">
+              <input type="hidden" id="editar-productId">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="editar-nome" class="form-label">Nome</label>
+                  <input type="text" class="form-control" id="editar-nome" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-barcode" class="form-label">Código de Barras</label>
+                  <input type="text" class="form-control" id="editar-barcode" required disabled>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-preco" class="form-label">Preço</label>
+                  <div class="input-group">
+                    <span class="input-group-text">R$</span>
+                    <input type="number" class="form-control" id="editar-preco" min="0" step="0.01">
+                  </div>
+                </div>                
+                <div class="col-md-6">
+                  <label for="editar-categoria" class="form-label">Categoria</label>
+                  <select class="form-select" id="editar-categoria">
+                    <option value="">Selecione</option>
+                    <!-- categorias aqui -->
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-estoque" class="form-label">Estoque</label>
+                  <input type="number" class="form-control" id="editar-estoque" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-lote" class="form-label">Lote</label>
+                  <input type="text" class="form-control" id="editar-lote" disabled>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-departamento" class="form-label">Departamento</label>
+                  <select class="form-select" id="editar-departamento">
+                    <option value="">Selecione</option>
+                    <!-- departamentos aqui -->
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-marketId" class="form-label">ID do Mercado</label>
+                  <input type="text" class="form-control" id="editar-marketId" required disabled>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-fabricacao" class="form-label">Data de Fabricação</label>
+                  <input type="date" class="form-control" id="editar-fabricacao" disabled>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-validade" class="form-label">Data de Validade</label>
+                  <input type="date" class="form-control" id="editar-validade" disabled>
+                </div>
+                <div class="col-12">
+                  <label for="editar-imagem" class="form-label">Imagem do Produto</label>
+                  <input type="file" class="form-control" id="editar-imagem">
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button class="btn btn-warning" id="btn-confirmar-edicao" onclick="abrirConfirmarEdicao()">Salvar Alterações</button>
+          </div>
+        </div>
+      </div>
+    </div>    
+
+    <!-- Modal de Exclusão de Produto -->
+    <div class="modal fade" id="modalExcluirProduto" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="modalExcluirLabel">Confirmar Exclusão</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <p>Tem certeza que deseja excluir o item abaixo?</p>
+            <ul class="list-unstyled">
+              <li><strong>Nome:</strong> <span id="excluir-nome"></span></li>
+              <li><strong>Código:</strong> <span id="excluir-codigo"></span></li>
+              <li><strong>Categoria:</strong> <span id="excluir-categoria"></span></li>
+              <li><strong>Estoque:</strong> <span id="excluir-estoque"></span></li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirmar-exclusao" onclick="abrirConfirmarExclusao()">Excluir</button>
+          </div>
         </div>
       </div>
     </div>
