@@ -60,7 +60,10 @@ function filtrarProdutos(termoBusca) {
 function getQueryParam(paramName) {
     const queryString = window.location.search.substring(1);
     const params = queryString.split('&');
-  
+    if(params.length <= 0 || params == ''){
+        console.log("chegou")
+        window.location.href = '/Error404'
+    }
     for (const param of params) {
       const [key, value] = param.split('=');
       if (key === paramName) {
@@ -70,13 +73,13 @@ function getQueryParam(paramName) {
     return null;
   }
   
-async function verificSuper(){
+function verificSuper(){
   fetch("/verific", {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
-  }).then( res => res.json())
-  .then( data => {
+  }).then(res => res.json())
+  .then(data => {
     if (Object.keys(data.mensagem).length === 0){
       window.location.href = '/Error404'
     } else {
