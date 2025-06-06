@@ -662,14 +662,14 @@ app.post("/verific", async (req, res) => { //Verficação se existe o SuperMerca
     let condicao = "";
     if (busca && column) {
         const termo = busca.replace(/'/g, "''")
-        condicao = `WHERE ${column.replace(/'/g, "''")} = ${termo}` 
+        condicao = `WHERE ${column.replace(/'/g, "''")} = '${termo}'` 
     }
     try{
     const results = await select(tableSelect, condicao);
     res.status(200).json({mensagem: results});
     }
     catch(e){
-        console.log(e)
+        res.status(404).json({mensagem: []})
     }
 })
 
