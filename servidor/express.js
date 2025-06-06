@@ -10,9 +10,11 @@ const app = express();
 const port = 4000;
 
 const { db } = require('./database.js'); // Importa o db do seu arquivo database.js
+const pages = require('./getwebpages.js');
 
-const webpages_dir = path.join(__dirname, "../webpages");
-var pages = [];
+const isPkg = typeof process.pkg !== 'undefined';
+const basePath = isPkg ? path.dirname(process.execPath) : __dirname;
+const webpages_dir = path.join(basePath, 'webpages');
 
 app.use(cookieParser());
 app.use(express.json());
@@ -60,23 +62,17 @@ app.get('/api/ip', (req, res) => {
   
 // Carregamento de páginas
 async function loadPages() {
-    app.use(express.static(webpages_dir));
-    fs.readdir(webpages_dir, (err, arquivos) => {
-        if (err) return;
-        pages = arquivos.filter(arquivo => {
-            const caminho = path.join(webpages_dir, arquivo);
-            return fs.statSync(caminho).isDirectory();
-        });
-
-        for (let i = 0; i < pages.length; i++) {
-            const temp_path = `${webpages_dir}/${pages[i]}/index.html`;
-            if (fs.existsSync(temp_path) && pages[i] != "main") {
-                app.get(`/${pages[i]}`, (req, res) => res.sendFile(temp_path));
-            } else if (pages[i] == "main") {
-                app.get("/", (req, res) => res.sendFile(temp_path));
-            }
+    pages.forEach(page => {
+        const temp_path = path.join(webpages_dir, page, 'index.html');
+      
+        if (page === 'main') {
+          app.get('/', (req, res) => res.sendFile(temp_path));
+        } else {
+          app.get(`/${page}`, (req, res) => res.sendFile(temp_path));
         }
-    });
+      });
+      
+    app.use(express.static(webpages_dir));
 }
 
 // Endpoint para adicionar produto (imagem é ignorada)
