@@ -777,7 +777,16 @@ app.post("/comprardofornecedor", async (req, res) => {
 
     }
 })
-
+app.post('/getAlerts', async (req, res) => {
+    const {marketId} = req.body;
+    try {
+        const alerts = await select('products', 'WHERE marketId = ?', marketId);
+        res.status(200).json(alerts)
+        
+    } catch (error) {
+        console.log(error)
+    }
+})
 
 
 app.get("/Error404", (req, res) => {
