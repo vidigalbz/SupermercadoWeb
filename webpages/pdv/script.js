@@ -61,7 +61,6 @@ function getQueryParam(paramName) {
     const queryString = window.location.search.substring(1);
     const params = queryString.split('&');
     if(params.length <= 0 || params == ''){
-        console.log("chegou")
         window.location.href = '/Error404'
     }
     for (const param of params) {
