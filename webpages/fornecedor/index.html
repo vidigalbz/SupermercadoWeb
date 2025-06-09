@@ -34,7 +34,7 @@
         <div class="container d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
                 <button class="btn btn-dark" onclick="history.back()">
-                    <i class="bi bi-arrow-left"></i>
+                    voltar
                 </button>
                 <h1>🛒</h1>
                 <span class="navbar-brand mb-0 h1">Super Mercado Didático:</span>
@@ -68,7 +68,7 @@
                     <div class="d-flex flex-column align-items-stretch">
                         <input type="text" class="form-control mb-1" id="codigo-editar" placeholder="CNPJ p/ Editar"
                             required>
-                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarFornecedorModal">
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarFornecedorModal" onclick="carregarEdit()">
                             Editar
                         </button>
                     </div>
@@ -90,43 +90,14 @@
         <div class="container my-4">
             <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-secondary text-white">
                 <h4 class="mb-0"><i class="bi bi-people-fill"></i> Fornecedores</h4>
-                <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque"
-                    onclick="reloadPage()">
+                <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque" onclick="reloadPage()">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
             </div>
 
-            <div class="grid-fornecedores" id="fornecedores-container">
+            <!-- Adicione a class row aqui -->
+            <div class="row g-3 mt-3" id="fornecedores-container" style="background-color: #e9ecef; overflow-y: auto; padding: 1rem; border-radius: 10px;">
                 <!-- Cards serão inseridos aqui -->
-                <div id="fornecedor-${cnpj}" class="card mb-3" style="border: 1px solid #dee2e6; max-width: 280px;">
-                    <div class="row g-0">
-                        <!-- Conteúdo -->
-                        <div class="col-md-9">
-                            <div class="card-body d-flex flex-column justify-content-between h-100">
-                                <div>
-                                    <h6 class="card-title mb-1 fw-bold">${razaoSocial}</h6>
-                                    <p class="card-text mb-1"><strong>CNPJ:</strong> ${cnpj}</p>
-                                    <p class="card-text mb-1"><strong>Tipo:</strong> ${tipoProduto}</p>
-                                </div>
-
-                                <!-- Botões -->
-                                <div class="card-actions d-flex gap-2 mt-2">
-                                    <button type="button" class="btn btn-sm btn-outline-primary btn-popover"
-                                        data-bs-toggle="popover" data-bs-html="true" title="Detalhes do Fornecedor"
-                                        data-bs-content="
-                                            <strong>Razão Social:</strong> ${razaoSocial}<br>
-                                            <strong>CNPJ:</strong> ${cnpj}<br>
-                                            <strong>Inscrição Estadual:</strong> ${inscricaoEstadual}<br>
-                                            <strong>Tipo:</strong> ${tipoProduto}<br>
-                                            <strong>Endereço:</strong> ${endereco}<br>
-                                            <strong>Contato:</strong> ${contato}">
-                                        <i class="bi bi-info-square"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -184,9 +155,8 @@
 
                     <!-- Rodapé do modal -->
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success">Salvar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success" onclick="adicionarFornecedor()">Salvar</button>
                     </div>
 
                 </form>
@@ -195,7 +165,8 @@
     </div>
 
     <!-- Modal de Editar Fornecedor -->
-    <div class="modal fade" id="editarFornecedorModal" tabindex="-1" aria-labelledby="editarFornecedorLabel" aria-hidden="true">
+    <div class="modal fade" id="editarFornecedorModal" tabindex="-1" aria-labelledby="editarFornecedorLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
 
@@ -246,7 +217,7 @@
                     <!-- Rodapé do modal -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-warning">Salvar Alterações</button>
+                        <button type="submit" class="btn btn-warning" onclick="updateFornecedor()">Salvar Alterações</button>
                     </div>
 
                 </form>
@@ -255,25 +226,28 @@
     </div>
 
     <!-- Modal de Remover Fornecedor -->
-    <div class="modal fade" id="removerFornecedorModal" tabindex="-1" aria-labelledby="removerFornecedorLabel" aria-hidden="true">
+    <div class="modal fade" id="removerFornecedorModal" tabindex="-1" aria-labelledby="removerFornecedorLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
 
                 <!-- Cabeçalho -->
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="removerFornecedorLabel">Remover Fornecedor</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Fechar"></button>
                 </div>
 
                 <form id="formRemoverFornecedor">
                     <div class="modal-body">
-                        <p>Tem certeza que deseja remover o fornecedor com o CNPJ <strong id="cnpjRemoverTexto"></strong>?</p>
+                        <p>Tem certeza que deseja remover o fornecedor com o CNPJ <strong
+                                id="cnpjRemoverTexto"></strong>?</p>
                     </div>
 
                     <!-- Rodapé -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-danger">Confirmar Remoção</button>
+                        <button type="submit" class="btn btn-danger" onclick="excluirFornecedor()">Confirmar Remoção</button>
                     </div>
                 </form>
 
@@ -281,9 +255,15 @@
         </div>
     </div>
 
+    <script src="script.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+        popoverTriggerList.forEach(popoverTriggerEl => {
+            new bootstrap.Popover(popoverTriggerEl)
+        })
+    </script>
 </body>
 
 </html>

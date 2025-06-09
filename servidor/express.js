@@ -1136,7 +1136,138 @@ app.post('/historicoData', async (req, res) => {
 });
 
 /**
+ * Fornecedores
+ */
+
+app.post("/addFornecedor", (req, res) => {
+    const {cnpj, 
+        razao_social, 
+        inscricao_estadual, 
+        endereco, 
+        contato,
+        tipo_de_produto
+    } = req.body
+    try {   
+        insert(
+            "fornecedores", 
+            ["cnpj", 
+            "razao_social", 
+            "inscricao_estadual", 
+            "endereco", 
+            "contato",
+            "tipo_de_produto"],
+            [cnpj, 
+            razao_social, 
+            inscricao_estadual, 
+            endereco, 
+            contato,
+            tipo_de_produto]
+        )
+        res.json({
+            status: "success"
+        })
+    } catch (error) {
+        
+    }
+})
+
+app.post("/fornecedorData", async (req, res) =>  {
+    try{
+        var data = await select("fornecedores")
+        res.status(200).json({result: data})
+    }
+    catch(e) {
+        res.status(500).json({erro: e})
+    }
+
+})
+
+app.post("/editarFornecedor", async (req, res) => {
+    const {
+        cnpj,
+        razaoSocial,
+        inscricaoEstadual, 
+        tipoProduto,
+        endereco,
+        contato,
+    } = req.body
+
+    try {
+        update("fornecedores",
+            ["cnpj", 
+                "razao_social", 
+                "inscricao_estadual", 
+                "endereco", 
+                "contato",
+                "tipo_de_produto"],
+            [
+                cnpj, razaoSocial, inscricaoEstadual, endereco, contato, tipoProduto,
+            ], `cnpj = ${cnpj}`
+        )
+    }catch (e) {
+        res.status(500).json({ erro: "Não ocorreu como Devia ter ocorrido"})
+    }
+})
+
+app.post("/excluirFornecedor", async (req, res) => {
+    const {cnpj} = req.body
+    if (!cnpj) return res.status(404).json({erro: "Cnpj não encotrado"})
+    delet("fornecedores", `cnpj = ${cnpj}`)
+    return res.status(200).json({mensagem: "Excluido com Sucesso"})
+})
+
+app.post("/comprardofornecedor", async (req, res) => {
+    const  {
+        cnpj,
+        productId,
+    quantidade_produto,
+    data_compra,
+    preco_unitario,
+    subtotal_produto,
+    valor_final,
+} = req.body
+    try {
+
+        insert(
+            "comprarfornecedor",
+            ["cnpj",
+            "productId",
+            'quantidade_produto',
+            'data_compra',
+            'preco_unitario',
+            'subtotal_produto',
+            'valor_final',],
+            [cnpj,
+            productId,
+        quantidade_produto,
+        data_compra,
+        preco_unitario,
+        subtotal_produto,
+        valor_final]
+        )
+        res.json({
+            status: "success"
+        })
+    } catch (error) {
+        console.error(error);
+    
+
+    }
+})
+app.post('/getAlerts', async (req, res) => {
+    const {marketId} = req.body;
+    try {
+        const alerts = await select('products', 'WHERE marketId = ?', marketId);
+        res.status(200).json(alerts)
+        
+    } catch (error) {
+        console.log(error)
+    }
+}) 
+
+/**
  * Middleware para redirecionar rotas não encontradas para /Error404
+ * NÃO UTILIZAR METODOS POST ABAIXO!! -Kaique
  */
 app.use((req, res, next) => {
     console.log(`[DEBUG] Rota não encontrada para: ${req.method} ${req.originalUrl}. Redirecionando para /Error404`);
