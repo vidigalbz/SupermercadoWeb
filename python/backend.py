@@ -3,7 +3,6 @@ import subprocess
 import urllib.request
 import tempfile
 import socket
-import pyperclip as app
 
 def verificar_nodejs():
     try:
@@ -39,7 +38,7 @@ def clonar_repositorio(branch="exec_download", repo_url="https://github.com/vidi
         return False, f"Erro: {e}"
 
 def iniciar_servidor():
-    caminho_exe = "app.exe"
+    caminho_exe = os.path.join(os.getenv("APPDATA"), "mercadoDidaticoDigital", "app.exe")
     if os.path.exists(caminho_exe):
         subprocess.Popen([caminho_exe])
         ip_local = socket.gethostbyname(socket.gethostname())
@@ -52,9 +51,3 @@ def parar_servidor():
         return True, "Servidor encerrado com sucesso."
     except Exception as e:
         return False, f"Erro ao parar o servidor: {e}"
-
-def copiar_link():
-    ip_local = socket.gethostbyname(socket.gethostname())
-    link = f"http://{ip_local}:4000/"
-    app.clipboard_clear()
-    app.clipboard_append(link)
