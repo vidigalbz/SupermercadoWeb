@@ -5,12 +5,6 @@ const precoInput = document.getElementById("add-preco");
 const estoqueInput = document.getElementById("produto-estoque");
 const valorTotalInput = document.getElementById("valor-total-compra");
 
-
-
-
-
-
-
 var categoriaValue = "Todos";
 
 function reloadPage() {
@@ -67,7 +61,6 @@ function gerarCodigoBarra(){
 
 const id = getQueryParam('id');
 document.getElementById("produto-marketId").value = id;
-document.getElementById("produto-barcode").value = gerarCodigoBarra()
 verificSuper()
 console.log(id);
 
@@ -162,7 +155,7 @@ async function criarCardHTML(produto) {
           <button type="button" class="btn btn-light btn-sm btn-codigoBar"
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            title="Imprimir Codigo de Barras" onclick="impressao(${produto.barcode})">
+            title="Imprimir Codigo de Barras" onclick="impressao(${parseInt(produto.barcode)})">
             <i class="bi bi-upc"></i>
           </button>
         </div>
@@ -204,7 +197,7 @@ function impressao(codigo){
   
 
   JsBarcode("#barcode", codigo, {
-    format: "EAN13",
+    format: "CODE128",
     displayValue: true,
     fontSize: 18,
     width: 2,
@@ -231,7 +224,7 @@ function impressao(codigo){
         </style>
       </head>
       <body>
-        <h2>Código de Barras EAN-13</h2>
+        <h2>Código de Barras</h2>
         ${barcode.outerHTML}
         <script>
           setTimeout(() => {
@@ -426,7 +419,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const year = today.getFullYear();
     const todayFormatted = `${year}-${month}-${day}`;
-    var barcode = getElementById('barcode')
     
     document.getElementById('produto-fabricacao').max = todayFormatted;
     document.getElementById('produto-validade').min = todayFormatted;
