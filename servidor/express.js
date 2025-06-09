@@ -75,50 +75,52 @@ app.get('/relatorio/:id', (req, res) => {
 
 app.post('/api/relatorio-data', async (req, res) => {
     try {
-        const { marketId, filtro = 'saida', tipoRelatorio } = req.body;
+        const { marketId } = req.body;
         
-        // 1. Verificar mercado
+        if (!marketId) {
+            return res.status(400).json({ error: 'O ID do mercado (marketId) é obrigatório.' });
+        }
+
+        // 1. Verificar se o mercado existe
         const mercado = await select('supermarkets', 'WHERE marketId = ?', [marketId]);
         if (!mercado || mercado.length === 0) {
             return res.status(404).json({ error: 'Mercado não encontrado' });
         }
 
-        // 2. Obter datas para filtro
+        // 2. Definir períodos de tempo
         const hoje = new Date().toISOString().split('T')[0];
-        const umMesAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const ontem = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         const umaSemanaAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const duasSemanasAtras = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const umMesAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const doisMesesAtras = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        const queryTotalVendas = `SELECT SUM(total) as total FROM sales WHERE marketId = ? AND date(saleDate) BETWEEN date(?) AND date(?)`;
 
-        // 3. Consulta para produtos com histórico do tipo 'saida'
-        const produtosComSaida = await selectFromRaw(`
-            SELECT 
-                p.productId,
-                p.name as nome,
-                p.barcode as codigo,
-                COUNT(h.historyId) as quantidade,
-                SUM(CASE WHEN h.type = 'saida' THEN JSON_EXTRACT(h.afterData, '$.stock') - JSON_EXTRACT(h.beforeData, '$.stock') ELSE 0 END) as quantidade_saida,
-                SUM(CASE WHEN h.type = 'saida' THEN (JSON_EXTRACT(h.beforeData, '$.stock') - JSON_EXTRACT(h.afterData, '$.stock')) * p.price ELSE 0 END) as valorTotal
-            FROM history h
-            JOIN products p ON h.productId = p.productId AND h.marketId = p.marketId
-            WHERE h.marketId = ? AND h.type = ?
-            AND date(h.createdAt) BETWEEN date(?) AND date(?)
-            GROUP BY p.productId
-            ORDER BY valorTotal DESC
-        `, [marketId, filtro, umMesAtras, hoje]);
+        // 3. Consultas de vendas para os cards de resumo
+        const vendasHoje = await selectFromRaw(queryTotalVendas, [marketId, hoje, hoje]);
+        const vendasOntem = await selectFromRaw(queryTotalVendas, [marketId, ontem, ontem]);
+        
+        const vendasUltimaSemana = await selectFromRaw(queryTotalVendas, [marketId, umaSemanaAtras, hoje]);
+        const vendasSemanaAnterior = await selectFromRaw(queryTotalVendas, [marketId, duasSemanasAtras, umaSemanaAtras]);
 
-        const produtosComSaidaIds = produtosComSaida.map(p => p.productId);
+        const vendasUltimoMes = await selectFromRaw(queryTotalVendas, [marketId, umMesAtras, hoje]);
+        const vendasMesAnterior = await selectFromRaw(queryTotalVendas, [marketId, doisMesesAtras, umMesAtras]);
+        
+        // Função para calcular variação percentual
+        const calcularVariacao = (atual, anterior) => {
+            if (!anterior || anterior === 0) return atual > 0 ? "100.00" : "0.00"; // Se não houve venda antes, qualquer venda é 100% de aumento
+            return (((atual - anterior) / anterior) * 100).toFixed(2);
+        };
 
-        // 4. Consultas adicionais filtradas por produtos com saída
-        const vendasHoje = await selectFromRaw(`
-            SELECT SUM(total) as total FROM sales 
-            WHERE marketId = ? AND date(saleDate) = date(?)
-            AND saleId IN (
-                SELECT DISTINCT si.saleId 
-                FROM sale_items si
-                WHERE si.productId IN (${produtosComSaidaIds.join(',') || 'NULL'})
-            )
-        `, [marketId, hoje]);
+        const totalHoje = vendasHoje[0]?.total || 0;
+        const totalOntem = vendasOntem[0]?.total || 0;
+        const totalSemana = vendasUltimaSemana[0]?.total || 0;
+        const totalSemanaAnterior = vendasSemanaAnterior[0]?.total || 0;
+        const totalMes = vendasUltimoMes[0]?.total || 0;
+        const totalMesAnterior = vendasMesAnterior[0]?.total || 0;
 
-        // 5. Consulta para mais vendidos (apenas produtos com histórico de saída)
+        // 4. Consulta para mais vendidos
         const maisVendidos = await selectFromRaw(`
             SELECT 
                 p.name as nome,
@@ -129,14 +131,13 @@ app.post('/api/relatorio-data', async (req, res) => {
             JOIN sales s ON si.saleId = s.saleId
             WHERE s.marketId = ? 
             AND date(s.saleDate) BETWEEN date(?) AND date(?)
-            AND p.productId IN (${idsProdutosVendidos})
             GROUP BY p.productId
             ORDER BY qtd DESC
             LIMIT 10
         `, [marketId, umMesAtras, hoje]);
-
-        // 6. Consulta para curva ABC (apenas categorias com produtos vendidos)
-        const curvaABC = await selectFromRaw(`
+        
+        // 5. Consulta para curva ABC
+        const vendasPorCategoria = await selectFromRaw(`
             SELECT 
                 p.category as categoria,
                 SUM(si.subtotal) as valor
@@ -145,52 +146,31 @@ app.post('/api/relatorio-data', async (req, res) => {
             JOIN sales s ON si.saleId = s.saleId
             WHERE s.marketId = ? 
             AND date(s.saleDate) BETWEEN date(?) AND date(?)
-            AND p.productId IN (${idsProdutosVendidos})
             GROUP BY p.category
             ORDER BY valor DESC
-            LIMIT 5
         `, [marketId, umMesAtras, hoje]);
 
-        // 7. Produtos encalhados (que não têm histórico de saída recente)
-        const produtosEncalhados = await selectFromRaw(`
-            SELECT 
-                p.name as nome,
-                p.stock as estoque,
-                p.barcode as codigo,
-                p.lot as lote,
-                p.expirationDate as validade,
-                MAX(s.saleDate) as ultimaVenda
-            FROM products p
-            LEFT JOIN sale_items si ON p.productId = si.productId
-            LEFT JOIN sales s ON si.saleId = s.saleId AND s.marketId = p.marketId
-            WHERE p.marketId = ? 
-            AND p.productId NOT IN (
-                SELECT DISTINCT h.productId
-                FROM history h
-                WHERE h.marketId = ? AND h.type = 'saida'
-                AND date(h.createdAt) >= date(?)
-            )
-            GROUP BY p.productId
-            HAVING p.stock > 0
-            ORDER BY ultimaVenda ASC
-            LIMIT 10
-        `, [marketId, marketId, umMesAtras]);
+        const totalVendasCurva = vendasPorCategoria.reduce((sum, cat) => sum + cat.valor, 0);
+        let acumulado = 0;
+        const curvaABCData = vendasPorCategoria.map(cat => {
+            acumulado += cat.valor;
+            return { ...cat, percentAcumulado: (acumulado / totalVendasCurva) * 100 };
+        });
 
-        // Calcular variações percentuais (simplificado)
-        const calcularVariacao = (atual, anterior) => {
-            if (!anterior || anterior === 0) return 100;
-            return ((atual - anterior) / anterior * 100).toFixed(2);
-        };
-
-        // Montar resposta
+        // Montar a resposta final para o frontend
         const response = {
-            produtosComSaida,
-            produtosComSaidaIds,
-            vendasHoje: {
-                total: vendasHoje[0]?.total?.toFixed(2) || "0,00",
-                variacao: calcularVariacao(vendasHoje[0]?.total || 0, vendasHoje[1]?.total || 0)
+            vendas: {
+                hoje: [totalHoje.toFixed(2), calcularVariacao(totalHoje, totalOntem)],
+                semana: [totalSemana.toFixed(2), calcularVariacao(totalSemana, totalSemanaAnterior)],
+                mes: [totalMes.toFixed(2), calcularVariacao(totalMes, totalMesAnterior)]
             },
-            // ... (restante da resposta)
+            maisVendidos: maisVendidos,
+            curvaABC: {
+                labels: curvaABCData.map(c => c.categoria),
+                dados: curvaABCData.map(c => c.valor),
+                cores: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d'].slice(0, curvaABCData.length)
+            },
+            // Você pode adicionar aqui os dados de produtos encalhados e menos vendidos se necessário
         };
 
         res.json(response);
@@ -956,14 +936,6 @@ app.post('/api/getUserDetails', async (req, res) => {
         res.status(500).json({ success: false, error: "Erro interno ao buscar detalhes do usuário." });
     }
 });
-app.post('/getRelatoriaSaida', async (req, res)=> {
-    const { marketId } = req.body;
-
-    const leavingProducts = await select("history", "WHERE marketId = ? and type = 'saida' ", marketId)
-    for (var productId in leavingProducts) {
-        const product = await select("products", 'WHERE productId = ?' productId.productId)
-    }
-})
 
 app.use((req, res, next) => {
     console.log(`[DEBUG] Rota não encontrada para: ${req.method} ${req.originalUrl}. Redirecionando para /Error404`);
