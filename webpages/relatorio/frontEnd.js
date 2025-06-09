@@ -1,24 +1,26 @@
+// Variáveis globais
 let graficoAtualABC = null;
-let graficoFinanceiro = null; // Adicionado para o segundo gráfico
-let relatorioData = null; // Guardará os dados da API para serem usados por outras funções
+let graficoFinanceiro = null;
+let relatorioData = null;
+let dataExibida = new Date(); // ✅ ESTADO: Controla o mês/ano que estamos vendo
 
-/**
- * Função principal que carrega todos os dados do relatório do backend.
- */
-async function carregarDadosDoRelatorio() {
+// --- FUNÇÃO PRINCIPAL DE BUSCA E RENDERIZAÇÃO ---
+async function buscarERenderizarRelatorio() {
     const params = new URLSearchParams(window.location.search);
     const marketId = params.get('id');
-
     if (!marketId) {
         alert("Erro: ID do mercado não especificado na URL.");
         return;
     }
 
     try {
+        const mes = dataExibida.getMonth();
+        const ano = dataExibida.getFullYear();
+        
         const response = await fetch('/api/relatorio-data', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ marketId: marketId })
+            body: JSON.stringify({ marketId, mes, ano })
         });
 
         if (!response.ok) {
@@ -28,86 +30,137 @@ async function carregarDadosDoRelatorio() {
 
         relatorioData = await response.json();
 
-        // Renderiza todos os componentes da página com os dados recebidos
+        // Renderiza todos os componentes da página
+        atualizarControlesUI();
         renderizarResumoVendas(relatorioData.vendas);
+        renderizarGraficoFinanceiro(relatorioData.desempenhoFinanceiro);
         renderizarGraficoABC(relatorioData.curvaABC);
         renderizarListaVendidos(relatorioData.maisVendidos, "mais");
-
-        // Habilitar funcionalidades extras que agora têm dados
-        const menosVendidosTab = document.getElementById('menos-vendidos-tab');
-        if (relatorioData.menosVendidos && relatorioData.menosVendidos.length > 0) {
-            menosVendidosTab.style.display = 'block';
-            menosVendidosTab.onclick = () => renderizarListaVendidos(relatorioData.menosVendidos, "menos");
-        } else {
-            menosVendidosTab.style.display = 'none'; // Esconde a aba se não houver dados
-        }
-        document.getElementById('mais-vendidos-tab').onclick = () => renderizarListaVendidos(relatorioData.maisVendidos, "mais");
-
-        // Se a API retornar dados de produtos encalhados, renderize-os
-        if(relatorioData.produtosEncalhados) {
-            renderizarProdutosEncalhados(relatorioData.produtosEncalhados);
-        }
-
-
+        renderizarProdutosEncalhados(relatorioData.produtosEncalhados);
+        
     } catch (error) {
         console.error("Erro ao carregar dados do relatório:", error);
-        document.body.innerHTML = `<div class="container mt-5"><div class="alert alert-danger"><strong>Erro ao carregar relatório:</strong> ${error.message}</div></div>`;
+        document.body.innerHTML = `<div class="container mt-5"><div class="alert alert-danger"><strong>Erro:</strong> ${error.message}</div></div>`;
     }
 }
 
-/**
- * Renderiza os cards de resumo de vendas (Hoje, Semana, Mês).
- */
-function renderizarResumoVendas(info) {
-    if (!info) return;
+// --- FUNÇÕES DE CONTROLE DA UI ---
+function atualizarControlesUI() {
+    const hoje = new Date();
+    const tituloEl = document.getElementById("titulo-mes-atual");
+    
+    const nomeMes = dataExibida.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    tituloEl.textContent = `${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)}`;
 
-    const valorHoje = parseFloat(info.hoje[0]).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    document.getElementById("qnt-hoje").textContent = valorHoje;
-    document.getElementById("prcn-hoje").textContent = `${info.hoje[1]}% em relação ao dia anterior`;
-
-    const valorSemana = parseFloat(info.semana[0]).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    document.getElementById("qnt-semana").textContent = valorSemana;
-    document.getElementById("prcn-semana").textContent = `${info.semana[1]}% em relação à semana anterior`;
-
-    const valorMes = parseFloat(info.mes[0]).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    document.getElementById("qnt-mes").textContent = valorMes;
-    document.getElementById("prcn-mes").textContent = `${info.mes[1]}% em relação ao mês anterior`;
+    const btnProximo = document.getElementById('btn-proximo-mes');
+    btnProximo.disabled = (dataExibida.getFullYear() >= hoje.getFullYear() && dataExibida.getMonth() >= hoje.getMonth());
 }
 
-/**
- * Renderiza o gráfico de pizza da Curva ABC.
- */
+// --- CONFIGURAÇÃO DOS EVENTOS ---
+document.addEventListener('DOMContentLoaded', () => {
+    buscarERenderizarRelatorio();
+
+    document.getElementById('btn-mes-anterior').onclick = () => {
+        dataExibida.setMonth(dataExibida.getMonth() - 1);
+        buscarERenderizarRelatorio();
+    };
+
+    document.getElementById('btn-proximo-mes').onclick = () => {
+        dataExibida.setMonth(dataExibida.getMonth() + 1);
+        buscarERenderizarRelatorio();
+    };
+    
+    document.getElementById('mais-vendidos-tab').onclick = () => {
+        if (relatorioData) renderizarListaVendidos(relatorioData.maisVendidos, "mais");
+    };
+});
+
+// --- FUNÇÕES DE RENDERIZAÇÃO ---
+
+// ✅ FUNÇÃO ATUALIZADA PARA MOSTRAR OS 3 CARDS
+function renderizarResumoVendas(info) {
+    if (!info) return;
+    
+    const formatCurrency = (value) => parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    // Mostra os cards de hoje e semana novamente
+    document.querySelectorAll('.col-md-4').forEach(card => card.style.display = 'block');
+
+    // Preenche os dados de Hoje
+    document.getElementById("qnt-hoje").textContent = formatCurrency(info.hoje[0]);
+    document.getElementById("prcn-hoje").textContent = `${info.hoje[1]}% em relação ao dia anterior`;
+
+    // Preenche os dados da Semana
+    document.getElementById("qnt-semana").textContent = formatCurrency(info.semana[0]);
+    document.getElementById("prcn-semana").textContent = `${info.semana[1]}% em relação à semana anterior`;
+
+    // Preenche os dados do Mês
+    document.getElementById("qnt-mes").textContent = formatCurrency(info.mes[0]);
+    document.getElementById("prcn-mes").textContent = "Total do Mês";
+}
+
+function renderizarGraficoFinanceiro(dados) {
+    const tituloEl = document.getElementById("titulo-financeiro");
+    const canvas = document.getElementById("graficoFinanceiro");
+    const ctx = canvas.getContext('2d');
+    
+    const nomeMes = dataExibida.toLocaleString('pt-BR', { month: 'long' });
+    tituloEl.textContent = `Desempenho de ${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)}`;
+    
+    if (graficoFinanceiro) graficoFinanceiro.destroy();
+
+    if (!dados || dados.length === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "16px Arial"; ctx.fillStyle = "#6c757d"; ctx.textAlign = "center";
+        ctx.fillText("Sem dados de vendas para este mês.", canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
+    graficoFinanceiro = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: dados.map(item => new Date(item.dia + 'T00:00:00').toLocaleDateString('pt-BR', {day: '2-digit'})),
+            datasets: [{
+                label: 'Vendas Diárias (R$)',
+                data: dados.map(item => item.totalDiario),
+                backgroundColor: 'rgba(255, 160, 64, 0.7)',
+                borderColor: 'rgba(255, 111, 0, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+}
+
 function renderizarGraficoABC(info) {
     if (graficoAtualABC) graficoAtualABC.destroy();
-    if (!info || !info.labels || !info.dados) return;
+    const canvas = document.getElementById("curvaABCChart");
+    const ctx = canvas.getContext('2d');
+    document.getElementById('titulo-mes-abc').textContent = `Mês: ${dataExibida.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`;
 
-    const ctx = document.getElementById("curvaABCChart").getContext('2d');
+    if (!info || !info.labels || info.labels.length === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "16px Arial"; ctx.fillStyle = "#6c757d"; ctx.textAlign = "center";
+        ctx.fillText("Sem dados para a curva ABC.", canvas.width / 2, canvas.height / 2);
+        return;
+    }
+    
     graficoAtualABC = new Chart(ctx, {
         type: 'pie',
         data: {
             labels: info.labels,
-            datasets: [{
-                data: info.dados,
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d'],
-                borderWidth: 1
-            }]
+            datasets: [{ data: info.dados, backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d'] }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false, // Isso agora funciona por causa do CSS
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
-/**
- * Renderiza a lista de produtos (mais ou menos vendidos, encalhados).
- */
 function renderizarListaVendidos(lista, tipo) {
-    const container = document.getElementById(tipo === "mais" ? "lista-mais-vendidos" : "lista-menos-vendidos");
+    const containerId = tipo === "mais" ? "lista-mais-vendidos" : "lista-menos-vendidos";
+    const container = document.getElementById(containerId);
     if (!container) return;
+    
+    document.getElementById('titulo-mes-mmv').textContent = `Mês: ${dataExibida.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`;
     
     container.innerHTML = "";
     if (!lista || lista.length === 0) {
@@ -116,45 +169,27 @@ function renderizarListaVendidos(lista, tipo) {
     }
 
     lista.forEach(item => {
-        const precoFormatado = parseFloat(item.precoTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        container.innerHTML +=
-            `<li class="list-group-item d-flex justify-content-between align-items-start">
-                <div class="ms-2 me-auto">
-                    <div class="fw-bold">${item.nome}</div>
-                    ${item.qtd} unidades
-                </div>
-                <span class="badge bg-primary rounded-pill">${precoFormatado}</span>
-            </li>`;
+        container.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">${item.nome}</div>${item.qtd} unidades</div><span class="badge bg-primary rounded-pill">${parseFloat(item.precoTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></li>`;
     });
 }
 
 function renderizarProdutosEncalhados(lista) {
     const container = document.getElementById("lista-encalhados");
     if (!container) return;
-
-    container.innerHTML = ""; // Limpa o conteúdo de exemplo
+    
+    document.getElementById('titulo-mes-encalhado').textContent = `Mês: ${dataExibida.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`;
+    container.innerHTML = "";
+    
     if (!lista || lista.length === 0) {
-        container.innerHTML = `<div class="list-group-item">Nenhum produto encalhado encontrado.</div>`;
+        container.innerHTML = `<div class="list-group-item text-muted">🎉 Nenhum produto encalhado encontrado!</div>`;
         return;
     }
     
     const listGroup = document.createElement('div');
     listGroup.className = 'list-group';
-    
     lista.forEach(item => {
-        listGroup.innerHTML +=
-            `<div class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <h6 class="mb-1">${item.nome}</h6>
-                    <small class="text-danger">Validade: ${new Date(item.validade).toLocaleDateString()}</small>
-                </div>
-                <p class="mb-1 small">Estoque: ${item.estoque} unidades | Código: ${item.codigo}</p>
-                <small class="text-muted">Última venda: ${item.ultimaVenda ? new Date(item.ultimaVenda).toLocaleDateString() : 'Nunca'}</small>
-            </div>`;
+        const ultimaVenda = item.ultimaVenda ? new Date(item.ultimaVenda).toLocaleDateString('pt-BR') : 'Nunca';
+        listGroup.innerHTML += `<div class="list-group-item list-group-item-action"><div class="d-flex w-100 justify-content-between"><h6 class="mb-1">${item.nome}</h6><small class="text-danger">Validade: ${new Date(item.validade + 'T00:00:00').toLocaleDateString('pt-BR')}</small></div><p class="mb-1 small">Estoque: ${item.estoque} | Código: ${item.codigo}</p><small class="text-muted">Última venda: ${ultimaVenda}</small></div>`;
     });
     container.appendChild(listGroup);
 }
-
-
-// --- INICIALIZAÇÃO ---
-document.addEventListener('DOMContentLoaded', carregarDadosDoRelatorio);
