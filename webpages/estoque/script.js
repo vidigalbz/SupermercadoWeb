@@ -545,24 +545,25 @@ async function gerarCodigo() {
 
 async function carregarFornecedores(selectId = 'add-fornecedor', callback) {
   try {
-    const response = await fetch('/fornecedores');
+    const response = await fetch('/fornecedorData', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({marketId:id})
+    });
     const fornecedores = await response.json();
-
-    console.log('Fornecedores carregados:', fornecedores);
 
     const select = document.getElementById(selectId);
     if (!select) {
       console.error(`Elemento #${selectId} não encontrado!`);
       return;
     }
-
+    console.log(fornecedores.result)
     select.innerHTML = '<option value="">Selecione</option>';
-
-    fornecedores.forEach(fornecedor => {
+    fornecedores.result.forEach(fornecedor => {
       const option = document.createElement('option');
       option.value = fornecedor.cnpj;  // VALOR = CNPJ (o que será salvo)
-      option.textContent = fornecedor.nome;  // TEXTO = NOME (o que o usuário vê)
-      option.dataset.nome = fornecedor.nome;  // Guarda o nome para uso posterior
+      option.textContent = fornecedor.razao_social;  // TEXTO = NOME (o que o usuário vê)
+      option.dataset.nome = fornecedor.razao_social;  // Guarda o nome para uso posterior
       select.appendChild(option);
     });
 
@@ -595,9 +596,10 @@ function carregarProdutoParaEdicao(produto) {
     
     const selectFornecedor = document.getElementById("editar-fornecedor");
     const options = selectFornecedor.querySelectorAll('option');
-    
+    console.log(options)
     for (let option of options) {
-      if (option.dataset.nome === produto.supplier || option.textContent === produto.supplier) {
+      if (option.dataset.razao_social === produto.supplier || option.textContent === produto.supplier) {
+        console.log('passo')
         selectFornecedor.value = option.value; // Define o CNPJ como valor
         break;
       }

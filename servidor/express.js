@@ -785,7 +785,6 @@ app.post("/comprardofornecedor", async (req, res) => {
 
     }
 })
-<<<<<<< Updated upstream
 
 app.get("/fornecedores", (req, res) => {
     db.all("SELECT cnpj, razao_social AS nome FROM fornecedores", (err, rows) => {
@@ -798,7 +797,6 @@ app.get("/fornecedores", (req, res) => {
     });
 });
 
-=======
 app.get('/getAlerts', async (req, res) => {
         const {marketId , category,data ,tipo } = req.body;
 
@@ -840,7 +838,6 @@ app.get('/getAlerts', async (req, res) => {
         res.status(500).json({ erro: "Erro ao consultar estoque." });
    
     }});
->>>>>>> Stashed changes
 
 
 app.get("/Error404", (req, res) => {
