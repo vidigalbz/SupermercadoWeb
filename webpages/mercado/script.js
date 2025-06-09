@@ -45,7 +45,7 @@ async function verificarUser() {
           window.location.href = "/error403";
           return;
     }
-    const res = await fetch('/users/' + userId);
+    const res = await fetch('/api/usuarios/users/' + userId);
     const data = await res.json();
 
     console.log(data);
@@ -176,7 +176,7 @@ async function renderizarFuncionarios(marketId) {
   const lista = document.getElementById('lista-funcionarios');
   lista.innerHTML = '';
 
-  const res = await fetch('/funcionarios', {
+  const res = await fetch('/api/funcionarios/funcionarios', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ marketId })
@@ -188,7 +188,7 @@ async function renderizarFuncionarios(marketId) {
   funcionarios = [];
 
   for (i = 0; i < funcionariosData.length; i++){
-    userData = await fetch(`/users/${funcionariosData[i].userId}`);
+    userData = await fetch(`/api/usuarios/users/${funcionariosData[i].userId}`);
     user = await userData.json();
 
     let auxList = [];
@@ -301,12 +301,9 @@ async function adicionarFuncionario() {
   permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
 
-  console.log(funcionarioInput.value);
-  console.log(permissionsBoolList);
-
   let func = {userId: funcionarioInput.value, permissoes: permissionsBoolList}
 
-  let res = await fetch("/atualizarFuncionario", {
+  let res = await fetch('/api/funcionarios/atualizarFuncionario', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({type: "insert", userData: func, marketId: mercadoSelecionado})
@@ -342,7 +339,7 @@ async function SalvarPermissoes() {
 
   func.permissoes = permissionsBoolList;
 
-  fetch("/atualizarFuncionario", {
+  fetch("/api/funcionarios/atualizarFuncionario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({type: "update", userData: func, marketId: mercadoSelecionado})
@@ -356,7 +353,7 @@ async function SalvarPermissoes() {
 
 async function RemoverFuncionario(){
   let func = funcionarios[edicaoAtual];
-  fetch("/atualizarFuncionario", {
+  fetch("/api/funcionarios/atualizarFuncionario", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({type: "delete", userData: func, marketId: mercadoSelecionado})
@@ -373,7 +370,7 @@ function irParaTela(tela) {
 }
 
 function carregarSupermercados() {
-  fetch('/supermercadoData', {
+  fetch('/api/supermercados/supermercadoData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ busca: userId })
@@ -430,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    fetch('/adicionarSupermercado', {
+    fetch('/api/supermercados/adicionarSupermercado', {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome, local, ownerId: userId, icon })
@@ -463,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    await fetch('/updateSupermercado', {
+    await fetch('/api/supermercados/updateSupermercado', {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -498,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch("/deletarSupermercado", {
+      const res = await fetch("/api/supermercados/deletarSupermercado", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: idMarket })

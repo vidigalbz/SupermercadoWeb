@@ -61,7 +61,7 @@ function main() {
     formData.append("userId", userId);
 
     try {
-      const response = await fetch("/uploadProfileImage", {
+      const response = await fetch("/api/profileImages/uploadProfileImage", {
         method: "POST",
         body: formData
       });
@@ -84,7 +84,7 @@ function main() {
     if (!confirm("Deseja realmente remover sua foto de perfil?")) return;
 
     try {
-      const response = await fetch("/removeProfileImage", {
+      const response = await fetch("/api/profileImages/removeProfileImage", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -148,7 +148,7 @@ async function loadUserData() {
     return;
   } else {
     try {
-      const response = await fetch('/users/' + userId);
+      const response = await fetch(`/api/usuarios/${userId}`);
       const data = await response.json();
 
       if (data.status === "success") {
@@ -162,10 +162,10 @@ async function loadUserData() {
           profileImageElem.src = urlImg;
         }
       } else {
-        console.error("Error:", data.message);
+        return;
       }
     } catch (error) {
-      console.error("Fetch failed:", error);
+      return;
     }
   }
 }

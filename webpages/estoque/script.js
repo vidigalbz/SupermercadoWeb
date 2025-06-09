@@ -39,7 +39,7 @@ async function verificarUser() {
           window.location.href = "/error403";
           return;
     }''
-    const res = await fetch('/users/' + userIdGlobal);
+    const res = await fetch('/api/usuarios/users/' + userIdGlobal);
     const data = await res.json();
 
     console.log(data);
