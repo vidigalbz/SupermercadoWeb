@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    padding-top: 60px;
+}
+
+.card-mercado {
+    background: linear-gradient(to right, #1976d2, #42a5f5);
+    color: white;
+    border: none;
+    border-radius: 10px;
+}
+
+.card-mercado .bi {
+    font-size: 2rem;
+}
+
+.card-mercado .btn {
+    background-color: white;
+    color: #1976d2;
+}
+
+.info-box {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .flex-md-row {
+        flex-direction: column !important;
+    }
+
+    .mercados-lista {
+        width: 100% !important;
+    }
+
+    .mercado-info {
+        width: 100% !important;
+    }
+}
+
+.card-button {
+    transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    background-color: #f8f9fa;
+}
+
+.card-button:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card.card-selecionado {
+    background-color: #e3f2fd !important;
+    border: 2px solid #1976d2 !important;
+    box-shadow: 0 0 0 2px #1976d2;
+}

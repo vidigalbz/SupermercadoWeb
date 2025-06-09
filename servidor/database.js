@@ -1,29 +1,48 @@
 const sqlite3 = require('sqlite3').verbose();
 
-const db = new sqlite3.Database('./database.sqlite')
+const db = new sqlite3.Database('./database.sqlite', (err) => {
+    if (err) {
+        console.error("Erro ao abrir o banco:", err.message);
+        return;
+    }
+    db.run("PRAGMA foreign_keys = ON", (pragmaErr) => {
+        if (pragmaErr) {
+            console.error("Erro ao habilitar foreign keys:", pragmaErr.message);
+        }
+    });
+    console.log("Conectado ao banco de dados SQLite com foreign keys ON.");
+});
 
 db.serialize(() => {
-    db.exec(`
-CREATE TABLE IF NOT EXISTS supermarkets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    marketId TEXT UNIQUE,
-    createdAt TEXT,
-    name TEXT NOT NULL,
-    local TEXT NOT NULL,
-    icon TEXT NOT NULL,
-    ownerId TEXT NOT NULL,
-    FOREIGN KEY (ownerId) REFERENCES users(userId)
-);
+    db.run("PRAGMA foreign_keys = ON");
 
+    db.exec(`
 CREATE TABLE IF NOT EXISTS users (
     userId INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    email TEXT UNIQUE,
     password TEXT NOT NULL,
-    gestor BOOL NOT NULL,
-    pdv BOOL NOT NULL DEFAULT 0,
-    estoque BOOL NOT NULL DEFAULT 0,
-    fornecedor BOOL NOT NULL DEFAULT 0,
-    relatorios BOOL NOT NULL DEFAULT 0
+    profileImage TEXT,
+    gestor BOOL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS supermarkets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    marketId TEXT UNIQUE NOT NULL,
+    createdAt TEXT NOT NULL,
+    name TEXT NOT NULL,
+    local TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    ownerId INTEGER NOT NULL,
+    FOREIGN KEY (ownerId) REFERENCES users(userId) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS accessKeys (
+    keyId INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT NOT NULL UNIQUE,
+    marketId TEXT NOT NULL,
+    type TEXT NOT NULL,
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -39,16 +58,16 @@ CREATE TABLE IF NOT EXISTS products (
     manufactureDate TEXT,
     barcode TEXT NOT NULL,
     image TEXT,
-    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS sales (
     saleId INTEGER PRIMARY KEY AUTOINCREMENT,
-    marketId INTEGER NOT NULL,
+    marketId TEXT NOT NULL,
     total REAL NOT NULL,
     paymentMethod TEXT NOT NULL,
     saleDate TEXT NOT NULL,
-    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS sale_items (
@@ -58,8 +77,8 @@ CREATE TABLE IF NOT EXISTS sale_items (
     quantity INTEGER NOT NULL,
     unitPrice REAL NOT NULL,
     subtotal REAL NOT NULL,
-    FOREIGN KEY (saleId) REFERENCES sales(saleId),
-    FOREIGN KEY (productId) REFERENCES products(productId)
+    FOREIGN KEY (saleId) REFERENCES sales(saleId) ON DELETE CASCADE,
+    FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS setors (
@@ -67,7 +86,22 @@ CREATE TABLE IF NOT EXISTS setors (
     name TEXT NOT NULL,
     type TEXT NOT NULL,
     marketId TEXT NOT NULL,
-    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId)
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE,
+    UNIQUE(name, type, marketId)
+);
+
+CREATE TABLE IF NOT EXISTS history (
+    historyId INTEGER PRIMARY KEY AUTOINCREMENT,
+    productId INTEGER,
+    marketId TEXT NOT NULL,
+    userId INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    beforeData TEXT,
+    afterData TEXT,
+    createdAt TEXT NOT NULL,
+    FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE SET NULL,
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE,
+    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS historico_produto (
@@ -139,77 +173,161 @@ CREATE TABLE IF NOT EXISTS relatorio_abc (
     preco_total REAL NOT NULL,
     FOREIGN KEY (id_supermercado) REFERENCES supermarkets(marketId)
 );
+
+CREATE TABLE IF NOT EXISTS user_permissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    userId INTEGER NOT NULL,
+    marketId TEXT NOT NULL,
+    pdv BOOL NOT NULL DEFAULT 0,
+    estoque BOOL NOT NULL DEFAULT 0,
+    fornecedor BOOL NOT NULL DEFAULT 0,
+    relatorios BOOL NOT NULL DEFAULT 0,
+    alertas BOOL NOT NULL DEFAULT 0,
+    rastreamento BOOL NOT NULL DEFAULT 0,
+    FOREIGN KEY (userId) REFERENCES users(userId),
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId),
+    UNIQUE(userId, marketId)
+);
+
+CREATE TABLE IF NOT EXISTS fornecedores (
+    cnpj INTENGER NOT NULL UNIQUE,
+    razao_social TEXT NOT NULL,
+    inscricao_estadual TEXT NOT NULL,
+    endereco TEXT NOT NULL,
+    contato TEXT NOT NULL,
+    tipo_de_produto TEXT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS comprarfornecedor (
+    compraId INTEGER PRIMARY KEY AUTOINCREMENT,
+    cnpj TEXT NOT NULL,
+    productId INTEGER NOT NULL,
+    quantidade_produto REAL NOT NULL,
+    data_compra TEXT NOT NULL,
+    preco_unitario REAL NOT NULL,
+    subtotal_produto REAL NOT NULL,
+    valor_final REAL NOT NULL,
+    FOREIGN KEY (cnpj) REFERENCES fornecedores(cnpj),
+    FOREIGN KEY (productId) REFERENCES products(productId)
+);
 `);
 });
 
-function select(table, condition = "", params = []) {
+function select(table, where = '', params = []) {
     return new Promise((resolve, reject) => {
-        var query = `SELECT * FROM ${table} ${condition}`;
-
+        const query = `SELECT * FROM ${table} ${where}`;
         db.all(query, params, (err, rows) => {
             if (err) {
+                console.error(`Erro na consulta SELECT (${table}): ${err.message}`);
                 reject(err);
             } else {
-                resolve(rows);
+                resolve(rows || []);
             }
-        })
-    })
+        });
+    });
 }
 
 function insert(table, columns, values) {
-    const placeholders = columns.map(() => '?').join(', ');
-    const query = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`;
-
-    db.run(query, values, (err) => {
-        if (err) {
-            return console.log(`Erro: ${err}`);
+    return new Promise((resolve, reject) => {
+        if (!columns || !values || columns.length !== values.length) {
+            return reject(new Error("Colunas e valores devem ter o mesmo tamanho"));
         }
+
+        const placeholders = columns.map(() => '?').join(', ');
+        const query = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`;
+
+        db.run(query, values, function(err) {
+            if (err) {
+                console.error(`Erro na inserção (${table}): ${err.message}`);
+                reject(err);
+            } else {
+                resolve({ id: this.lastID, changes: this.changes });
+            }
+        });
     });
 }
 
-function update(table, columns, values, condition = ""){
-    multiColumns = columns.map(col => `${col} = ?`).join(', ')
-    var query = `UPDATE ${table} SET ${multiColumns} ${condition ? "WHERE " + condition : ""}`
-
-    db.run(query, values ,(err) => {
-        if (err) {
-            return console.log(`Erro: ${err}`)
+function update(table, columns, values, condition, conditionParams = []) {
+    return new Promise((resolve, reject) => {
+        if (!columns || !values || columns.length !== values.length) {
+            return reject(new Error("Colunas e valores devem ter o mesmo tamanho"));
         }
 
-    })
+        const setClause = columns.map(col => `${col} = ?`).join(', ');
+        const query = `UPDATE ${table} SET ${setClause} ${condition ? "WHERE " + condition : ""}`;
+        const allParams = [...values, ...conditionParams];
+
+        db.run(query, allParams, function(err) {
+            if (err) {
+                console.error(`Erro na atualização (${table}): ${err.message}`);
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
+    });
 }
 
-function delet(table, condition){
-    db.run(`DELETE FROM ${table} WHERE ${condition}`)
-}
-
-function query(query){
-    db.run(query, (err) => {
-        if (err) {
-            console.log(`Erro: ${err}`)
+function delet(table, condition, params = []) {
+    return new Promise((resolve, reject) => {
+        if (!condition) {
+            return reject(new Error("Condição de exclusão não fornecida"));
         }
-    })
+        const query = `DELETE FROM ${table} WHERE ${condition}`;
+
+        db.run(query, params, function(err) {
+            if (err) {
+                console.error(`Erro na exclusão (${table}): ${err.message}`);
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
+    });
+}
+
+function query(queryText, params = []) {
+    return new Promise((resolve, reject) => {
+        db.run(queryText, params, function(err) {
+            if (err) {
+                console.error(`Erro na query: ${err.message}`);
+                reject(err);
+            } else {
+                resolve({ changes: this.changes, lastID: this.lastID });
+            }
+        });
+    });
+}
+
+function selectFromRaw(queryText, params = []) {
+    return new Promise((resolve, reject) => {
+        db.all(queryText, params, (err, rows) => {
+            if (err) {
+                console.error(`Erro no SELECT raw: ${err.message}`);
+                reject(err);
+            } else {
+                resolve(rows || []);
+            }
+        });
+    });
 }
 
 async function insertLink(key, marketId, type) {
-    return new Promise((resolve, reject) => {
-        db.run(
-            `INSERT INTO accessKeys (key, marketId, type) VALUES (?, ?, ?)`,
-            [key, marketId, type],
-            function(err) {
-                if (err) reject(err);
-                else resolve(this.lastID);
-            }
-        );
-    });
+    try {
+        const result = await insert('accessKeys', ['key', 'marketId', 'type'], [key, marketId, type]);
+        return result.id;
+    } catch (err) {
+        console.error(`Erro ao inserir link de acesso: ${err.message}`);
+        throw err;
+    }
 }
 
 module.exports = {
-    insert,
+    db,
     select,
+    insert,
     update,
     delet,
     query,
     insertLink,
-    db
-}
+    selectFromRaw,
+};

@@ -38,8 +38,7 @@
           <h5 class="navbar-brand mb-0 h1" id="supermarket-name">Super Mercado: </h5>
         </div>
       </div>
-
-      <!-- Primeira linha: Pesquisa e Ações -->
+      
       <div class="row g-3 align-items-end">
         <!-- Pesquisa -->
         <div class="col-md-4">
@@ -61,21 +60,26 @@
 
         <!-- Editar -->
         <div class="col-md-2 col-sm-6">
-          <label for="codigo-editar" class="form-label">Código p/ editar</label>
           <input type="text" class="form-control" id="codigo-editar" placeholder="Código p/ editar" required>
           <button class="btn btn-warning w-100 mt-2" onclick="abrirModalEdicao()">✏️ Editar</button>
         </div>
 
         <!-- Excluir -->
         <div class="col-md-2 col-sm-6">
-          <label for="codigo-excluir" class="form-label">Código p/ excluir</label>
           <input type="text" class="form-control" id="codigo-excluir" placeholder="Código p/ excluir" required>
           <button class="btn btn-danger w-100 mt-2" onclick="abrirModalExclusao()">🗑️ Excluir</button>
         </div>
 
-        <div class="col-md-2 col-sm-5">
-          <button class="btn btn-primary w-100 mt-2 text-wrap" onclick="abrirModalDepCat()">
-            ⚙️ Gerenciar Setores
+        <!-- Agrupar Fornecedores e Setores em uma coluna -->
+        <div class="col-md-2 col-sm-6 d-flex flex-column">
+          <!-- Fornecedores em cima -->
+          <a href="../fornecedor/index.html" class="btn btn-dark w-100 mb-2 text-wrap">
+            ⚙️ Fornecedores
+          </a>
+
+          <!-- Gerenciar Setores embaixo -->
+          <button class="btn btn-primary w-100 text-wrap" onclick="abrirModalDepCat()">
+            ⚙️ Setores
           </button>
         </div>        
       </div>
@@ -210,7 +214,7 @@
             <div class="tipo-toggle mb-3">
               <span id="label-toggle" class="tipo-label active">Departamento</span>
               <div class="form-check form-switch m-0">
-                <input class="form-check-input" type="checkbox" id="toggleTipo" onchange="alternarTipo()">
+                <input class="form-check-input" type="checkbox" id="toggleTipo" onchange="alternarTipoSetor()">
               </div>
               <span id="label-toggle-2" class="tipo-label">Categoria</span>
             </div>
@@ -263,6 +267,7 @@
           </div>
           <div class="modal-body">
             <form id="form-editar-item">
+              <input type="hidden" id="editar-productId">
               <div class="row g-3">
                 <div class="col-md-6">
                   <label for="editar-nome" class="form-label">Nome</label>
