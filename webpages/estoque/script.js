@@ -50,6 +50,9 @@ async function verificarUser() {
       body: JSON.stringify({ marketIdGlobal })
     });
 
+    // TODO: 
+    // O Fetch não está sendo fechado
+
     console.log("a");
 
     let funcData = await funcionarios.json();
@@ -63,7 +66,7 @@ async function verificarUser() {
     }
   } catch (err) {
     console.error("Erro ao verificar usuário:", err);
- //   window.location.href = "/error403";
+    window.location.href = "/error403";
   }
 }
 

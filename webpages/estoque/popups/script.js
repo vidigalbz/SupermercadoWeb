@@ -60,12 +60,12 @@ function getCookie(cname) {
 }
 
 function getMarketIdParaPopups() {
-    const id = getCookie("marketId") || new URLSearchParams(window.location.search).get("id");
+    const id = getCookie("marketId");
 
     return id;
 }
 function getUserIdParaPopups() {
-    const uid = getCookie("userId");
+    const uid = getCookie("user");
 
     return uid;
 }
@@ -294,6 +294,8 @@ async function adicionarDepartamentoCategoria() {
   const tipoParaApi = tipoAtualSetor === "Departamento" ? "dept" : "cat";
   const currentMarketId = getMarketIdParaPopups();
   const currentUserId = getUserIdParaPopups();
+
+  console.log(`${currentMarketId} || ${currentUserId}`)
 
   if (!currentMarketId || !currentUserId) {
       showAlert("ID do Mercado ou Usuário não identificado.", "Erro", "error");
