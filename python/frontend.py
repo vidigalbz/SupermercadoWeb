@@ -29,9 +29,14 @@ def criar_interface():
 
         instalar_node_btn.configure(state="disabled" if node_instalado else "normal")
         instalar_arquivos_btn.configure(state="disabled" if arquivos_instalados else "normal")
+        remover_arquivos_btn.configure(state="normal" if arquivos_instalados else "disabled")   
 
         iniciar_button.configure(state="normal" if arquivos_instalados and not servidor_rodando else "disabled")
         parar_button.configure(state="normal" if servidor_rodando else "disabled")
+
+    def atualizar_link_():
+        ip_local = backend.ip_local
+        link_label.configure(text=f"Link: http://{ip_local}:4000/login")
 
     def instalar_node():
         def task():
@@ -51,11 +56,21 @@ def criar_interface():
             status_label.configure(text="")
         threading.Thread(target=task).start()
 
+    def remover_arquivos():
+        def task():
+            status_label.configure(text="⏳ Removendo arquivos...")
+            sucesso, msg = backend.remover_arquivos()
+            mbox.showinfo("Arquivos", msg)
+            atualizar_status()
+            status_label.configure(text="")
+        threading.Thread(target=task).start()
+
     def iniciar():
         global servidor_rodando
         sucesso, msg = backend.iniciar_servidor()
         if sucesso:
             servidor_rodando = True
+            atualizar_link_()
             webbrowser.open(msg)
         else:
             mbox.showerror("Erro", msg)
@@ -109,6 +124,10 @@ def criar_interface():
                   fg_color="#FFA726", hover_color="#FF9800", text_color="black", width=largura)
     instalar_arquivos_btn.pack(pady=10)
 
+    remover_arquivos_btn = ctk.CTkButton(botoes_frame, text="📂 Remover Arquivos", command=remover_arquivos,
+                  fg_color="#FFA726", hover_color="#D32F2F", text_color="black", width=largura)
+    remover_arquivos_btn.pack(pady=10)
+
     iniciar_button = ctk.CTkButton(botoes_frame, text="🚀 Iniciar Servidor", command=iniciar,
                                    fg_color="#00C853", hover_color="#00B342", text_color="white", width=largura)
     iniciar_button.pack(pady=10)
@@ -117,7 +136,8 @@ def criar_interface():
                                  fg_color="#D32F2F", hover_color="#B71C1C", text_color="white", width=largura)
     parar_button.pack(pady=10)
 
-    ctk.CTkLabel(app, text="Link: do Server: ", font=ctk.CTkFont(size=26, weight="bold"), text_color="white").pack(pady=25)
+    link_label = ctk.CTkLabel(app, text="", font=ctk.CTkFont(size=14, weight="bold"), text_color="white")
+    link_label.pack(pady=25)
 
     # Feedback
     status_label = ctk.CTkLabel(app, text="", wraplength=350, text_color="white", font=ctk.CTkFont(size=13))
