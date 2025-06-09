@@ -778,15 +778,45 @@ app.post("/comprardofornecedor", async (req, res) => {
     }
 })
 app.post('/getAlerts', async (req, res) => {
-    const {marketId} = req.body;
-    try {
-        const alerts = await select('products', 'WHERE marketId = ?', marketId);
-        res.status(200).json(alerts)
-        
-    } catch (error) {
-        console.log(error)
+     const {category,data ,tipo ,marketId } = req.body;
+    if (!marketId) {
+        return res.status(400).json({ erro: "marketId é obrigatório" });
     }
-})
+    const marketIdSafe = marketId.replace(/'/g, "''");
+    let categorySafe = category ? category.replace(/'/g, "''") : null;
+    let conditions = [`marketId = '${marketIdSafe}'`];
+    if (categorySafe) {
+        conditions.push(`category = '${categorySafe}'`);
+    }
+
+    const condicao = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    try {
+        var  results = await select("products", condicao);
+        if (tipo=="vencido"){
+            results = produtos.filter(produto => new Date(produto.validade) < hoje);
+
+        
+        }else if(tipo =="perto"){
+            const daqui15Dias = new Date();
+            daqui15Dias.setDate(hoje.getDate() +data?? 15);
+            results = produtos.filter(produto => {
+            const validade = new Date(produto.validade);
+            return validade >= hoje && validade <= daqui15Dias;
+                        });
+                
+
+        }else if(tipo=="valido"){
+             results= produtos.filter(produto => new Date(produto.validade) >= hoje);
+        }
+        
+        return res.status(200).json({ mensagem: results });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao consultar estoque." });
+    }
+});
 
 
 app.get("/Error404", (req, res) => {
