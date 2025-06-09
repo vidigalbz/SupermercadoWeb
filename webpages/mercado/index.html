@@ -132,7 +132,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div class="d-flex align-items-center">
                                 <h6 class="fw-bold mb-0">Funcionários</h6>
-                                <button class="btn btn-sm bg-light ms-2" id="funcionarioCount">3/3</button>
+                                <button class="btn btn-sm bg-light ms-2" id="funcionarioCount">0</button>
                             </div>
                             <div class="d-flex align-items-center">
                                 <button class="btn btn-sm btn-success" data-bs-toggle="modal"
@@ -190,8 +190,8 @@
                                     </div>
                                     <div class="col">
                                         <div class="card text-center shadow-sm p-3 px-2 card-button"
-                                        onclick="irParaTela('fornecedores')">
-                                        <i class="bi bi-truck fs-3 text-secondary"></i>
+                                            onclick="irParaTela('fornecedores')">
+                                            <i class="bi bi-truck fs-3 text-secondary"></i>
                                             <div class="fw-semibold mt-2">Fornecedores</div>
                                         </div>
                                     </div>
@@ -314,6 +314,7 @@
                         </div>
 
                         <!-- Acessos -->
+                        <label for="cargoFuncionario" class="form-label">Defina os níveis de acesso do funcionário:</label>
                         <div class="row row-cols-2 row-cols-md-3 g-3">
                             <div class="col">
                                 <div class="card text-center shadow-sm p-3 card-button card-acesso"
@@ -367,7 +368,8 @@
                     </div>
                     <div class="modal-footer mt-4">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"  onclick="adicionarFuncionario()">Adicionar</button>
+                        <button type="submit" class="btn btn-primary"
+                            onclick="adicionarFuncionario()">Adicionar</button>
                     </div>
                 </div>
             </div>
@@ -419,7 +421,7 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="card text-center shadow-sm p-3 card-button card-acesso"
+                                    <div class="card text-center shadow-sm p-3 px-2 card-button card-acesso"
                                         data-permissao="Rastreamento">
                                         <i class="bi bi-geo-alt fs-3 text-warning"></i>
                                         <div class="fw-semibold mt-2">Rastreamento</div>
@@ -427,7 +429,7 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="card text-center shadow-sm p-3 card-button card-acesso"
+                                    <div class="card text-center shadow-sm p-3 px-2 card-button card-acesso"
                                         data-permissao="Fornecedores">
                                         <i class="bi bi-truck fs-3 text-secondary"></i>
                                         <div class="fw-semibold mt-2">Fornecedores</div>
@@ -465,7 +467,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-danger" id="btnConfirmarRemoverFuncionario" onclick="RemoverFuncionario()">
+                        <button type="button" class="btn btn-danger" id="btnConfirmarRemoverFuncionario"
+                            onclick="RemoverFuncionario()">
                             Remover
                         </button>
                     </div>
@@ -493,12 +496,14 @@
         </div>
 
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-            <div id="liveToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div id="liveToast" class="toast align-items-center text-white bg-danger border-0" role="alert"
+                aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body" id="toastMessage">
-                    <!-- A mensagem será inserida via JavaScript -->
+                        <!-- A mensagem será inserida via JavaScript -->
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Fechar"></button>
                 </div>
             </div>
         </div>

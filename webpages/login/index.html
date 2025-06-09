@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SuperMercado Didático - Login / Cadastro</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="/login/style.css">
   <script src="https://smtpjs.com/v3/smtp.js"></script>
 </head>
+
 <body>
   <div class="container-auth" id="container">
-    
+
     <!-- Tela de Cadastro -->
     <div class="form-container sign-up-container">
       <form class="w-100 px-4">
@@ -19,18 +22,26 @@
         <hr class="mb-3">
         <h1 class="mb-4">Criar Conta</h1>
         <hr class="mb-3">
-        
+
         <input type="text" class="form-control mb-3" id="nomeCadastro" placeholder="Nome" />
 
         <input type="password" class="form-control mb-3" id="senhaCadastro" placeholder="Senha" />
         <input type="password" class="form-control mb-3" id="confirmedsenhaCadastro" placeholder="Confirmar Senha" />
 
         <!-- Toggle switch -->
-        <div class="d-flex flex-column align-items-center my-3">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="funcaoToggle">
-            <label class="form-check-label ms-2" for="funcaoToggle" id="funcaoLabel">Funcionário</label>
-          </div>
+        <div class="role-toggle-wrapper my-3">
+          <label class="form-label">Selecione o que você será:</label>
+          <input type="checkbox" class="invisible-checkbox" id="funcaoToggle">
+
+          <label class="role-switch" for="funcaoToggle">
+            <div class="label">
+              <i class="bi bi-person-badge-fill"></i> <span>Funcionário</span>
+            </div>
+            <div class="label">
+              <i class="bi bi-person-fill-gear"></i> <span>Gestor</span>
+            </div>
+            <div class="switch-slider"></div>
+          </label>
         </div>
 
         <button class="btn btn-custom mt-3 w-100" id="registerButton">Cadastrar</button>
@@ -69,12 +80,14 @@
 
   <!-- Toast de Notificação -->
   <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-    <div id="liveToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="liveToast" class="toast align-items-center text-white bg-danger border-0" role="alert"
+      aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body" id="toastMessage">
           <!-- A mensagem será inserida via JavaScript -->
         </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+          aria-label="Fechar"></button>
       </div>
     </div>
   </div>
@@ -83,4 +96,5 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="./script.js"></script>
 </body>
+
 </html>

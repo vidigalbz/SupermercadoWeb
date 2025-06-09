@@ -26,18 +26,20 @@ let userId;
 
 const permissoesPorLoja = {
   "Loja Centro": {
+    pdv: true,
     estoque: true,
-    caixa: true,
-    relatorios: true,
-    rastreio: false,
-    configuracoes: false
+    fornecedor: false,
+    relatorios: false,
+    historico: false,
+    rastreio: false
   },
   "Loja Norte": {
-    estoque: true,
-    caixa: false,
-    relatorios: false,
-    rastreio: false,
-    configuracoes: false
+    pdv: false,
+    estoque: false,
+    fornecedor: true,
+    relatorios: true,
+    historico: true,
+    rastreio: true
   }
 };
 
@@ -125,20 +127,18 @@ function voltarParaSupermercados() {
 }
 
 function atualizarAcessos(permissoes) {
+  toggleCard('cardPdv', permissoes.pdv);
   toggleCard('cardEstoque', permissoes.estoque);
-  toggleCard('cardCaixa', permissoes.caixa);
+  toggleCard('cardFornecedor', permissoes.fornecedor);
   toggleCard('cardRelatorios', permissoes.relatorios);
   toggleCard('cardRastreio', permissoes.rastreio);
-  toggleCard('cardConfiguracoes', permissoes.configuracoes);
+  toggleCard('cardHistorico', permissoes.historico);
 }
 
 function toggleCard(id, habilitado) {
   const card = document.getElementById(id);
-  if (habilitado) {
-    card.classList.remove('disabled-card');
-  } else {
-    card.classList.add('disabled-card');
-  }
+  card.classList.remove('disabled-card');
+  if (!habilitado) card.classList.add('disabled-card');
 }
 
 async function loadUserData() {
@@ -174,3 +174,26 @@ function confirmarSaida() {
   document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
   window.location.href = "/login";
 }
+
+function adicionarSupermercado(nome, icone, codigo) {
+  const div = document.getElementById('supermercadosRow')
+
+  const n = `
+      <div class="col">
+        <a class="card text-center access-card" id="${codigo}" onclick="selecionarSupermercado('Loja Centro')">
+          <div class="card-body">
+            <div style="font-size: 2.5rem;">${icone}</div>
+            <h6 class="mt-2">${nome}</h6>
+          </div>
+        </a>
+      </div>`
+
+  div.innerHTML += n;
+}
+
+function irParaTela(tela){
+  console.log("Ir para tela de xx");
+}
+
+adicionarSupermercado("Loja Centro", "🏬", "lojaCentro");
+adicionarSupermercado("Loja Centro", "🏬", "lojaCentro");
