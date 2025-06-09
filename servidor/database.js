@@ -71,7 +71,9 @@ CREATE TABLE IF NOT EXISTS fornecedores (
     inscricao_estadual TEXT NOT NULL,
     endereco TEXT NOT NULL,
     contato TEXT NOT NULL,
-    tipo_de_produto TEXT NOT NULL);
+    tipo_de_produto TEXT NOT NULL,
+    marketId TEXT NOT NULL,
+    FOREIGN KEY (marketId) REFERENCES supermarkets(marketId));
 
 CREATE TABLE IF NOT EXISTS comprarfornecedor (
     compraId INTEGER PRIMARY KEY AUTOINCREMENT,

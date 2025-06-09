@@ -604,7 +604,10 @@ function calcularValorTotalEdicao() {
   document.getElementById('editar-valor-total').value = total.toFixed(2).replace('.', ',');
 }
 
-
+function abrirFornecedores(){
+  var url = window.location.origin
+  window.location.href = `${url}/fornecedores/?id=${id}`
+}
 
 // Atualiza o valor total sempre que o preço ou o estoque mudar
 precoInput.addEventListener("input", calcularTotalCompra);

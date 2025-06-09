@@ -668,7 +668,8 @@ app.post("/addFornecedor", (req, res) => {
         inscricao_estadual, 
         endereco, 
         contato,
-        tipo_de_produto
+        tipo_de_produto,
+        marketId
     } = req.body
     try {   
         insert(
@@ -678,16 +679,20 @@ app.post("/addFornecedor", (req, res) => {
             "inscricao_estadual", 
             "endereco", 
             "contato",
-            "tipo_de_produto"],
+            "tipo_de_produto",
+            "marketId"
+        ],
             [cnpj, 
             razao_social, 
             inscricao_estadual, 
             endereco, 
             contato,
-            tipo_de_produto]
+            tipo_de_produto,
+            marketId]
         )
-        res.json({
-            status: "success"
+        console.log("sla")
+        res.status(200).json({
+            mensagem: "Adicionado com Sucesso"
         })
     } catch (error) {
         
@@ -696,7 +701,8 @@ app.post("/addFornecedor", (req, res) => {
 
 app.post("/fornecedorData", async (req, res) =>  {
     try{
-        var data = await select("fornecedores")
+        const {marketId} = req.body;
+        var data = await select("fornecedores", `WHERE marketId = '${marketId}'` )
         res.status(200).json({result: data})
     }
     catch(e) {
@@ -727,6 +733,7 @@ app.post("/editarFornecedor", async (req, res) => {
                 cnpj, razaoSocial, inscricaoEstadual, endereco, contato, tipoProduto,
             ], `cnpj = ${cnpj}`
         )
+        res.status(200).json({mensagem: "Edição concluída"})
     }catch (e) {
         res.status(500).json({ erro: "Não ocorreu como Devia ter ocorrido"})
     }

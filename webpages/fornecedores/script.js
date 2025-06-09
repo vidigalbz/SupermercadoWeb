@@ -1,6 +1,24 @@
-
+const url = window.location.origin
 const container = document.getElementById('fornecedores-container')
 let dataFornecedores = []
+
+function getQueryParam(paramName) {
+    const queryString = window.location.search.substring(1);
+    const params = queryString.split('&');
+    if(params.length <= 0 || params == ''){
+        window.location.href = '/Error404'
+    }
+    for (const param of params) {
+      const [key, value] = param.split('=');
+      if (key === paramName) {
+        return decodeURIComponent(value || '');
+      }
+    }
+    return null;
+  }
+
+const id = getQueryParam("id")
+
 
 async function adicionarFornecedor() {
     const cnpj = document.getElementById('cnpj').value;
@@ -21,10 +39,11 @@ async function adicionarFornecedor() {
             inscricao_estadual: inscricao_estadual,
             endereco: endereco,
             contato: contato,
-            tipo_de_produto: tipo_de_produto
+            tipo_de_produto: tipo_de_produto,
+            marketId: id
         })
     }).then(res => res.json()).then(data => {
-        
+        location.reload()
     })}
 }
 
@@ -73,7 +92,7 @@ async function carregarFornecedor() {
     fetch("/fornecedorData", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({marketId: id})
     }).then(res => res.json()).then(data => {
         if(data.result){
             dataFornecedores = data.result
@@ -126,6 +145,10 @@ function updateFornecedor(){
         method: 'POST',
         headers: {'Content-Type': 'application/json' },
         body: JSON.stringify(fornecedor)
+    }).then(res => res.json()).then(data => {
+        if(data.mensagem){
+            location.reload()
+        }
     })
 }
 
@@ -140,8 +163,7 @@ function excluirFornecedor() {
     }).then(res => res.json())
     .then(data => {
         if (data.mesagem){
-            
-
+            location.reload()
         }
     })
 }
