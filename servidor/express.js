@@ -396,6 +396,7 @@ app.post("/editarProduto", (req, res) => {
     const {
         productId,
         name,
+        supplier,
         price_per_unity,
         price,
         category,
@@ -410,12 +411,12 @@ app.post("/editarProduto", (req, res) => {
     } = req.body;
 
     const columns = [
-        "name", "price_per_unity", "price", "category", "departament", "stock",
+        "name","supplier", "price_per_unity", "price", "category", "departament", "stock",
         "lot", "expirationDate", "manufactureDate", "barcode", "valortotal", "marketId"
     ];
 
     const values = [
-        name, price_per_unity, price, category, departament, stock,
+        name, supplier,price_per_unity, price, category, departament, stock,
         lot, expirationDate, manufactureDate, barcode, valortotal, marketId
     ];
 
@@ -652,14 +653,14 @@ app.post("/verific", async (req, res) => { //Verficação se existe o SuperMerca
     let condicao = "";
     if (busca && column) {
         const termo = busca.replace(/'/g, "''")
-        condicao = `WHERE ${column.replace(/'/g, "''")} = '${termo}'` 
+        condicao = `WHERE ${column.replace(/'/g, "''")} = ${termo}` 
     }
     try{
     const results = await select(tableSelect, condicao);
     res.status(200).json({mensagem: results});
     }
     catch(e){
-        res.status(404).json({mensagem: []})
+        console.log(e)
     }
 })
 app.post("/addFornecedor", (req, res) => {
@@ -784,16 +785,18 @@ app.post("/comprardofornecedor", async (req, res) => {
 
     }
 })
-app.post('/getAlerts', async (req, res) => {
-    const {marketId} = req.body;
-    try {
-        const alerts = await select('products', 'WHERE marketId = ?', marketId);
-        res.status(200).json(alerts)
-        
-    } catch (error) {
-        console.log(error)
-    }
-})
+
+app.get("/fornecedores", (req, res) => {
+    db.all("SELECT cnpj, razao_social AS nome FROM fornecedores", (err, rows) => {
+        if (err) {
+            console.error("Erro ao buscar fornecedores:", err);
+            res.status(500).json({ erro: "Erro ao buscar fornecedores" });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
 
 
 app.get("/Error404", (req, res) => {

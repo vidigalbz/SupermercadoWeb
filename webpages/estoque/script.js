@@ -14,9 +14,7 @@ function reloadPage() {
 function getQueryParam(paramName) {
   const queryString = window.location.search.substring(1);
   const params = queryString.split('&');
-  if(params.length <= 0 || params == ''){
-      window.location.href = '/Error404'
-  }
+
   for (const param of params) {
     const [key, value] = param.split('=');
     if (key === paramName) {
@@ -111,12 +109,15 @@ async function getImageURL(rawImagePath) {
 }
 
 async function criarCardHTML(produto) {
-  var rawImagePath = ""
+  var rawImagePath = "";
   if (produto.image != null){
-    rawImagePath = produto.image.replace(/\\/g, '/')
+    rawImagePath = produto.image.replace(/\\/g, '/');
   }
 
-  const imagemURL = await  getImageURL(rawImagePath);
+  const imagemURL = await getImageURL(rawImagePath);
+  
+  // Busca o nome do fornecedor usando o CNPJ
+  const nomeFornecedor = await obterNomeFornecedor(produto.supplier);
 
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = `
@@ -140,7 +141,7 @@ async function criarCardHTML(produto) {
                     <strong>Nome:</strong> ${produto.name}<br>
                     <strong>Código de Barras:</strong> ${produto.barcode}<br>
                     <strong>Código de Sistema:</strong> ${produto.productId}<br>
-                    <strong>Fornecedor:</strong> ${produto.supplier}<br>
+                    <strong>Fornecedor:</strong> ${nomeFornecedor}<br>
                     <Strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
                     <strong>Preço:</strong> R$ ${produto.price.toFixed(2)}<br>
                     <strong>Categoria:</strong> ${produto.category}<br>
@@ -166,15 +167,13 @@ async function criarCardHTML(produto) {
   const cardElement = tempDiv.firstElementChild;
   container.appendChild(cardElement);
 
-  const bntBarCode = cardElement.querySelector("#btn-codigoBar")
   const btnCopiar = cardElement.querySelector('.btn-copiar');
   const btnPopover = cardElement.querySelector('.btn-popover');
 
-  
   new bootstrap.Tooltip(btnCopiar);
   new bootstrap.Popover(btnPopover, {
     trigger: 'focus'
-  })
+  });
 
   btnCopiar.addEventListener('click', () => {
     navigator.clipboard.writeText(produto.productId).then(() => {
@@ -192,7 +191,6 @@ async function criarCardHTML(produto) {
     });
   });
 }
-
 function impressao(codigo){
   
 
@@ -545,22 +543,45 @@ async function gerarCodigo() {
     .catch(err => console.error('Erro ao carregar produtos:', err));
 }
 
+async function carregarFornecedores(selectId = 'add-fornecedor', callback) {
+  try {
+    const response = await fetch('/fornecedores');
+    const fornecedores = await response.json();
 
-async function carregarFornecedores() {
-  const res = await fetch('/fornecedorData', { method: 'POST' })
-  const json = await res.json()
-  const fornecedores = json.result
+    console.log('Fornecedores carregados:', fornecedores);
 
-  const select = document.getElementById('add-fornecedor')
-  select.innerHTML = '' // limpa
+    const select = document.getElementById(selectId);
+    if (!select) {
+      console.error(`Elemento #${selectId} não encontrado!`);
+      return;
+    }
 
-  fornecedores.forEach(fornecedor => {
-    const option = document.createElement('option')
-    option.value = fornecedor.cnpj  // ou id, se tiver
-    option.text = fornecedor.razao_social
-    select.appendChild(option)
-  })
+    select.innerHTML = '<option value="">Selecione</option>';
+
+    fornecedores.forEach(fornecedor => {
+      const option = document.createElement('option');
+      option.value = fornecedor.cnpj;  // VALOR = CNPJ (o que será salvo)
+      option.textContent = fornecedor.nome;  // TEXTO = NOME (o que o usuário vê)
+      option.dataset.nome = fornecedor.nome;  // Guarda o nome para uso posterior
+      select.appendChild(option);
+    });
+
+    if (callback) callback();
+  } catch (error) {
+    console.error('Erro ao carregar fornecedores:', error);
+  }
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const modalAdicionar = document.getElementById('modalAdicionarItem');
+  if (modalAdicionar) {
+    modalAdicionar.addEventListener('show.bs.modal', () => {
+      carregarFornecedores();
+    });
+  }
+});
+
 
 // Quando o modal de adicionar produto for aberto
 const modalAdicionar = document.getElementById('modalAdicionarItem')
@@ -569,9 +590,21 @@ modalAdicionar.addEventListener('show.bs.modal', () => {
 })
 
 function carregarProdutoParaEdicao(produto) {
+ 
+  carregarFornecedores('editar-fornecedor', () => {
+    
+    const selectFornecedor = document.getElementById("editar-fornecedor");
+    const options = selectFornecedor.querySelectorAll('option');
+    
+    for (let option of options) {
+      if (option.dataset.nome === produto.supplier || option.textContent === produto.supplier) {
+        selectFornecedor.value = option.value; // Define o CNPJ como valor
+        break;
+      }
+    }
+  });
   document.getElementById("editar-nome").value = produto.name;
   document.getElementById("editar-barcode").value = produto.barcode;
-  document.getElementById("editar-fornecedor").value = produto.supplier;
   document.getElementById("editar-preço-unidade").value = produto.price_per_unity;
   document.getElementById("editar-preco").value = produto.price;
   document.getElementById("editar-categoria").value = produto.category;
@@ -581,11 +614,43 @@ function carregarProdutoParaEdicao(produto) {
   document.getElementById("editar-marketId").value = produto.marketId;
   document.getElementById("editar-fabricacao").value = produto.manufactureDate;
   document.getElementById("editar-validade").value = produto.expirationDate;
-  document.getElementById("editar-valor-total").value = produto.precototal
+  document.getElementById("editar-valor-total").value = produto.precototal;
 
-  // 👇 Aqui calcula o valor total e exibe
   calcularValorTotalEdicao();
 }
+
+
+async function obterNomeFornecedor(cnpj) {
+  try {
+    const response = await fetch('/fornecedores');
+    const fornecedores = await response.json();
+    const fornecedor = fornecedores.find(f => f.cnpj === cnpj);
+    return fornecedor ? fornecedor.nome : cnpj;
+  } catch (error) {
+    console.error('Erro ao buscar nome do fornecedor:', error);
+    return cnpj;
+  }
+}
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  
+  const modalAdicionar = document.getElementById('modalAdicionarItem');
+  if (modalAdicionar) {
+    modalAdicionar.addEventListener('show.bs.modal', () => {
+      carregarFornecedores('add-fornecedor');
+    });
+  }
+
+  // Modal de editar
+  const modalEditar = document.getElementById('modalEditarProduto');
+  if (modalEditar) {
+    modalEditar.addEventListener('show.bs.modal', () => {
+      carregarFornecedores('editar-fornecedor');
+    });
+  }
+});
 
 
 function calcularTotalCompra() {
