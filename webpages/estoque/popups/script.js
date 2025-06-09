@@ -527,11 +527,7 @@ function abrirModalExclusaoProduto() {
   }
   const modalExcluirInstancia = bootstrap.Modal.getOrCreateInstance(modalExcluirEl);
   modalExcluirInstancia.show();
-  
-  // O botão "Excluir" dentro do modal #modalExcluirProduto no HTML já tem:
-  // onclick="abrirConfirmarExclusao()"
-  // Essa função abrirConfirmarExclusao() está no seu link.js e abre o SEGUNDO modal de confirmação.
-  // Portanto, não precisamos adicionar um event listener para o botão de confirmação aqui.
+
 }
 
 // Inicialização no DOMContentLoaded
