@@ -59,7 +59,7 @@ app.get('/api/ip', (req, res) => {
     const ip = getRealWirelessIP();
     res.json({ ip });
 });
-  
+
 // Carregamento de páginas
 async function loadPages() {
     pages.forEach(page => {

@@ -3,17 +3,15 @@ const path = require('path');
 
 const webpages_dir = path.join(__dirname, '..', 'webpages');
 
-fs.readdir(webpages_dir, (err, arquivos) => {
-  if (err) {
-    console.error('Erro lendo a pasta webpages:', err);
-    return;
-  }
-
+try {
+  const arquivos = fs.readdirSync(webpages_dir);
   const pages = arquivos.filter(arquivo => {
     const caminho = path.join(webpages_dir, arquivo);
     return fs.statSync(caminho).isDirectory();
   });
 
-  // Gera um arquivo JS com a lista pages
-  module.exports = JSON.stringify(pages, null, 2);
-});
+  module.exports = pages; // Exporta o array diretamente, não precisa stringify
+} catch (err) {
+  console.error('Erro lendo a pasta webpages:', err);
+  module.exports = []; // Exporta array vazio em caso de erro
+}
