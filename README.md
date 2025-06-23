@@ -27,6 +27,7 @@ Desenvolvido com 💙 pela turma 0035:
 - **Bernado Gualberto**
 - **Bruna Gontijo**
 - **Gabriel Henrique**
+- **Hugo Pierre**
 - **Kaique Madureira**
 - **Leonardo Vidigal**
 - **Pedro Henrique**
