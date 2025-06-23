@@ -786,7 +786,7 @@ app.post("/comprardofornecedor", async (req, res) => {
     }
 })
 
-app.get("/fornecedores", (req, res) => {
+app.post("/fornecedores", (req, res) => {
     db.all("SELECT cnpj, razao_social AS nome FROM fornecedores", (err, rows) => {
         if (err) {
             console.error("Erro ao buscar fornecedores:", err);
