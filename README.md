@@ -22,12 +22,12 @@ Este projeto foi desenvolvido pela **turma de Desenvolvimento de Sistemas (046.2
 
 Desenvolvido com 💙 pela turma 0035:
 
-- **Kaique Madureira**
+- **André Luis**
 - **Arthur Otavio**
 - **Bernado Gualberto**
 - **Bruna Gontijo**
-- **André Luis**
 - **Gabriel Henrique**
+- **Kaique Madureira**
 - **Leonardo Vidigal**
 - **Pedro Henrique**
 
