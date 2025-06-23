@@ -9,5 +9,6 @@ router.post("/deletarSupermercado", supermercadosController.deletarSupermercado)
 router.post("/supermercadoData", supermercadosController.deletarSupermercado);
 router.post("/updateSupermercado", supermercadosController.updateSupermercado);
 router.post("/adicionarSupermercado", supermercadosController.adicionarSupermercado);
+router.post("/verify", supermercadosController.verify);
 
 module.exports = router;

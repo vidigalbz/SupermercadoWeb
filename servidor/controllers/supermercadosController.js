@@ -159,10 +159,27 @@ const updateSupermercado = async (req, res) => {
     }
 };
 
+const verify = async (req, res) => { 
+    const {busca, column, tableSelect} = req.body
+    let condicao = "";
+    if (busca && column) {
+        const termo = busca.replace(/'/g, "''")
+        condicao = `WHERE ${column.replace(/'/g, "''")} = '${termo}'` 
+    }
+    try{
+    const results = await select(tableSelect, condicao);
+    res.status(200).json({mensagem: results});
+    }
+    catch(e){
+        res.status(404).json({mensagem: []})
+    }
+}
+
 module.exports = {
     adicionarSupermercado,
     listarSupermercados,
     deletarSupermercado,
     supermercadoData,
-    updateSupermercado
+    updateSupermercado,
+    verify
 }

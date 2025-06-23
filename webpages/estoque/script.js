@@ -44,7 +44,7 @@ async function verificarUser() {
 
     console.log(data);
 
-    const funcionarios =  await fetch('/funcionarios', {
+    const funcionarios =  await fetch('/api/funcionarios/funcionarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ marketIdGlobal })
@@ -66,7 +66,7 @@ async function verificarUser() {
     }
   } catch (err) {
     console.error("Erro ao verificar usuário:", err);
-    window.location.href = "/error403";
+   // window.location.href = "/error404";
   }
 }
 
@@ -154,30 +154,22 @@ function reloadPage() {
   }
 }
 
-async function verificSuper(currentMarketId) {
-  if (!currentMarketId) {
-    if (supermarketNameEl) supermarketNameEl.textContent = "Supermercado: ID Inválido";
-    return;
-  }
-  try {
-    const response = await fetch("/verific", {
+function verificSuper(){
+    fetch("api/supermercados/verific", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ marketId: currentMarketId })
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Falha ao verificar supermercado");
+      body: JSON.stringify({busca: id, column: "marketId", tableSelect :"supermarkets"})
+    }).then( res => res.json())
+    .then( data => {
+      if (Object.keys(data.mensagem).length === 0){
+        window.location.href = '/Error404'
+      } else {
 
-    if (data.success && data.market) {
-      if (supermarketNameEl) supermarketNameEl.textContent = "Supermercado: " + data.market.name;
-    } else {
-      if (supermarketNameEl) supermarketNameEl.textContent = "Supermercado: Não Encontrado";
-      console.warn("POPUP SCRIPT: verificSuper - " + (data.message || "Supermercado não encontrado"));
-    }
-  } catch (err) {
-    console.error('ESTOQUE SCRIPT: Erro em verificSuper:', err);
-    if (supermarketNameEl) supermarketNameEl.textContent = "Supermercado: Erro na Verificação";
-  }
+        const supermarketName = data.mensagem[0].name;
+        document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
+      }
+    })
+    .catch(err => console.error('Erro ao verificar supermercado:', err));
 }
 
 async function carregarSetoresEstoque(currentMarketId) {
@@ -186,7 +178,7 @@ async function carregarSetoresEstoque(currentMarketId) {
     return;
   }
   try {
-    const response = await fetch('/getSetor', {
+    const response = await fetch('/api/setores/getSetor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ marketId: currentMarketId })
@@ -388,7 +380,7 @@ async function carregarProdutos(currentMarketId) {
   if (container) container.innerHTML = "<div class='col-12 text-center p-3'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Carregando...</span></div> <p>Carregando produtos...</p></div>";
 
   try {
-    const response = await fetch('/estoqueData', {
+    const response = await fetch('/api/produtos/estoqueData', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ marketId: currentMarketId })
@@ -428,7 +420,7 @@ function searchEstoque() {
   };
   if (categoria && categoria !== "Todos") payload.category = categoria;
 
-  fetch('/estoqueData', {
+  fetch('/api/produtos//estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -567,7 +559,7 @@ async function adicionarProduto() {
   }
 
   try {
-      const res = await fetch("/adicionarProduto", {
+      const res = await fetch("/api/produtos/adicionarProduto", {
           method: "POST",
           body: formData // Com FormData, o browser define o Content-Type automaticamente para multipart/form-data
       });
@@ -663,7 +655,7 @@ async function confirmarEdicao() {
 
   try {
     console.log("ESTOQUE SCRIPT: Enviando para /editarProduto:", produtoAtualizado);
-    const response = await fetch("/editarProduto", {
+    const response = await fetch("/api/produtos/editarProduto", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(produtoAtualizado)
@@ -703,7 +695,7 @@ async function excluirProduto() {
   }
 
   try {
-    const res = await fetch("/deletarProduto", {
+    const res = await fetch("/api/produtos/deletarProduto", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 

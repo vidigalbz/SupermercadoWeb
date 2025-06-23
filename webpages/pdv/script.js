@@ -113,7 +113,7 @@ async function verificSuper() {
     }
 
     try {
-        const response = await fetch("/verific", { // Endpoint correto para verificar supermercado
+        const response = await fetch("/supermercado/verify", { // Endpoint correto para verificar supermercado
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ marketId: marketIdFromUrl }) // Envia o marketId corretamente
@@ -125,7 +125,7 @@ async function verificSuper() {
             throw new Error(data.message || data.error || `Erro ${response.status} ao verificar supermercado.`);
         }
 
-        // O backend /verific (corrigido) retorna { success: true, market: {name: "..."} }
+        // O backend /verify (corrigido) retorna { success: true, market: {name: "..."} }
         if (data.success && data.market) {
             const supermarketName = data.market.name;
             const supermarketNameEl = document.getElementById("supermarket-name");

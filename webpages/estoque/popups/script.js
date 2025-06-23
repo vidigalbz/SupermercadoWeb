@@ -81,7 +81,7 @@ async function carregarSetoresGlobais(currentMarketId) {
     return;
   }
   try {
-    const response = await fetch('/getSetor', {
+    const response = await fetch('/api/setores/getSetor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ marketId: currentMarketId })
@@ -302,7 +302,7 @@ async function adicionarDepartamentoCategoria() {
       return;
   }
   try {
-    const response = await fetch('/addSetor', {
+    const response = await fetch('/api/setores/addSetor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: valor, type: tipoParaApi, marketId: currentMarketId, userId: currentUserId })
@@ -341,7 +341,7 @@ async function excluirDepartamentoCategoria() {
       return;
   }
   try {
-    const response = await fetch('/deleteSetor', {
+    const response = await fetch('/api/setores/deleteSetor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: valor, type: tipoParaApi, marketId: currentMarketId, userId: currentUserId })
@@ -380,7 +380,7 @@ async function atualizarAlertas(currentMarketId) {
   }
   try {
     if (reloadIcon) reloadIcon.classList.add('spinner-icon');
-    const response = await fetch('/estoqueData', {
+    const response = await fetch('/api/produtos/estoqueData', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ marketId: currentMarketId })
