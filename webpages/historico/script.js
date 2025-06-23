@@ -1,129 +1,309 @@
-// DADOS DINÂMICOS
-const produtos = [
-    "Arroz", "Feijão", "Macarrão", "Açúcar", "Sal", "Óleo", "Café", "Farinha",
-    "Milho", "Bolacha", "Achocolatado", "Sabão", "Shampoo", "Detergente",
-    "Água sanitária", "Papel higiênico", "Pasta de dente", "Escova", "Alvejante", "Biscoito"
-];
+let debounceTimer;
+function debounce(func, delay) {
+  return function() {
+    const context = this;
+    const args = arguments;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(context, args), delay);
+  }
+}
 
-// FUNÇÃO PARA GERAR OS CARDS
-function gerarCards() {
-    const entradasContainer = document.getElementById("entradasAccordion");
-    const saidasContainer = document.getElementById("saidasAccordion");
-    const alteracoesContainer = document.getElementById("alteracoesAccordion");
+document.addEventListener("DOMContentLoaded", () => {
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    alert("Você precisa estar logado para acessar o histórico.");
+    window.location.href = "/login";
+    return;
+  }
+  carregarSupermercados();
+});
 
-    produtos.forEach((nome, i) => {
-    const data = `2${Math.floor(Math.random() * 8) + 1}/05`;
+async function carregarSupermercados() {
+  const selectEl = document.getElementById("select-market");
+  const userId = localStorage.getItem("userId");
 
-    // ENTRADAS
-    entradasContainer.innerHTML += `
-        <div class="accordion-item">
-        <h2 class="accordion-header" id="entrada${i}">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapseEntrada${i}" aria-expanded="false">
-            <i class="bi bi-box-arrow-in-down me-2 text-success"></i>${nome}
-            <span class="badge bg-success ms-2">${data}</span>
-            </button>
-        </h2>
-        <div id="collapseEntrada${i}" class="accordion-collapse collapse" aria-labelledby="entrada${i}">
-            <div class="accordion-body">
-            <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 40 + 10)}</div>
-            <div class="linha"><strong>Valor:</strong> R$ ${(Math.random() * 200).toFixed(2)}</div>
-            <div class="linha"><strong>Fornecedor:</strong> Empresa ${i + 1}</div>
-            </div>
-        </div>
-        </div>`;
+  if (!userId) {
+    console.error("HISTORICO: Usuário não logado. userId não encontrado no localStorage.");
+    if (selectEl) selectEl.innerHTML = `<option value="">Usuário não identificado</option>`;
 
-    // SAÍDAS
-    saidasContainer.innerHTML += `
-        <div class="accordion-item">
-        <h2 class="accordion-header" id="saida${i}">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapseSaida${i}" aria-expanded="false">
-            <i class="bi bi-box-arrow-right me-2 text-danger"></i>${nome}
-            <span class="badge bg-danger ms-2">${data}</span>
-            </button>
-        </h2>
-        <div id="collapseSaida${i}" class="accordion-collapse collapse" aria-labelledby="saida${i}">
-            <div class="accordion-body">
-            <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 20 + 5)}</div>
-            <div class="linha"><strong>Motivo:</strong> ${i % 2 === 0 ? "Vencido" : "Venda"}</div>
-            </div>
-        </div>
-        </div>`;
+    clearAllHistoryAccordions("Faça login para ver o histórico ou selecionar um supermercado.");
+    return;
+  }
 
-    // ALTERAÇÕES
-    alteracoesContainer.innerHTML += `
-        <div class="accordion-item">
-        <h2 class="accordion-header" id="alteracao${i}">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapseAlteracao${i}" aria-expanded="false">
-            <i class="bi bi-pencil-square me-2 text-primary"></i>${nome}
-            <span class="badge bg-primary ms-2">${data}</span>
-            </button>
-        </h2>
-        <div id="collapseAlteracao${i}" class="accordion-collapse collapse" aria-labelledby="alteracao${i}">
-            <div class="accordion-body">
-            <div class="alteracao-comparacao">
-                <div class="antes">
-                <h6><strong>Antes:</strong></h6>
-                <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 30 + 1)}</div>
-                <div class="linha"><strong>Preço:</strong> R$ ${(Math.random() * 100).toFixed(2)}</div>
-                </div>
-                <div class="depois">
-                <h6><strong>Depois:</strong></h6>
-                <div class="linha"><strong>Quantidade:</strong> ${Math.floor(Math.random() * 30 + 1)}</div>
-                <div class="linha"><strong>Preço:</strong> R$ ${(Math.random() * 100).toFixed(2)}</div>
-                </div>
-            </div>
-            </div>
-        </div>
-        </div>`;
+  console.log("HISTORICO: Tentando carregar supermercados para userId:", userId);
+  if (selectEl) selectEl.innerHTML = `<option value="">Carregando supermercados...</option>`;
+
+  try {
+    const response = await fetch("/listarSupermercados", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: userId })
+    });
+
+    const responseBodyText = await response.text();
+    console.log("HISTORICO: Resposta bruta de /listarSupermercados:", response.status, responseBodyText);
+
+    if (!response.ok) {
+      let errorMsg = `Erro ${response.status} ao buscar supermercados.`;
+      try {
+        const errorJson = JSON.parse(responseBodyText);
+        errorMsg += ` Detalhe: ${errorJson.error || errorJson.message || responseBodyText}`;
+      } catch (e) {
+        errorMsg += ` Resposta do servidor: ${responseBodyText.substring(0, 200)}`;
+      }
+      throw new Error(errorMsg);
+    }
+
+    const result = JSON.parse(responseBodyText);
+    console.log("HISTORICO: Dados de /listarSupermercados parseados:", result);
+
+    if (!result.success) {
+      throw new Error(result.error || "Falha ao listar supermercados (backend retornou success: false).");
+    }
+
+    if (!result.data || result.data.length === 0) {
+      if (selectEl) selectEl.innerHTML = `<option value="">Nenhum supermercado encontrado</option>`;
+      localStorage.removeItem("marketId");
+      clearAllHistoryAccordions("Nenhum supermercado encontrado para este usuário.");
+      if (typeof carregarHistorico === 'function') carregarHistorico();
+      return;
+    }
+
+    if (selectEl) {
+      selectEl.innerHTML = result.data.map(m =>
+          `<option value="${m.marketId}" ${m.marketId === localStorage.getItem("marketId") ? "selected" : ""}>
+              ${m.name} (${m.marketId})
+          </option>`
+      ).join("");
+
+      let currentMarketIdInStorage = localStorage.getItem("marketId");
+      const isValidMarketIdStored = result.data.some(m => m.marketId === currentMarketIdInStorage);
+
+      if ((!currentMarketIdInStorage || !isValidMarketIdStored) && result.data.length > 0) {
+          currentMarketIdInStorage = result.data[0].marketId;
+          localStorage.setItem("marketId", currentMarketIdInStorage);
+      }
+      
+      if (localStorage.getItem("marketId")) {
+          selectEl.value = localStorage.getItem("marketId");
+      } else if (result.data.length > 0) {
+           selectEl.value = result.data[0].marketId;
+      }
+
+    }
+    
+    if (typeof carregarHistorico === 'function') {
+      carregarHistorico();
+    }
+
+  } catch (err) {
+    console.error("HISTORICO: Erro detalhado em carregarSupermercados:", err.message);
+    if (selectEl) selectEl.innerHTML = `<option value="">Erro ao carregar</option>`;
+    
+    if (typeof mostrarNotificacaoGlobal === 'function') {
+        mostrarNotificacaoGlobal('Erro', `Falha ao carregar lista de supermercados: ${err.message}.`, 'error');
+    } else {
+        console.warn("Função mostrarNotificacaoGlobal não definida na página de histórico.");
+    }
+    clearAllHistoryAccordions(`Falha ao carregar supermercados: ${err.message}`);
+  }
+}
+  
+function clearAllHistoryAccordions(message = "Nenhum dado para exibir.") {
+    const accordions = ['entradasAccordion', 'saidasAccordion', 'alteracoesAccordion', 'remocoesAccordion'];
+    const emptyMsgHTML = `<div class="alert alert-info mt-3"><i class="bi bi-info-circle"></i> ${message}</div>`;
+    accordions.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = emptyMsgHTML;
     });
 }
 
-// CARREGA OS CARDS QUANDO A PÁGINA ESTIVER PRONTA
-document.addEventListener('DOMContentLoaded', gerarCards);
 
-function pesquisarHistorico() {
-    const termo = document.getElementById('pesquisa').value.toLowerCase();
-    const categoria = document.getElementById('filtro-categoria').value;
+async function carregarHistorico() {
+  const marketId = localStorage.getItem("marketId");
+  const userId = localStorage.getItem("userId");
+  const busca = document.getElementById("pesquisa")?.value || "";
 
-    // Simulação de busca: substitua com seus dados reais do Firebase ou onde estiver
-    console.log(`Pesquisar: termo="${termo}", categoria="${categoria}"`);
-    // Aqui você filtra os itens e exibe no resultado
+  const accordions = {
+      entradas: document.getElementById("entradasAccordion"),
+      saidas: document.getElementById("saidasAccordion"),
+      alteracoes: document.getElementById("alteracoesAccordion"),
+      remocoes: document.getElementById("remocoesAccordion")
+  };
+
+  const loadingHTML = `
+      <div class="text-center my-4">
+          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div>
+          <p class="text-muted mt-2">Carregando histórico...</p>
+      </div>`;
+  Object.values(accordions).forEach(el => { if (el) el.innerHTML = loadingHTML; });
+
+  if (!userId || !marketId) {
+      const errorMsg = !userId ? "Usuário não autenticado." : "Nenhum supermercado selecionado.";
+      Object.values(accordions).forEach(el => {
+          if (el) el.innerHTML = `<div class="alert alert-warning mt-3">${errorMsg}</div>`;
+      });
+      return;
+  }
+
+  try {
+      const response = await fetch("/historicoData", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+              marketId, 
+              userId: parseInt(userId),
+              busca: busca.trim()
+              // O parâmetro 'categoria' foi removido do corpo da requisição
+          })
+      });
+
+      if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: "Erro de rede ou resposta não JSON" }));
+          throw new Error(errorData.error || `Erro ${response.status} ao carregar histórico.`);
+      }
+      const result = await response.json();
+
+      if (!result.success || !result.data) {
+          throw new Error(result.error || "Resposta inválida do servidor ao carregar histórico.");
+      }
+      
+      Object.values(accordions).forEach(el => { if (el) el.innerHTML = ''; });
+
+      if (result.data.length === 0) {
+          const emptyMsg = `<div class="alert alert-info mt-3"><i class="bi bi-info-circle"></i> Nenhum registro encontrado com os filtros atuais.</div>`;
+          Object.values(accordions).forEach(el => { if (el) el.innerHTML = emptyMsg; });
+          return;
+      }
+
+      const grouped = { entrada: [], saida: [], edicao: [], remocao: [] };
+      result.data.forEach(item => {
+          if (item.type === 'entrada') grouped.entrada.push(item);
+          else if (item.type === 'saida') grouped.saida.push(item);
+          else if (item.type === 'edicao') grouped.edicao.push(item);
+          else if (item.type === 'remocao') grouped.remocao.push(item);
+      });
+
+      renderHistoricoItems(grouped.entrada, accordions.entradas, 'entrada');
+      renderHistoricoItems(grouped.saida, accordions.saidas, 'saida');
+      renderHistoricoItems(grouped.edicao, accordions.alteracoes, 'edicao');
+      renderHistoricoItems(grouped.remocao, accordions.remocoes, 'remocao');
+
+  } catch (err) {
+      console.error("Erro detalhado ao carregar histórico:", err);
+      const errorHTML = `<div class="alert alert-danger mt-3"><i class="bi bi-exclamation-triangle"></i> <strong>Erro:</strong> ${err.message}</div>`;
+      Object.values(accordions).forEach(el => { if (el) el.innerHTML = errorHTML; });
+  }
 }
 
-function confirmarExclusao() {
-    const valor = document.getElementById('campo-excluir').value.trim().toLowerCase();
+function renderHistoricoItems(items, container, typeKey) {
+  if (!container) return;
+  container.innerHTML = '';
 
-    if (!valor) {
-    alert('Digite um nome de produto ou categoria para apagar.');
-    return;
-    }
+  if (!items || items.length === 0) {
+      container.innerHTML = `<p class="text-muted py-3"><i class="bi bi-database-exclamation"></i> Nenhum registro de ${getTypeNameDisplay(typeKey)} encontrado.</p>`;
+      return;
+  }
 
-    const confirmar = confirm(`Tem certeza que deseja apagar "${valor}"? Essa ação não pode ser desfeita.`);
-    if (confirmar) {
-    // Aqui você identifica se é um produto ou categoria, e executa a exclusão
-    console.log(`Apagar: "${valor}"`);
-    // Função para deletar do banco
-    }
+  items.forEach((item, index) => {
+      const before = item.beforeData || {};
+      const after = item.afterData || {};
+      const dataFormatada = item.date ? formatDate(item.date) : 'Data desconhecida';
+      const productName = item.name || (typeKey === 'remocao' && before.name) || (typeKey === 'entrada' && after.name) || `Produto ID: ${item.productId || 'N/A'}`;
+      const itemHTML = `
+          <div class="accordion-item">
+              <h2 class="accordion-header" id="heading-${typeKey}-${index}">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                          data-bs-target="#collapse-${typeKey}-${index}" aria-expanded="false" aria-controls="collapse-${typeKey}-${index}">
+                      <i class="bi ${getTypeIcon(typeKey)} me-2 text-${getTypeColor(typeKey)}"></i>
+                      ${productName}
+                      <span class="badge bg-${getTypeColor(typeKey)} ms-auto">${dataFormatada}</span>
+                  </button>
+              </h2>
+              <div id="collapse-${typeKey}-${index}" class="accordion-collapse collapse" aria-labelledby="heading-${typeKey}-${index}">
+                  <div class="accordion-body">
+                      <div class="linha"><strong>ID do Produto:</strong> ${item.productId || 'N/A'}</div>
+                      ${item.barcode ? `<div class="linha"><strong>Cód. Barras:</strong> ${item.barcode}</div>` : ''}
+                      ${getTypeDetails(typeKey, before, after)}
+                  </div>
+              </div>
+          </div>`;
+      container.insertAdjacentHTML('beforeend', itemHTML);
+  });
 }
 
-async function verificUser(){
-    fetch("/verific", {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({busca: id, column: "userId", tableSelect :"users"})
-    }).then( res => res.json())
-    .then( data => {
-    if (Object.keys(data.mensagem).length === 0){
-        window.location.href = '/Error404'
+function getTypeNameDisplay(typeKey) {
+  return { entrada: 'entrada', saida: 'saída', edicao: 'alteração', remocao: 'remoção' }[typeKey] || typeKey;
+}
+function getTypeIcon(typeKey) {
+  return { entrada: 'bi-box-arrow-in-down', saida: 'bi-box-arrow-right', edicao: 'bi-pencil-square', remocao: 'bi-trash3' }[typeKey] || 'bi-question-circle';
+}
+function getTypeColor(typeKey) {
+  return { entrada: 'success', saida: 'danger', edicao: 'primary', remocao: 'warning' }[typeKey] || 'secondary';
+}
+function formatDate(dateString) {
+  if (!dateString) return 'Data inválida';
+  const date = new Date(dateString);
+  return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatValue(value, prefix = '') {
+  if (value === null || typeof value === 'undefined' || String(value).trim() === '') return '-';
+  if (typeof value === 'number' && prefix === 'R$ ') return `${prefix}${value.toFixed(2)}`;
+  return `${prefix}${value}`;
+}
+
+function getTypeDetails(typeKey, before, after) {
+  let details = '';
+  if (typeKey === 'entrada') {
+    details += `<div class="linha"><strong>Nome:</strong> ${formatValue(after.name)}</div>`;
+    details += `<div class="linha"><strong>Quantidade Adicionada:</strong> ${formatValue(after.stock)}</div>`;
+    details += `<div class="linha"><strong>Preço de Entrada:</strong> ${formatValue(after.price, 'R$ ')}</div>`;
+  } else if (typeKey === 'saida') {
+    details += `<div class="linha"><strong>Nome:</strong> ${formatValue(before.name || after.name)}</div>`;
+    details += `<div class="linha"><strong>Estoque Anterior:</strong> ${formatValue(before.stock)}</div>`;
+    details += `<div class="linha"><strong>Estoque Atual:</strong> ${formatValue(after.stock)}</div>`;
+    details += `<div class="linha"><strong>Quantidade Retirada:</strong> ${formatValue(before.stock - after.stock)}</div>`;
+  } else if (typeKey === 'remocao') {
+    details += `<div class="linha"><strong>Produto Removido:</strong> ${formatValue(before.name)}</div>`;
+    details += `<div class="linha"><strong>Estoque no momento da remoção:</strong> ${formatValue(before.stock)}</div>`;
+    details += `<div class="linha"><strong>Preço no momento da remoção:</strong> ${formatValue(before.price, 'R$ ')}</div>`;
+
+  } else if (typeKey === 'edicao') {
+    details += `
+      <div class="alteracao-comparacao mt-2">
+        <div class="antes p-2 rounded" style="background-color: #ffeeba; border: 1px solid #ffdf7e; flex-basis: 48%;">
+          <h6><strong><i class="bi bi-arrow-left-circle"></i> Antes:</strong></h6>
+          ${Object.keys(before).map(key => {
+            if (key === 'image' || key === 'marketId' || key === 'productId' || before[key] === (after[key] || '')) return '';
+            if(JSON.stringify(before[key]) === JSON.stringify(after[key])) return '';
+            return `<div class="linha"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${formatValue(before[key], key === 'price' ? 'R$ ' : '')}</div>`;
+          }).join('')}
+        </div>
+        <div class="depois p-2 rounded" style="background-color: #cce5ff; border: 1px solid #b8daff; flex-basis: 48%;">
+          <h6><strong><i class="bi bi-arrow-right-circle"></i> Depois:</strong></h6>
+          ${Object.keys(after).map(key => {
+             if (key === 'image' || key === 'marketId' || key === 'productId' || after[key] === (before[key] || '')) return '';
+             if(JSON.stringify(after[key]) === JSON.stringify(before[key])) return '';
+             return `<div class="linha"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${formatValue(after[key], key === 'price' ? 'R$ ' : '')}</div>`;
+          }).join('')}
+        </div>
+      </div>`;
+
+    if (!details.includes('<div class="linha">')) {
+      details = '<div class="alert alert-light mt-2">Nenhuma alteração significativa nos campos principais foi registrada (ou os valores permaneceram os mesmos).</div>';
     }
-    else {
-        document.getElementById('userName').textContent = data.mensagem[0].name;
-        document.getElementById('userEmail').textContent = data.mensagem[0  ].email;
-        document.getElementById('userRole').textContent = "Gerente";
-    }
-    }
-    )
+  }
+  return details;
+}
+
+function trocarSupermercado() {
+  const novoMarketId = document.getElementById("select-market").value;
+  if (novoMarketId) {
+    localStorage.setItem("marketId", novoMarketId);
+    carregarHistorico();
+  } else {
+    localStorage.removeItem("marketId");
+    clearAllHistoryAccordions("Nenhum supermercado selecionado.");
+  }
 }

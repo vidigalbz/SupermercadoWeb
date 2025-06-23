@@ -3,145 +3,30 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Inventário com Tabs</title>
+  <title>Histórico com Tabs</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8f9fa;
-      padding-top: 70px; /* Increased padding for fixed navbar */
-    }
-
-    .navbar {
-      background: linear-gradient(to left, #ff6f00, #ffa040);
-      /* position: fixed; /* Consider if navbar should be fixed */
-      /* top: 0; */
-      /* width: 100%; */
-      /* z-index: 1030; */
-    }
-    .navbar-brand {
-        color: white !important; /* Ensure text is visible */
-    }
-
-    .container-principal {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      max-width: 1300px; 
-      margin: 20px auto; /* Added top/bottom margin */
-      /* height: 500px; /* Removed fixed height, let content define it */
-    }
-
-    .nav-tabs {
-      border-bottom: 2px solid #dee2e6;
-    }
-    .nav-tabs .nav-link {
-      font-weight: 600;
-      color: #495057;
-      border: none;
-    }
-    .nav-tabs .nav-link.active {
-      color: #ff6f00;
-      border-bottom: 3px solid #ff6f00;
-    }
-
-    .accordion-item {
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      margin-bottom: 8px;
-      border-radius: 8px !important; /* Ensure !important is necessary */
-    }
-    .accordion-button {
-      padding: 12px 15px;
-      font-weight: 600;
-    }
-    .accordion-button:not(.collapsed) {
-      background-color: rgba(255, 111, 0, 0.05);
-      color: #ff6f00;
-    }
-    .accordion-button.collapsed .badge { /* Hide badge when collapsed if too cluttered */
-        display: none;
-    }
-
-
-    .linha {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #eee;
-      padding: 8px 0;
-      flex-wrap: wrap; /* Allow wrapping on small screens */
-    }
-    .linha strong {
-        margin-right: 5px;
-    }
-
-    .antes, .depois {
-      padding: 10px;
-      border-radius: 6px;
-      flex: 1;
-      min-width: 200px; /* Minimum width before wrapping */
-      margin-bottom: 5px; /* Space if they stack */
-    }
-    .antes { background-color: #f8d7da; }
-    .depois { background-color: #d4edda; }
-
-    .alteracao-comparacao {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap; /* Allow wrapping */
-    }
-    .titulo-painel {
-      font-weight: bold;
-      font-size: 1.2rem;
-      margin-bottom: 15px;
-    }
-
-    .scrollable-content { /* Applied to accordion body's parent if needed, or accordion itself */
-      max-height: 350px; /* Adjust as needed */
-      overflow-y: auto;
-      padding-right: 10px; 
-    }
-    .accordion {
-        max-height: 350px; /* Already in .scrollable-content */
-        overflow-y: auto;
-        padding-right: 5px; 
-    }
-    /* Top controls container */
-    .controls-container {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        max-width: 1300px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .form-label {
-        font-weight: 500;
-    }
-    #resultado-pesquisa { /* This div seems unused, content goes into accordions */
-        display: none; /* Or remove if not needed */
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <nav class="navbar navbar-light fixed-top">
-    <div class="container-fluid">
-      <span class="navbar-brand mb-0 h1 text-white">
-        <i class="bi bi-box-seam me-2"></i>Histórico de Produtos
-      </span>
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-dark" onclick="history.back()">
+                voltar
+            </button>
+            <h1>📖</h1>
+            <span class="navbar-brand mb-0 h1">Histórico:</span>
+        </div>
     </div>
-  </nav>
+</nav>
 
 <div class="controls-container mt-4">
     <div class="row mb-3">
       <div class="col-12">
-        <h4 class="text-primary"><strong>📦 Inventário de Produtos</strong></h4>
+        <h4 class="text-primary"><strong>📦 Histórico de Produtos</strong></h4>
       </div>
     </div>
   
@@ -152,27 +37,18 @@
           <option value="">Carregando...</option>
         </select>
       </div>
-      <div class="col-md-5">
+      <div class="col-md-8">
         <label for="pesquisa" class="form-label">Pesquisar produto (nome, código de barras, ID)</label>
         <div class="input-group">
           <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Arroz, 789..., 123" oninput="debounce(carregarHistorico, 500)()">
           <button class="input-group-text btn btn-outline-secondary" onclick="carregarHistorico()"><i class="bi bi-search"></i></button>
         </div>
       </div>
-      <div class="col-md-3">
-        <label for="filtro-categoria" class="form-label">Tipo de Histórico</label>
-        <select class="form-select" id="filtro-categoria" onchange="carregarHistorico()">
-            <option value="">Todas</option>
-            <option value="entrada">Entrada</option>
-            <option value="saida">Saída</option>
-            <option value="alteracao">Alterações</option>
-            <option value="remocao">Remoções</option>
-        </select>
-      </div>
     </div>
-    </div>
+</div>
   
-<div class="container-principal"> <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="container-principal"> 
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0 text-primary"><i class="bi bi-archive me-2"></i>Registros de Histórico</h4>
         <button class="btn btn-outline-primary fs-5" id="btn-recarrega-historico" title="Recarregar Histórico"
             onclick="carregarHistorico()"> <i class="bi bi-arrow-clockwise"></i>
@@ -223,350 +99,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-
-  function getCookie(cname) {
-    let name = cname + "=";
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
-    for (let c of ca) {
-      c = c.trim();
-      if (c.indexOf(name) === 0) {
-        return c.substring(name.length);
-      }
-    }
-    return "";
-  }
-
-  let debounceTimer;
-  function debounce(func, delay) {
-    return function() {
-      const context = this;
-      const args = arguments;
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => func.apply(context, args), delay);
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const userId = getCookie("user");
-    console.log(userId)
-    if (!userId) {
-      //alert("Você precisa estar logado para acessar o histórico.");
-      //window.location.href = "/login"; // Assuming login page is at /login
-      return;
-    }
-    carregarSupermercados(); // Load supermarkets first, then history if a market is selected
-  });
-
-  async function carregarSupermercados() {
-    const selectEl = document.getElementById("select-market");
-    const userId = getCookie("user");
-
-    console.log("HISTORICO: Tentando carregar supermercados para userId:", userId);
-    if (selectEl) selectEl.innerHTML = `<option value="">Carregando supermercados...</option>`;
-
-    try {
-      const response = await fetch("/listarSupermercados", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: userId })
-      });
-
-      const responseBodyText = await response.text();
-      console.log("HISTORICO: Resposta bruta de /listarSupermercados:", response.status, responseBodyText);
-
-      if (!response.ok) {
-        let errorMsg = `Erro ${response.status} ao buscar supermercados.`;
-        try {
-          const errorJson = JSON.parse(responseBodyText);
-          errorMsg += ` Detalhe: ${errorJson.error || errorJson.message || responseBodyText}`;
-        } catch (e) {
-          errorMsg += ` Resposta do servidor: ${responseBodyText.substring(0, 200)}`;
-        }
-        throw new Error(errorMsg);
-      }
-
-      const result = JSON.parse(responseBodyText);
-      console.log("HISTORICO: Dados de /listarSupermercados parseados:", result);
-
-      if (!result.success) {
-        throw new Error(result.error || "Falha ao listar supermercados (backend retornou success: false).");
-      }
-
-      if (!result.data || result.data.length === 0) {
-        if (selectEl) selectEl.innerHTML = `<option value="">Nenhum supermercado encontrado</option>`;
-        document.cookie = "marketId =; path = /"
-        clearAllHistoryAccordions("Nenhum supermercado encontrado para este usuário.");
-        if (typeof carregarHistorico === 'function') carregarHistorico(); // Tenta carregar (mostrará msg de nenhum mercado)
-        return;
-      }
-
-      if (selectEl) {
-        selectEl.innerHTML = result.data.map(m =>
-            // ***** LINHA CORRIGIDA ABAIXO *****
-            `<option value="${m.marketId}" ${m.marketId === getCookie("marketId") ? "selected" : ""}>
-                ${m.name} (${m.marketId})
-            </option>`
-            // ***** FIM DA LINHA CORRIGIDA *****
-        ).join("");
-
-        let currentMarketIdInStorage = getCookie("marketId");
-        const isValidMarketIdStored = result.data.some(m => m.marketId === currentMarketIdInStorage);
-
-        if ((!currentMarketIdInStorage || !isValidMarketIdStored) && result.data.length > 0) {
-            currentMarketIdInStorage = result.data[0].marketId;
-            document.cookie = `marketId = ${currentMarketIdInStorage}`;
-        }
-
-        if (getCookie("marketId")) {
-            selectEl.value = getCookie("marketId");
-        } else if (result.data.length > 0) {
-             selectEl.value = result.data[0].marketId; // Fallback para o primeiro se nada estiver selecionado
-        }
-
-      }
-      
-      if (typeof carregarHistorico === 'function') {
-        carregarHistorico();
-      }
-
-    } catch (err) {
-      console.error("HISTORICO: Erro detalhado em carregarSupermercados:", err.message);
-      if (selectEl) selectEl.innerHTML = `<option value="">Erro ao carregar</option>`;
-      
-      if (typeof mostrarNotificacaoGlobal === 'function') {
-          mostrarNotificacaoGlobal('Erro', `Falha ao carregar lista de supermercados: ${err.message}.`, 'error');
-      } else {
-          console.warn("Função mostrarNotificacaoGlobal não definida na página de histórico.");
-          // alert(`Falha ao carregar lista de supermercados: ${err.message}`);
-      }
-      clearAllHistoryAccordions(`Falha ao carregar supermercados: ${err.message}`);
-    }
-  }
-  
-  function clearAllHistoryAccordions(message = "Nenhum dado para exibir.") {
-      const accordions = ['entradasAccordion', 'saidasAccordion', 'alteracoesAccordion', 'remocoesAccordion'];
-      const emptyMsgHTML = `<div class="alert alert-info mt-3"><i class="bi bi-info-circle"></i> ${message}</div>`;
-      accordions.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.innerHTML = emptyMsgHTML;
-      });
-  }
-
-
-  async function carregarHistorico() {
-    const marketId = getCookie("marketId");
-    const userId = getCookie("user");
-    const busca = document.getElementById("pesquisa")?.value || "";
-    const categoriaFiltro = document.getElementById("filtro-categoria")?.value || ""; // Renamed to avoid conflict
-
-    const accordions = {
-        entradas: document.getElementById("entradasAccordion"),
-        saidas: document.getElementById("saidasAccordion"),
-        alteracoes: document.getElementById("alteracoesAccordion"),
-        remocoes: document.getElementById("remocoesAccordion")
-    };
-
-    // Initial loading state for all accordions
-    const loadingHTML = `
-        <div class="text-center my-4">
-            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div>
-            <p class="text-muted mt-2">Carregando histórico...</p>
-        </div>`;
-    Object.values(accordions).forEach(el => { if (el) el.innerHTML = loadingHTML; });
-
-    if (!userId || !marketId) {
-        const errorMsg = !userId ? "Usuário não autenticado." : "Nenhum supermercado selecionado.";
-        Object.values(accordions).forEach(el => {
-            if (el) el.innerHTML = `<div class="alert alert-warning mt-3">${errorMsg}</div>`;
-        });
-        return;
-    }
-
-    try {
-        const response = await fetch("/historicoData", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                marketId, 
-                userId: parseInt(userId),
-                busca: busca.trim(),
-                categoria: categoriaFiltro // 'categoria' is the type for history (entrada, saida, etc.)
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: "Erro de rede ou resposta não JSON" }));
-            throw new Error(errorData.error || `Erro ${response.status} ao carregar histórico.`);
-        }
-        const result = await response.json();
-
-        if (!result.success || !result.data) {
-            throw new Error(result.error || "Resposta inválida do servidor ao carregar histórico.");
-        }
-        
-        // Clear previous content
-        Object.values(accordions).forEach(el => { if (el) el.innerHTML = ''; });
-
-        if (result.data.length === 0) {
-            const emptyMsg = `<div class="alert alert-info mt-3"><i class="bi bi-info-circle"></i> Nenhum registro encontrado com os filtros atuais.</div>`;
-            // Show this message in all tabs if global search yields nothing, or handle per tab based on filtering.
-            // For simplicity, if 'categoriaFiltro' is active, only that tab gets the message. Otherwise, all.
-            if (categoriaFiltro && accordions[getTypeNameTarget(categoriaFiltro)]) {
-                 accordions[getTypeNameTarget(categoriaFiltro)].innerHTML = emptyMsg;
-            } else if (!categoriaFiltro) { // No specific filter, show in all (or active)
-                 Object.values(accordions).forEach(el => { if (el) el.innerHTML = emptyMsg; });
-            }
-            // Ensure other tabs show a generic "no items for this type" if a specific filter is active.
-            if (categoriaFiltro) {
-                renderHistoricoItems([], accordions.entradas, 'entrada');
-                renderHistoricoItems([], accordions.saidas, 'saida');
-                renderHistoricoItems([], accordions.alteracoes, 'edicao');
-                renderHistoricoItems([], accordions.remocoes, 'remocao');
-            }
-            return;
-        }
-
-        const grouped = { entrada: [], saida: [], edicao: [], remocao: [] };
-        result.data.forEach(item => {
-            if (item.type === 'entrada') grouped.entrada.push(item);
-            else if (item.type === 'saida') grouped.saida.push(item);
-            else if (item.type === 'edicao') grouped.edicao.push(item);
-            else if (item.type === 'remocao') grouped.remocao.push(item);
-        });
-
-        renderHistoricoItems(grouped.entrada, accordions.entradas, 'entrada');
-        renderHistoricoItems(grouped.saida, accordions.saidas, 'saida');
-        renderHistoricoItems(grouped.edicao, accordions.alteracoes, 'edicao');
-        renderHistoricoItems(grouped.remocao, accordions.remocoes, 'remocao');
-
-    } catch (err) {
-        console.error("Erro detalhado ao carregar histórico:", err);
-        const errorHTML = `<div class="alert alert-danger mt-3"><i class="bi bi-exclamation-triangle"></i> <strong>Erro:</strong> ${err.message}</div>`;
-        Object.values(accordions).forEach(el => { if (el) el.innerHTML = errorHTML; });
-    }
-  }
-
-function renderHistoricoItems(items, container, typeKey) {
-    if (!container) return;
-    container.innerHTML = ''; // Clear previous items
-
-    if (!items || items.length === 0) {
-        container.innerHTML = `<p class="text-muted py-3"><i class="bi bi-database-exclamation"></i> Nenhum registro de ${getTypeNameDisplay(typeKey)} encontrado.</p>`;
-        return;
-    }
-
-    items.forEach((item, index) => {
-        const before = item.beforeData || {};
-        const after = item.afterData || {};
-        const dataFormatada = item.date ? formatDate(item.date) : 'Data desconhecida';
-        // Product name can be tricky if product was deleted. The backend tries to get it from JSON.
-        const productName = item.name || (typeKey === 'remocao' && before.name) || (typeKey === 'entrada' && after.name) || `Produto ID: ${item.productId || 'N/A'}`;
-
-
-        const itemHTML = `
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="heading-${typeKey}-${index}">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                            data-bs-target="#collapse-${typeKey}-${index}" aria-expanded="false" aria-controls="collapse-${typeKey}-${index}">
-                        <i class="bi ${getTypeIcon(typeKey)} me-2 text-${getTypeColor(typeKey)}"></i>
-                        ${productName}
-                        <span class="badge bg-${getTypeColor(typeKey)} ms-auto">${dataFormatada}</span>
-                    </button>
-                </h2>
-                <div id="collapse-${typeKey}-${index}" class="accordion-collapse collapse" aria-labelledby="heading-${typeKey}-${index}">
-                    <div class="accordion-body">
-                        <div class="linha"><strong>ID do Produto:</strong> ${item.productId || 'N/A'}</div>
-                        ${item.barcode ? `<div class="linha"><strong>Cód. Barras:</strong> ${item.barcode}</div>` : ''}
-                        ${getTypeDetails(typeKey, before, after)}
-                    </div>
-                </div>
-            </div>`;
-        container.insertAdjacentHTML('beforeend', itemHTML);
-    });
-}
-
-// Helper Functions
-function getTypeNameTarget(type) { // For targeting accordion elements
-  return { entrada: 'entradas', saida: 'saidas', alteracao: 'alteracoes', remocao: 'remocoes' }[type] || type;
-}
-function getTypeNameDisplay(typeKey) { // For display in messages
-  return { entrada: 'entrada', saida: 'saída', edicao: 'alteração', remocao: 'remoção' }[typeKey] || typeKey;
-}
-function getTypeIcon(typeKey) {
-  return { entrada: 'bi-box-arrow-in-down', saida: 'bi-box-arrow-right', edicao: 'bi-pencil-square', remocao: 'bi-trash3' }[typeKey] || 'bi-question-circle';
-}
-function getTypeColor(typeKey) {
-  return { entrada: 'success', saida: 'danger', edicao: 'primary', remocao: 'warning' }[typeKey] || 'secondary';
-}
-function formatDate(dateString) {
-  if (!dateString) return 'Data inválida';
-  const date = new Date(dateString);
-  return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-
-function formatValue(value, prefix = '') {
-    if (value === null || typeof value === 'undefined' || String(value).trim() === '') return '-';
-    if (typeof value === 'number' && prefix === 'R$ ') return `${prefix}${value.toFixed(2)}`;
-    return `${prefix}${value}`;
-}
-
-function getTypeDetails(typeKey, before, after) {
-  let details = '';
-  if (typeKey === 'entrada') {
-    details += `<div class="linha"><strong>Nome:</strong> ${formatValue(after.name)}</div>`;
-    details += `<div class="linha"><strong>Quantidade Adicionada:</strong> ${formatValue(after.stock)}</div>`;
-    details += `<div class="linha"><strong>Preço de Entrada:</strong> ${formatValue(after.price, 'R$ ')}</div>`;
-  } else if (typeKey === 'saida') { // Typically stock change
-    details += `<div class="linha"><strong>Nome:</strong> ${formatValue(before.name || after.name)}</div>`; // Name might be in before or after
-    details += `<div class="linha"><strong>Estoque Anterior:</strong> ${formatValue(before.stock)}</div>`;
-    details += `<div class="linha"><strong>Estoque Atual:</strong> ${formatValue(after.stock)}</div>`;
-    details += `<div class="linha"><strong>Quantidade Retirada:</strong> ${formatValue(before.stock - after.stock)}</div>`;
-  } else if (typeKey === 'remocao') {
-    details += `<div class="linha"><strong>Produto Removido:</strong> ${formatValue(before.name)}</div>`;
-    details += `<div class="linha"><strong>Estoque no momento da remoção:</strong> ${formatValue(before.stock)}</div>`;
-    details += `<div class="linha"><strong>Preço no momento da remoção:</strong> ${formatValue(before.price, 'R$ ')}</div>`;
-    // Add other fields from 'before' if needed
-  } else if (typeKey === 'edicao') {
-    details += `
-      <div class="alteracao-comparacao mt-2">
-        <div class="antes p-2 rounded" style="background-color: #ffeeba; border: 1px solid #ffdf7e; flex-basis: 48%;">
-          <h6><strong><i class="bi bi-arrow-left-circle"></i> Antes:</strong></h6>
-          ${Object.keys(before).map(key => {
-            if (key === 'image' || key === 'marketId' || key === 'productId' || before[key] === (after[key] || '')) return ''; // Skip image, ids or unchanged simple values
-            if(JSON.stringify(before[key]) === JSON.stringify(after[key])) return ''; // Skip if complex value is same
-            return `<div class="linha"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${formatValue(before[key], key === 'price' ? 'R$ ' : '')}</div>`;
-          }).join('')}
-        </div>
-        <div class="depois p-2 rounded" style="background-color: #cce5ff; border: 1px solid #b8daff; flex-basis: 48%;">
-          <h6><strong><i class="bi bi-arrow-right-circle"></i> Depois:</strong></h6>
-          ${Object.keys(after).map(key => {
-             if (key === 'image' || key === 'marketId' || key === 'productId' || after[key] === (before[key] || '')) return '';
-             if(JSON.stringify(after[key]) === JSON.stringify(before[key])) return '';
-             return `<div class="linha"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${formatValue(after[key], key === 'price' ? 'R$ ' : '')}</div>`;
-          }).join('')}
-        </div>
-      </div>`;
-      // Check if any changes were actually listed
-      if (!details.includes('<div class="linha">')) {
-        details = '<div class="alert alert-light mt-2">Nenhuma alteração significativa nos campos principais foi registrada (ou os valores permaneceram os mesmos).</div>';
-      }
-  }
-  return details;
-}
-
-function trocarSupermercado() {
-  const novoMarketId = document.getElementById("select-market").value;
-  if (novoMarketId) {
-    document.cookie = `marketId = ${novoMarketId}; path = /`
-    carregarHistorico();
-  } else {
-    document.cookie = "marketId =; path=/"
-    clearAllHistoryAccordions("Nenhum supermercado selecionado.");
-  }
-}
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
