@@ -49,6 +49,30 @@ Este projeto faz parte da proposta educativa da **Rede de Ensino SENAC**, promov
 
 ---
 
+### Nossas Soluções
+
+---
+
+#### **Solução 1: Gestão Financeira**
+Uma interface intuitiva para controle total das suas finanças.
+
+![Gestão Financeira](https://via.placeholder.com/600x400?text=Imagem+Gestao+Financeira)
+
+---
+
+#### **Solução 2: Análise de Dados**
+Visualize seus dados com gráficos interativos e relatórios detalhados.
+
+![Análise de Dados](https://via.placeholder.com/600x400?text=Imagem+Analise+de+Dados)
+
+---
+
+#### **Solução 3: Suporte ao Cliente**
+Nosso time de suporte está sempre pronto para ajudar!
+
+![Suporte ao Cliente](https://via.placeholder.com/600x400?text=Imagem+Suporte+ao+Cliente)
+---
+
 ## 📂 Como Executar
 
 # Clone o repositório
