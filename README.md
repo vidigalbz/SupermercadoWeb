@@ -49,28 +49,74 @@ Este projeto faz parte da proposta educativa da **Rede de Ensino SENAC**, promov
 
 ---
 
-### Nossas Soluções
+### Nossas Telas e suas Funcionalidades
 
 ---
 
-#### **Solução 1: Gestão Financeira**
-Uma interface intuitiva para controle total das suas finanças.
+#### **Tela de Autenticação: Login e Cadastro**
+Faça seu login e cadastro para acessar o sistema.
 
-![Gestão Financeira](https://via.placeholder.com/600x400?text=Imagem+Gestao+Financeira)
-
----
-
-#### **Solução 2: Análise de Dados**
-Visualize seus dados com gráficos interativos e relatórios detalhados.
-
-![Análise de Dados](https://via.placeholder.com/600x400?text=Imagem+Analise+de+Dados)
+<p align="center">
+  <img src="./ScreenShots/login.png" width="400" title="Tela de Login">
+  <img src="./ScreenShots/cadastro.png" width="400" title="Tela de Cadastro">
+</p>
 
 ---
 
-#### **Solução 3: Suporte ao Cliente**
-Nosso time de suporte está sempre pronto para ajudar!
+#### **Tela do Usuário: Painel de Controle**
+Aqui o usuário visualiza e edita suas informações pessoais, além de gerenciar os supermercados dos quais faz parte.
 
-![Suporte ao Cliente](https://via.placeholder.com/600x400?text=Imagem+Suporte+ao+Cliente)
+<p align="center">
+  <img src="./ScreenShots/painel.png" width="450" title="Painel do Usuário - Parte 1">
+  <img src="./ScreenShots/painel2.png" width="450" title="Painel do Usuário - Parte 2">
+</p>
+
+---
+
+#### **Tela de Gestão de Estoque**
+Registre, edite e remova todos os produtos do supermercado nesta seção.
+
+<p align="center">
+  <img src="./ScreenShots/estoque.png" width="600" title="Tela de Estoque">
+</p>
+
+---
+
+#### **Tela de Ponto de Venda (PDV)**
+Realize a venda de produtos adicionando-os com seu código de barras ou busca.
+
+<p align="center">
+  <img src="./ScreenShots/pdv.png" width="600" title="Tela de Ponto de Venda">
+</p>
+
+---
+
+#### **Tela de Histórico do Estoque**
+Visualize todas as mudanças no estoque, incluindo adições e remoções por compras, vendas ou outras operações.
+
+<p align="center">
+  <img src="./ScreenShots/historico.png" width="600" title="Tela de Histórico">
+</p>
+
+---
+
+#### **Tela de Fornecedores**
+Gerencie e visualize as informações dos fornecedores do seu supermercado.
+
+<p align="center">
+  <img src="./ScreenShots/fornecedor.png" width="600" title="Tela de Fornecedores">
+</p>
+
+---
+
+#### **Tela de Relatórios e Análises**
+Gere relatórios detalhados sobre produtos mais e menos vendidos, gastos, lucros, Curva ABC e outras informações estratégicas.
+
+<p align="center">
+  <img src="./ScreenShots/relatorio.png" width="450" title="Tela de Relatórios - Parte 1">
+  <img src="./ScreenShots/relatorio2.png" width="450" title="Tela de Relatórios - Parte 2">
+</p>
+
 ---
 
 ## 📂 Como Executar
