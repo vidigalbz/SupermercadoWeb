@@ -146,6 +146,7 @@ function atualizarContador() {
 function selecionarMercado({ id, nome, local, icone }) {
   idMarket = id;
   mercadoSelecionado = id;
+  document.cookie = `marketId=${idMarket}; path=/`; //Salvando o MarketId Após a pessoa selecionar o Mercado
 
   document.getElementById('nome-mercado-info').textContent = nome;
   document.getElementById('endereco-mercado-info').textContent = local;
@@ -394,8 +395,8 @@ async function RemoverFuncionario(){
   renderizarFuncionarios(mercadoSelecionado);
 }
 
-function irParaTela(tela) {
-  alert("Indo para tela: " + tela);
+function irParaTela(tela) {    
+  window.location.href = `${window.location.origin}/${tela}`
 }
 
 function carregarSupermercados() {
@@ -564,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById("btn-recarrega-estoque")?.addEventListener("click", () => {
+    document.cookie = 'marketId=;'
     window.location.reload();
   });
 });
