@@ -539,8 +539,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.reload();
   });
 });
-
-function deslogar() {
-  document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+document.getElementById("encerrarSessao")?.addEventListener("click", () => {
+  deslogar(event);
+})
+function deslogar(event) {
+  event.preventDefault();
+  document.cookie = "user=; path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC";
   window.location.href = "/login";
 }
