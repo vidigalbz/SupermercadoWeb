@@ -294,6 +294,12 @@ function fecharModalAdicionarFuncionario() {
 
 async function adicionarFuncionario() {
   let funcionarioInput = document.getElementById("cargoFuncionario");
+  let funcionarioId = funcionarioInput.value.trim();
+
+  if (!funcionarioId || !funcionarioInput) {
+    showToast("Por favor, selecione ou preencha o funcionário antes de adicionar.", "error");
+    return;
+  }
 
   const permissoesSelecionadas = Array.from(
     document.querySelectorAll('#modalAdicionarFuncionario .card-acesso')
@@ -310,21 +316,24 @@ async function adicionarFuncionario() {
   permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
 
-  let func = { userId: funcionarioInput.value, permissoes: permissionsBoolList };
+  let func = { userId: funcionarioId, permissoes: permissionsBoolList };
 
-  let res = await fetch('/api/funcionarios/atualizarFuncionario', {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "insert", userData: func, marketId: mercadoSelecionado })
-  });
+  try {
+    let res = await fetch('/api/funcionarios/atualizarFuncionario', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "insert", userData: func, marketId: mercadoSelecionado })
+    });
 
-  let data = await res.json();
+    let data = await res.json();
 
-  alert(data.message);
-
-  fecharModalAdicionarFuncionario();
-
-  renderizarFuncionarios(mercadoSelecionado);
+    showToast(data.message, "success");
+    fecharModalAdicionarFuncionario();
+    renderizarFuncionarios(mercadoSelecionado);
+  } catch (error) {
+    showToast("Erro ao adicionar funcionário. Tente novamente.", "error");
+    console.error(error);
+  }
 }
 
 
