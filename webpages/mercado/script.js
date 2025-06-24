@@ -467,7 +467,8 @@ document.addEventListener('DOMContentLoaded', () => {
         id: idMarket,
         nome: inputSuper.value.trim(),
         local: inputLocal.value.trim(),
-        icon: inputIcon.value.trim()
+        icon: inputIcon.value.trim(),
+        ownerId: userId
       })
     })
       .then(res => res.json())
@@ -498,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch("/api/supermercados/deletarSupermercado", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: idMarket })
+        body: JSON.stringify({ marketId: idMarket, ownerId: userId})
       });
       const result = await res.json();
       if (res.ok && result.mensagem) {
