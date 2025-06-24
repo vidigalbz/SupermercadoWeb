@@ -76,8 +76,9 @@ async function verificarUser() {
 // Ao carregar o DOM
 document.addEventListener('DOMContentLoaded', async function() {
   // Recupera IDs
-  marketIdGlobal = getCookie('marketId');
+  marketIdGlobal = getQueryParam('id');
   userIdGlobal = getCookie("user");
+  document.cookie = `marketId=${marketIdGlobal}; path=/`;
 
   verificarUser();
 
@@ -90,7 +91,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (supermarketNameEl) supermarketNameEl.textContent = "Supermercado: ID NÃO ENCONTRADO NA URL";
     if (container) container.innerHTML = "<p class='alert alert-danger'>Erro crítico: ID do mercado não fornecido na URL.</p>";
     if (pesquisaInput) pesquisaInput.disabled = true;
-    window.location.href = '/error404'
     return;
   }
   if (!userIdGlobal) {
@@ -278,7 +278,7 @@ async function criarCardHTML(produto) {
                     <strong>Cód. Barras:</strong> ${barcode}<br>
                     <strong>ID Sistema:</strong> ${productId}<br>
                     <strong>Fornecedor:</strong> ${nomeFornecedor}<br>
-                    <strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
+                    <Strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
                     <strong>Preço Total:</strong> R$ ${price}<br>
                     <strong>Categoria:</strong> ${category}<br>
                     <strong>Estoque:</strong> ${stock} unidades<br>

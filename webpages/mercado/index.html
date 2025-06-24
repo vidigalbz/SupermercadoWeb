@@ -14,7 +14,6 @@
     <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <button class="btn btn-dark" onclick="history.back()">voltar</button>
                 <h1 class="ms-3">🏪</h1>
                 <span class="navbar-brand mb-0 h1">Mercado Didático</span>
             </div>
@@ -154,44 +153,37 @@
                                 <label class="fw-bold mb-2 d-block">Navegar para outra Tela</label>
                                 <div class="row row-cols-2 row-cols-md-6 g-3">
                                     <div class="col">
-                                        <div class="card text-center shadow-sm p-3 card-button"
+                                        <div class="card text-center shadow-sm p-4 card-button w-120"
                                             onclick="irParaTela('pdv')">
                                             <i class="bi bi-cash-coin fs-3 text-primary"></i>
                                             <div class="fw-semibold mt-2">PDV</div>
                                         </div>
                                     </div>
                                     <div class="col">
-                                        <div class="card text-center shadow-sm p-3 card-button"
+                                        <div class="card text-center shadow-sm p-4 card-button w-120"
                                             onclick="irParaTela('estoque')">
                                             <i class="bi bi-box-seam fs-3 text-success"></i>
                                             <div class="fw-semibold mt-2">Estoque</div>
                                         </div>
                                     </div>
                                     <div class="col">
-                                        <div class="card text-center shadow-sm p-3 card-button"
-                                            onclick="irParaTela('alertas')">
-                                            <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
-                                            <div class="fw-semibold mt-2">Alertas</div>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <div class="card text-center shadow-sm p-3 card-button"
+                                        <div class="card text-center shadow-sm p-4 px-2 card-button w-120"
                                             onclick="irParaTela('relatorio')">
                                             <i class="bi bi-clipboard-data fs-3 text-info"></i>
                                             <div class="fw-semibold mt-2">Relatório</div>
                                         </div>
                                     </div>
                                     <div class="col">
-                                        <div class="card text-center shadow-sm p-3 px-2 card-button"
-                                            onclick="irParaTela('rastreamento')">
-                                            <i class="bi bi-geo-alt fs-3 text-warning"></i>
-                                            <div class="fw-semibold mt-2">Rastreamento</div>
+                                        <div class="card text-center shadow-sm p-4 px-2 card-button w-120"
+                                            onclick="irParaTela('historico')">
+                                            <i class="bi bi-clock fs-3 text-warning"></i>
+                                            <div class="fw-semibold mt-2">Histórico</div>
                                         </div>
                                     </div>
                                     <div class="col">
-                                        <div class="card text-center shadow-sm p-3 px-2 card-button"
-                                        onclick="irParaTela('fornecedores')">
-                                        <i class="bi bi-truck fs-3 text-secondary"></i>
+                                        <div class="card text-center shadow-sm p-4 px-2 card-button w-120"
+                                            onclick="irParaTela('fornecedor')">
+                                            <i class="bi bi-truck fs-3 text-secondary"></i>
                                             <div class="fw-semibold mt-2">Fornecedores</div>
                                         </div>
                                     </div>
@@ -333,14 +325,6 @@
                             </div>
                             <div class="col">
                                 <div class="card text-center shadow-sm p-3 card-button card-acesso"
-                                    data-permissao="Alertas">
-                                    <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
-                                    <div class="fw-semibold mt-2">Alertas</div>
-                                    <input type="checkbox" class="d-none" />
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card text-center shadow-sm p-3 card-button card-acesso"
                                     data-permissao="Relatório">
                                     <i class="bi bi-clipboard-data fs-3 text-info"></i>
                                     <div class="fw-semibold mt-2">Relatório</div>
@@ -350,8 +334,8 @@
                             <div class="col">
                                 <div class="card text-center shadow-sm p-3 card-button card-acesso"
                                     data-permissao="Rastreamento">
-                                    <i class="bi bi-geo-alt fs-3 text-warning"></i>
-                                    <div class="fw-semibold mt-2">Rastreamento</div>
+                                    <i class="bi bi-clock fs-3 text-warning"></i>
+                                    <div class="fw-semibold mt-2">Histórico</div>
                                     <input type="checkbox" class="d-none" />
                                 </div>
                             </div>
@@ -404,14 +388,6 @@
                                 </div>
                                 <div class="col">
                                     <div class="card text-center shadow-sm p-3 card-button card-acesso"
-                                        data-permissao="Alertas">
-                                        <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
-                                        <div class="fw-semibold mt-2">Alertas</div>
-                                        <input type="checkbox" class="d-none" />
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="card text-center shadow-sm p-3 card-button card-acesso"
                                         data-permissao="Relatório">
                                         <i class="bi bi-clipboard-data fs-3 text-info"></i>
                                         <div class="fw-semibold mt-2">Relatório</div>
@@ -421,8 +397,8 @@
                                 <div class="col">
                                     <div class="card text-center shadow-sm p-3 card-button card-acesso"
                                         data-permissao="Rastreamento">
-                                        <i class="bi bi-geo-alt fs-3 text-warning"></i>
-                                        <div class="fw-semibold mt-2">Rastreamento</div>
+                                        <i class="bi bi-clock fs-3 text-warning"></i>
+                                        <div class="fw-semibold mt-2">Histórico</div>
                                         <input type="checkbox" class="d-none" />
                                     </div>
                                 </div>
@@ -430,7 +406,7 @@
                                     <div class="card text-center shadow-sm p-3 card-button card-acesso"
                                         data-permissao="Fornecedores">
                                         <i class="bi bi-truck fs-3 text-secondary"></i>
-                                        <div class="fw-semibold mt-2">Fornecedores</div>
+                                        <div class="fw-semibold mt-2">Fornecedor</div>
                                         <input type="checkbox" class="d-none" />
                                     </div>
                                 </div>
@@ -487,7 +463,7 @@
                     </div>
                 </div>
                 <div>
-                    <a href=""><button class="btn btn-danger w-100">Encerrar Sessão</button></a>
+                    <a href=""><button class="btn btn-danger w-100" id="encerrarSessao">Encerrar Sessão</button></a>
                 </div>
             </div>
         </div>

@@ -283,8 +283,17 @@ function abrirModalEditarFuncionario(idx) {
   new bootstrap.Modal(document.getElementById('modalEditarFuncionario')).show();
 }
 
-async function adicionarFuncionario() {
+function fecharModalAdicionarFuncionario() {
+  const modal = document.getElementById("modalAdicionarFuncionario");
 
+  modal.style.display = "none";
+  const overlay = document.querySelector('.modal-backdrop');
+  if (overlay) overlay.remove();
+  document.body.classList.remove("modal-open");
+}
+
+
+async function adicionarFuncionario() {
   let funcionarioInput = document.getElementById("cargoFuncionario");
 
   const permissoesSelecionadas = Array.from(
@@ -302,21 +311,35 @@ async function adicionarFuncionario() {
   permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
 
-  let func = {userId: funcionarioInput.value, permissoes: permissionsBoolList}
+  let func = { userId: funcionarioInput.value, permissoes: permissionsBoolList };
 
   let res = await fetch('/api/funcionarios/atualizarFuncionario', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({type: "insert", userData: func, marketId: mercadoSelecionado})
-      });
-  data = await res.json();
-  /*TODO:
-    Popup para Feedback de Adição de Usuário!
-    data.message contém a mensagem (ok, erro, usuário já cadastrado....)
-    Fechar modal de usuário
-  */
- renderizarFuncionarios(mercadoSelecionado);
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "insert", userData: func, marketId: mercadoSelecionado })
+  });
+
+  let data = await res.json();
+
+  alert(data.message);
+
+  fecharModalAdicionarFuncionario();
+
+  renderizarFuncionarios(mercadoSelecionado);
 }
+
+
+function fecharModalEditarFuncionario() {
+  const modal = document.getElementById("modalEditarFuncionario");
+
+  modal.style.display = "none";
+  const overlay = document.querySelector('.modal-backdrop');
+  if (overlay) {
+    overlay.remove();
+  }
+  document.body.classList.remove("modal-open");
+}
+
 
 async function SalvarPermissoes() {
   let func = funcionarios[edicaoAtual];
@@ -345,11 +368,8 @@ async function SalvarPermissoes() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({type: "update", userData: func, marketId: mercadoSelecionado})
       });
-  /*
-    TODO:
-    Popup para Feedback de Alteração nas permissões de usuário!
-  */
- renderizarFuncionarios(mercadoSelecionado);
+  fecharModalEditarFuncionario();
+  renderizarFuncionarios(mercadoSelecionado);
 }
 
 async function RemoverFuncionario(){
@@ -540,8 +560,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.reload();
   });
 });
-
-function deslogar() {
-  document.cookie = "user=; path=/; marketId=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+document.getElementById("encerrarSessao")?.addEventListener("click", () => {
+  deslogar(event);
+})
+function deslogar(event) {
+  event.preventDefault();
+  document.cookie = "user=; path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC";
   window.location.href = "/login";
 }
