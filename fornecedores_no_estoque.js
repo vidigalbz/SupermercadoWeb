@@ -278,7 +278,7 @@ async function criarCardHTML(produto) {
                     <strong>Cód. Barras:</strong> ${barcode}<br>
                     <strong>ID Sistema:</strong> ${productId}<br>
                     <strong>Fornecedor:</strong> ${nomeFornecedor}<br>
-                    <strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
+                    <Strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
                     <strong>Preço Total:</strong> R$ ${price}<br>
                     <strong>Categoria:</strong> ${category}<br>
                     <strong>Estoque:</strong> ${stock} unidades<br>

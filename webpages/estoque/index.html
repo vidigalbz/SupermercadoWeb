@@ -134,7 +134,8 @@
             <h5 class="modal-title" id="modalAdicionarItemLabel">Adicionar Produto</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
-          <div class="modal-body">
+ 
+          <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
             <form id="form-adicionar-item">
               <div class="row g-3">
                 <div class="col-md-6">
@@ -143,10 +144,25 @@
                 </div>
                 <div class="col-md-6">
                   <label for="produto-barcode" class="form-label">Código de Barras</label>
-                  <input type="text" class="form-control" id="produto-barcode" required>
+                  <input type="text" class="form-control" id="produto-barcode">
                 </div>
                 <div class="col-md-6">
-                  <label for="add-preco" class="form-label">Preço</label>
+                  <label for="add-departamento" class="form-label">Fornecedor</label>
+                  <select class="form-select" id="add-fornecedor">
+                    <option value="">Selecione</option>
+                    <!-- Opções aqui -->
+                  </select>
+                </div>
+               
+                <div class="col-md-6">
+                  <label for="add-preco" class="form-label">Preço pago por unidade</label>
+                  <div class="input-group">
+                    <span class="input-group-text">R$</span>
+                    <input type="number" class="form-control" id="add-unidade" min="0" step="0.01">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="add-preco" class="form-label">Preço de venda</label>
                   <div class="input-group">
                     <span class="input-group-text">R$</span>
                     <input type="number" class="form-control" id="add-preco" min="0" step="0.01">
@@ -185,6 +201,10 @@
                 <div class="col-md-6">
                   <label for="produto-validade" class="form-label">Data de Validade</label>
                   <input type="date" class="form-control" id="produto-validade">
+                </div>
+                <div class="col-12">
+                  <label for="valor-total-compra" class="form-label">Valor Total da Compra</label>
+                  <input type="text" class="form-control" id="valor-total-compra" required desabled>
                 </div>
                 <div class="col-12">
                   <label for="produto-imagem" class="form-label">Imagem do Produto</label>
@@ -259,7 +279,8 @@
     </div>    
     
     <!-- Modal de Edição de Produto -->
-    <div class="modal fade" id="modalEditarProduto" tabindex="-1" aria-labelledby="modalEditarProdutoLabel" aria-hidden="true">
+     <!-- Modal de Edição de Produto -->
+     <div class="modal fade" id="modalEditarProduto" tabindex="-1" aria-labelledby="modalEditarProdutoLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header bg-warning text-dark">
@@ -268,7 +289,6 @@
           </div>
           <div class="modal-body">
             <form id="form-editar-item">
-              <input type="hidden" id="editar-productId">
               <div class="row g-3">
                 <div class="col-md-6">
                   <label for="editar-nome" class="form-label">Nome</label>
@@ -279,7 +299,21 @@
                   <input type="text" class="form-control" id="editar-barcode" required disabled>
                 </div>
                 <div class="col-md-6">
-                  <label for="editar-preco" class="form-label">Preço</label>
+                  <label for="add-departamento" class="form-label">Fornecedor</label>
+                  <select class="form-select" id="editar-fornecedor" required>
+                    <option value="">Selecione</option>
+                    <!-- Opções aqui -->
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="add-preco" class="form-label">Preço pago por unidade</label>
+                  <div class="input-group">
+                    <span class="input-group-text">R$</span>
+                    <input type="number" class="form-control" id="editar-preço-unidade" oninput="calcularValorTotalEdicao()">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editar-preco" class="form-label">Preço de venda</label>
                   <div class="input-group">
                     <span class="input-group-text">R$</span>
                     <input type="number" class="form-control" id="editar-preco" min="0" step="0.01">
@@ -294,7 +328,7 @@
                 </div>
                 <div class="col-md-6">
                   <label for="editar-estoque" class="form-label">Estoque</label>
-                  <input type="number" class="form-control" id="editar-estoque" required>
+                  <input type="number" class="form-control" id="editar-estoque" oninput="calcularValorTotalEdicao()">
                 </div>
                 <div class="col-md-6">
                   <label for="editar-lote" class="form-label">Lote</label>
@@ -320,6 +354,10 @@
                   <input type="date" class="form-control" id="editar-validade" disabled>
                 </div>
                 <div class="col-12">
+                  <label for="valor-total-compra" class="form-label">Valor Total da Compra</label>
+                  <input type="text" class="form-control" id="editar-valor-total" disabled>
+                </div>
+                <div class="col-12">
                   <label for="editar-imagem" class="form-label">Imagem do Produto</label>
                   <input type="file" class="form-control" id="editar-imagem">
                 </div>
@@ -333,7 +371,6 @@
         </div>
       </div>
     </div>    
-
     <!-- Modal de Exclusão de Produto -->
     <div class="modal fade" id="modalExcluirProduto" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
