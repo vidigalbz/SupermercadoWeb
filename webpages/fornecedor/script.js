@@ -112,7 +112,7 @@ async function carregarFornecedor() {
     fetch("/api/fornecedores/fornecedorData", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({marketId: getCookie('marketId')})
     }).then(res => res.json()).then(data => {
         if(data.result){
             dataFornecedores = data.result

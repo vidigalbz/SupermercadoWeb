@@ -26,8 +26,9 @@ const addFornecedor = async (req, res) => {
 };
 
 const getFornecedores = async (req, res) => {
+    const { marketId } = req.body;
     try {
-        const data = await select("fornecedores");
+        const data = await select("fornecedores", "WHERE marketId = ?", marketId);
         res.status(200).json({ result: data });
     } catch (e) {
         res.status(500).json({ erro: e });
