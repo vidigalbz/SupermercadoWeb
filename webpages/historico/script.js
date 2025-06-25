@@ -1,3 +1,16 @@
+/**
+ * Função para buscar um cookie específico pelo seu nome.
+ * @param {string} name - O nome do cookie a ser procurado.
+ * @returns {string|null} - O valor do cookie ou null se não for encontrado.
+ */
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+
 let debounceTimer;
 function debounce(func, delay) {
   return function() {
@@ -20,14 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function carregarSupermercados() {
   const selectEl = document.getElementById("select-market");
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem("userId"); // Mantemos o userId no localStorage por enquanto
 
   if (!userId) {
-    console.error("HISTORICO: Usuário não logado. userId não encontrado no localStorage.");
-    if (selectEl) selectEl.innerHTML = `<option value="">Usuário não identificado</option>`;
-
-    clearAllHistoryAccordions("Faça login para ver o histórico ou selecionar um supermercado.");
-    return;
+      console.error("HISTORICO: Usuário não logado.");
+      if (selectEl) selectEl.innerHTML = `<option value="">Usuário não identificado</option>`;
+      clearAllHistoryAccordions("Faça login para ver o histórico.");
+      return;
   }
 
   if (selectEl) selectEl.innerHTML = `<option value="">Carregando supermercados...</option>`;
@@ -57,51 +69,42 @@ async function carregarSupermercados() {
       throw new Error(result.error || "Falha ao listar supermercados (backend retornou success: false).");
     }
 
-    if (!result.data || result.data.length === 0) {
-      if (selectEl) selectEl.innerHTML = `<option value="">Nenhum supermercado encontrado</option>`;
-      localStorage.removeItem("marketId");
-      clearAllHistoryAccordions("Nenhum supermercado encontrado para este usuário.");
-      if (typeof carregarHistorico === 'function') carregarHistorico();
-      return;
-    }
+      if (!result.data || result.data.length === 0) {
+          if (selectEl) selectEl.innerHTML = `<option value="">Nenhum supermercado encontrado</option>`;
+          // ALTERADO: Remove o cookie em vez do localStorage
+          document.cookie = 'marketId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          clearAllHistoryAccordions("Nenhum supermercado encontrado para este usuário.");
+          return;
+      }
 
-    if (selectEl) {
-      selectEl.innerHTML = result.data.map(m =>
-          `<option value="${m.marketId}" ${m.marketId === localStorage.getItem("marketId") ? "selected" : ""}>
-              ${m.name} (${m.marketId})
-          </option>`
-      ).join("");
+      if (selectEl) {
+          // ALTERADO: Lê o cookie em vez do localStorage
+          const marketIdFromCookie = getCookie("marketId");
 
-      let currentMarketIdInStorage = localStorage.getItem("marketId");
-      const isValidMarketIdStored = result.data.some(m => m.marketId === currentMarketIdInStorage);
+          selectEl.innerHTML = result.data.map(m =>
+              `<option value="${m.marketId}" ${m.marketId === marketIdFromCookie ? "selected" : ""}>
+                  ${m.name} (${m.marketId})
+              </option>`
+          ).join("");
 
-      if ((!currentMarketIdInStorage || !isValidMarketIdStored) && result.data.length > 0) {
-          currentMarketIdInStorage = result.data[0].marketId;
-          localStorage.setItem("marketId", currentMarketIdInStorage);
+          const isValidMarketIdStored = result.data.some(m => m.marketId == marketIdFromCookie);
+
+          if (!marketIdFromCookie || !isValidMarketIdStored) {
+              const firstMarketId = result.data[0].marketId;
+              // ALTERADO: Salva no cookie em vez do localStorage
+              document.cookie = `marketId=${firstMarketId}; path=/`;
+              selectEl.value = firstMarketId;
+          } else {
+              selectEl.value = marketIdFromCookie;
+          }
       }
       
-      if (localStorage.getItem("marketId")) {
-          selectEl.value = localStorage.getItem("marketId");
-      } else if (result.data.length > 0) {
-           selectEl.value = result.data[0].marketId;
-      }
-
-    }
-    
-    if (typeof carregarHistorico === 'function') {
       carregarHistorico();
-    }
 
   } catch (err) {
-    console.error("HISTORICO: Erro detalhado em carregarSupermercados:", err.message);
-    if (selectEl) selectEl.innerHTML = `<option value="">Erro ao carregar</option>`;
-    
-    if (typeof mostrarNotificacaoGlobal === 'function') {
-        mostrarNotificacaoGlobal('Erro', `Falha ao carregar lista de supermercados: ${err.message}.`, 'error');
-    } else {
-        console.warn("Função mostrarNotificacaoGlobal não definida na página de histórico.");
-    }
-    clearAllHistoryAccordions(`Falha ao carregar supermercados: ${err.message}`);
+      console.error("HISTORICO: Erro em carregarSupermercados:", err.message);
+      if (selectEl) selectEl.innerHTML = `<option value="">Erro ao carregar</option>`;
+      clearAllHistoryAccordions(`Falha ao carregar supermercados: ${err.message}`);
   }
 }
   
@@ -116,7 +119,7 @@ function clearAllHistoryAccordions(message = "Nenhum dado para exibir.") {
 
 
 async function carregarHistorico() {
-  const marketId = localStorage.getItem("marketId");
+  const marketId = getCookie("marketId");
   const userId = localStorage.getItem("userId");
   const busca = document.getElementById("pesquisa")?.value || "";
 
