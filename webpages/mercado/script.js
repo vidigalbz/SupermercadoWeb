@@ -381,18 +381,42 @@ async function SalvarPermissoes() {
   renderizarFuncionarios(mercadoSelecionado);
 }
 
-async function RemoverFuncionario(){
-  let func = funcionarios[edicaoAtual];
-  fetch("/api/funcionarios/atualizarFuncionario", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({type: "delete", userData: func, marketId: mercadoSelecionado})
-  })
-  /*
-    TODO:
-    Popup para Feedback de remoção de Usuário!
-  */
-  renderizarFuncionarios(mercadoSelecionado);
+async function RemoverFuncionario() {
+  const btnRemover = document.getElementById('btnConfirmarRemoverFuncionario');
+  const btnOriginalText = btnRemover.innerHTML;
+  
+  try {
+    // Mostrar estado de carregamento
+    btnRemover.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Removendo...';
+    btnRemover.disabled = true;
+    
+    let func = funcionarios[edicaoAtual];
+    const response = await fetch("/api/funcionarios/atualizarFuncionario", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({type: "delete", userData: func, marketId: mercadoSelecionado})
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      showToast("Funcionário removido com sucesso!", "success");
+      
+      // Fechar modais
+      bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusaoFuncionario')).hide();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditarFuncionario')).hide();
+      
+      renderizarFuncionarios(mercadoSelecionado);
+    } else {
+      showToast(data.message || "Erro ao remover funcionário", "error");
+    }
+  } catch (error) {
+    console.error(error);
+    showToast("Erro ao conectar com o servidor", "error");
+  } finally {
+    btnRemover.innerHTML = btnOriginalText;
+    btnRemover.disabled = false;
+  }
 }
 
 function irParaTela(tela) {    
