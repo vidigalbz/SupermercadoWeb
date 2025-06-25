@@ -7,13 +7,14 @@ const addFornecedor = async (req, res) => {
         inscricao_estadual,
         endereco,
         contato,
-        tipo_de_produto
+        tipo_de_produto,
+        marketId
     } = req.body;
     try {
         await insert(
             "fornecedores",
-            ["cnpj", "razao_social", "inscricao_estadual", "endereco", "contato", "tipo_de_produto"],
-            [cnpj, razao_social, inscricao_estadual, endereco, contato, tipo_de_produto]
+            ["cnpj", "razao_social", "inscricao_estadual", "endereco", "contato", "tipo_de_produto", "marketId"],
+            [cnpj, razao_social, inscricao_estadual, endereco, contato, tipo_de_produto, marketId]
         );
         res.json({
             status: "success"
