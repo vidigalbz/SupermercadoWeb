@@ -4,33 +4,58 @@ let graficoFinanceiro = null;
 let relatorioData = null;
 let dataExibida = new Date(); // ✅ ESTADO: Controla o mês/ano que estamos vendo
 
-// --- FUNÇÃO PRINCIPAL DE BUSCA E RENDERIZAÇÃO ---
+/**
+ * Função para buscar um cookie específico pelo seu nome.
+ * @param {string} name - O nome do cookie a ser procurado.
+ * @returns {string|null} - O valor do cookie ou null se não for encontrado.
+ */
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
+// --- FUNÇÃO PRINCIPAL DE BUSCA E RENDERIZAÇÃO (VERSÃO FINAL) ---
 async function buscarERenderizarRelatorio() {
-    const params = new URLSearchParams(window.location.search);
-    const marketId = params.get('id');
+    // 1. Pega o ID do mercado que está salvo no cookie.
+    const marketId = getCookie('marketId');
+
+    // 2. Validação: Se não houver um mercado selecionado, exibe uma mensagem clara e interrompe a função.
     if (!marketId) {
-        alert("Erro: ID do mercado não especificado na URL.");
-        return;
+        document.body.innerHTML = `<div class="container mt-5">
+                                      <div class="alert alert-warning">
+                                          <strong>Atenção:</strong> Você precisa selecionar um mercado para ver os relatórios.
+                                          <br><br>
+                                          <a href="/" class="btn btn-primary">Voltar para a seleção de mercados</a>
+                                      </div>
+                                   </div>`;
+        return; // Para a execução aqui.
     }
 
+    // 3. Bloco try...catch para lidar com possíveis erros de rede ou do servidor.
     try {
         const mes = dataExibida.getMonth();
         const ano = dataExibida.getFullYear();
         
-        const response = await fetch('/api/relatorio-data', {
+        // 4. ✨ CORREÇÃO PRINCIPAL: A URL foi ajustada para a rota correta e mais organizada do backend.
+        const response = await fetch('/api/relatorio/data', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ marketId, mes, ano })
         });
 
+        // 5. Validação da resposta: Se a resposta não for bem-sucedida (ex: erro 400, 500), lança um erro.
         if (!response.ok) {
+            // Tenta extrair uma mensagem de erro do corpo da resposta JSON.
             const err = await response.json();
-            throw new Error(err.error || 'Falha ao buscar dados do relatório');
+            throw new Error(err.error || `Falha ao buscar dados do relatório (Status: ${response.status})`);
         }
 
+        // 6. Processa a resposta bem-sucedida.
         relatorioData = await response.json();
 
-        // Renderiza todos os componentes da página
+        // 7. Chama todas as funções que atualizam a interface com os novos dados.
         atualizarControlesUI();
         renderizarResumoVendas(relatorioData.vendas);
         renderizarGraficoFinanceiro(relatorioData.desempenhoFinanceiro);
@@ -39,6 +64,7 @@ async function buscarERenderizarRelatorio() {
         renderizarProdutosEncalhados(relatorioData.produtosEncalhados);
         
     } catch (error) {
+        // 8. Se qualquer erro for lançado no bloco 'try', ele será capturado e exibido aqui.
         console.error("Erro ao carregar dados do relatório:", error);
         document.body.innerHTML = `<div class="container mt-5"><div class="alert alert-danger"><strong>Erro:</strong> ${error.message}</div></div>`;
     }
@@ -97,6 +123,10 @@ function renderizarResumoVendas(info) {
     // Preenche os dados do Mês
     document.getElementById("qnt-mes").textContent = formatCurrency(info.mes[0]);
     document.getElementById("prcn-mes").textContent = "Total do Mês";
+}
+
+function irParaTela(tela) {
+    window.location.href = `${window.location.origin}/${tela}`;
 }
 
 function renderizarGraficoFinanceiro(dados) {
