@@ -33,7 +33,7 @@ async function carregarSupermercados() {
   if (selectEl) selectEl.innerHTML = `<option value="">Carregando supermercados...</option>`;
 
   try {
-    const response = await fetch("/listarSupermercados", {
+    const response = await fetch("/api/historico/listarSupermercados", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: userId })
@@ -143,7 +143,7 @@ async function carregarHistorico() {
   }
 
   try {
-      const response = await fetch("/historicoData", {
+      const response = await fetch("/api/historico/historicoData", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 

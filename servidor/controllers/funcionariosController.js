@@ -4,7 +4,7 @@ const funcionarios = async (req, res) => {
   const {marketId, userId} = req.body;
   if (marketId && !userId){
     const funcionarios = await select("user_permissions", "WHERE marketId = ?", [marketId])
-    if (funcionarios.length > 0){
+    if (funcionarios.length >= 0){
       return res.status(200).json({
         status: "success",
         message: funcionarios
