@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   console.log(`ESTOQUE SCRIPT: Market ID = ${marketIdGlobal}, User ID = ${userIdGlobal}`);
 
   // Verifica supermercado e carrega dados
-  await verificSuper(marketIdGlobal);
+  await verificSuper();
   await carregarSetoresEstoque(marketIdGlobal);
   await carregarProdutos(marketIdGlobal);
 
@@ -164,7 +164,7 @@ function verificSuper(){
       body: JSON.stringify({busca: marketIdGlobal, column: "marketId", tableSelect :"supermarkets"})
     }).then( res => res.json())
     .then( data => {
-      if (Object.keys(data.mensagem).length === 0){
+      if (Object.keys(data.mensagem).length == 0){
         window.location.href = '/Error404'
       } else {
 

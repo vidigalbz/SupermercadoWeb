@@ -59,7 +59,8 @@ async function adicionarFornecedor() {
             inscricao_estadual: inscricao_estadual,
             endereco: endereco,
             contato: contato,
-            tipo_de_produto: tipo_de_produto
+            tipo_de_produto: tipo_de_produto,
+            marketId: marketIdGlobal
         })
     }).then(res => res.json()).then(data => {
         

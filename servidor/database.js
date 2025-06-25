@@ -190,6 +190,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
 );
 
 CREATE TABLE IF NOT EXISTS fornecedores (
+    marketId TEXT NOT NULL,
     cnpj INTENGER NOT NULL UNIQUE,
     razao_social TEXT NOT NULL,
     inscricao_estadual TEXT NOT NULL,
