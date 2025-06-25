@@ -30,18 +30,16 @@ async function carregarSupermercados() {
     return;
   }
 
-  console.log("HISTORICO: Tentando carregar supermercados para userId:", userId);
   if (selectEl) selectEl.innerHTML = `<option value="">Carregando supermercados...</option>`;
 
   try {
-    const response = await fetch("/listarSupermercados", {
+    const response = await fetch("/api/historico/listarSupermercados", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: userId })
     });
 
     const responseBodyText = await response.text();
-    console.log("HISTORICO: Resposta bruta de /listarSupermercados:", response.status, responseBodyText);
 
     if (!response.ok) {
       let errorMsg = `Erro ${response.status} ao buscar supermercados.`;
@@ -55,8 +53,6 @@ async function carregarSupermercados() {
     }
 
     const result = JSON.parse(responseBodyText);
-    console.log("HISTORICO: Dados de /listarSupermercados parseados:", result);
-
     if (!result.success) {
       throw new Error(result.error || "Falha ao listar supermercados (backend retornou success: false).");
     }
@@ -147,7 +143,7 @@ async function carregarHistorico() {
   }
 
   try {
-      const response = await fetch("/historicoData", {
+      const response = await fetch("/api/historico/historicoData", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 

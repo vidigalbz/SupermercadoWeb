@@ -49,7 +49,6 @@ async function adicionarFornecedor() {
     const tipo_de_produto = document.getElementById('tipoProduto').value;
 
     if (cnpj && razao_social && inscricao_estadual && endereco && contato && tipo_de_produto){
-    console.log("Entrou")
     await fetch('/api/fornecedores/addFornecedor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,9 +116,6 @@ async function carregarFornecedor() {
         if(data.result){
             dataFornecedores = data.result
             renderizar(dataFornecedores)
-        }
-        else {
-            console.log("Erro no fetch")
         }
     })
 }
@@ -218,6 +214,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     marketIdGlobal = getCookie('marketId')
     userIdGlobal = getCookie("user")
-    console.log(marketId)
+
 
 })

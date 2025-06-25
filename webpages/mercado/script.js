@@ -42,7 +42,6 @@ async function verificarUser() {
     const res = await fetch('/api/usuarios/users/' + userId);
     const data = await res.json();
 
-    console.log(data);
     document.getElementById('userName').textContent = data.data.name;
     document.getElementById('userRole').textContent = "Gerente";
 
@@ -179,34 +178,34 @@ async function renderizarFuncionarios(marketId) {
   let data = await res.json();
   funcionariosData = data.message;
 
-  document.getElementById("funcionarioCount").textContent = funcionariosData.length;
-  funcionarios = [];
+  if (funcionariosData){
+    document.getElementById("funcionarioCount").textContent = funcionariosData.length;
+    funcionarios = [];
 
-  for (i = 0; i < funcionariosData.length; i++){
-    userData = await fetch(`/api/usuarios/users/${funcionariosData[i].userId}`);
-    user = await userData.json();
+    
+    for (i = 0; i < funcionariosData.length; i++){
+      userData = await fetch(`/api/usuarios/users/${funcionariosData[i].userId}`);
+      user = await userData.json();
 
-    let auxList = [];
+      let auxList = [];
 
-    if (funcionariosData[i].pdv) auxList.push("PDV")
-    if (funcionariosData[i].estoque) auxList.push("Estoque")
-    if (funcionariosData[i].fornecedor) auxList.push("Fornecedores")
-    if (funcionariosData[i].relatorios) auxList.push("Relatório")
-    if (funcionariosData[i].alertas) auxList.push("Alertas")
-    if (funcionariosData[i].rastreamento) auxList.push("Rastreamento")
+      if (funcionariosData[i].pdv) auxList.push("PDV")
+      if (funcionariosData[i].estoque) auxList.push("Estoque")
+      if (funcionariosData[i].fornecedor) auxList.push("Fornecedores")
+      if (funcionariosData[i].relatorios) auxList.push("Relatório")
+      if (funcionariosData[i].alertas) auxList.push("Alertas")
+      if (funcionariosData[i].rastreamento) auxList.push("Rastreamento")
 
-    user.data["permissoes"] = auxList;
-    user.data.profileImage = await getImageURL(user.data.profileImage);
+      user.data["permissoes"] = auxList;
+      user.data.profileImage = await getImageURL(user.data.profileImage);
 
     funcionarios.push(user.data);
-    console.log(user.data.profileImage)
-    console.log(user.data);
   }
 
-  if (funcionarios.length === 0) {
-    lista.innerHTML = '<li class="list-group-item text-muted">Nenhum funcionário cadastrado.</li>';
-    return;
-  }
+    if (funcionarios.length === 0) {
+      lista.innerHTML = '<li class="list-group-item text-muted">Nenhum funcionário cadastrado.</li>';
+      return;
+    }
 
   funcionarios.forEach(async (func, idx) => {
     console.log(func)
@@ -214,43 +213,44 @@ async function renderizarFuncionarios(marketId) {
       ? func.permissoes.map(p => `<span class="badge bg-primary me-1">${p}</span>`).join(' ')
       : '<span class="text-muted">Nenhuma</span>';
 
-    const popoverContent = `
-      <div class="text-center mb-2">
-        <img src="${func.profileImage || 'https://via.placeholder.com/64'}" class="rounded-circle mb-2" width="64" height="64">
-        <div class="fw-bold mt-1">${func.name}</div>
-      </div>
-      <div><strong>Status:</strong> ${func.online ? '<span class="text-success">Online</span>' : '<span class="text-secondary">Offline</span>'}</div>
-      <div><strong>Tela:</strong> ${func.tela || '<span class="text-muted">Nenhuma</span>'}</div>
-      <div><strong>Permissões:</strong> ${permissoesHtml}</div>
-    `.replace(/"/g, '&quot;').replace(/\n/g, '');
+      const popoverContent = `
+        <div class="text-center mb-2">
+          <img src="${func.profileImage || 'https://via.placeholder.com/64'}" class="rounded-circle mb-2" width="64" height="64">
+          <div class="fw-bold mt-1">${func.name}</div>
+        </div>
+        <div><strong>Status:</strong> ${func.online ? '<span class="text-success">Online</span>' : '<span class="text-secondary">Offline</span>'}</div>
+        <div><strong>Tela:</strong> ${func.tela || '<span class="text-muted">Nenhuma</span>'}</div>
+        <div><strong>Permissões:</strong> ${permissoesHtml}</div>
+      `.replace(/"/g, '&quot;').replace(/\n/g, '');
 
-    const item = document.createElement('li');
-    item.className = 'list-group-item d-flex justify-content-between align-items-center';
+      const item = document.createElement('li');
+      item.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-    if (func.online) item.classList.add('list-group-item-success');
+      if (func.online) item.classList.add('list-group-item-success');
 
-    item.innerHTML = `
-      <div class="d-flex align-items-center">
-        <img src="${func.profileImage || 'https://via.placeholder.com/32'}" alt="Foto de ${func.name}" class="rounded-circle me-2" width="32" height="32">
-        <strong>${func.name}</strong>
-      </div>
-      <div class="d-flex align-items-center gap-2 ms-auto">
-        <span class="badge bg-light text-dark border me-2">${func.tela || 'Nenhuma'}</span>
-        <button class="btn btn-sm btn-info" 
-          data-bs-toggle="popover"
-          data-bs-html="true"
-          data-bs-content="${popoverContent}"
-          title="Informações de ${func.name}">
-          <i class="bi bi-eye"></i>
-        </button>
-        <button class="btn btn-sm btn-warning" title="Editar" onclick="abrirModalEditarFuncionario(${idx})">
-          <i class="bi bi-pencil"></i>
-        </button>
-      </div>
-    `;
+      item.innerHTML = `
+        <div class="d-flex align-items-center">
+          <img src="${func.profileImage || 'https://via.placeholder.com/32'}" alt="Foto de ${func.name}" class="rounded-circle me-2" width="32" height="32">
+          <strong>${func.name}</strong>
+        </div>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <span class="badge bg-light text-dark border me-2">${func.tela || 'Nenhuma'}</span>
+          <button class="btn btn-sm btn-info" 
+            data-bs-toggle="popover"
+            data-bs-html="true"
+            data-bs-content="${popoverContent}"
+            title="Informações de ${func.name}">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button class="btn btn-sm btn-warning" title="Editar" onclick="abrirModalEditarFuncionario(${idx})">
+            <i class="bi bi-pencil"></i>
+          </button>
+        </div>
+      `;
 
-    lista.appendChild(item);
-  });
+      lista.appendChild(item);
+    });
+  }
 
   const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
   popoverTriggerList.forEach(el => new bootstrap.Popover(el, { trigger: 'focus', placement: 'left' }));
@@ -361,8 +361,6 @@ async function SalvarPermissoes() {
   permissionsBoolList.push(permissoesSelecionadas.includes("Relatório") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
-
-  console.log(func);
 
   func.permissoes = permissionsBoolList;
 
@@ -583,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById("btn-recarrega-estoque")?.addEventListener("click", () => {
-    document.cookie = 'marketId=;'
+    document.cookie = 'marketId=; path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC'
     window.location.reload();
   });
 });
