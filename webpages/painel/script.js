@@ -137,15 +137,28 @@ function addMarketCard(marketName, permissions) {
   marketList.innerHTML += innerHTML;
 }
 
-function irParaTela(tela) {    
+function irParaTela(tela) {
   window.location.href = `${window.location.origin}/${tela}`
 }
 
 async function loadMarketData(userId) {
   const response = await fetch(`/api/usuarios/user_permissions/${userId}`);
   const json = await response.json();
+
   for (const permission of json.data) {
-    const marketName = permission.marketId;
+    // Agora que 'permission' está definido, podemos usar permission.marketId
+    const marketResponse = await fetch("/api/supermercados/supermercadoData", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ busca: permission.marketId })
+    });
+
+
+    const marketData = await marketResponse.json();
+    const marketName = marketData.mensagem.nome;
+
     const permissions = {
       pdv: permission.pdv,
       estoque: permission.estoque,
@@ -154,6 +167,7 @@ async function loadMarketData(userId) {
       alertas: permission.alertas,
       rastreamento: permission.rastreamento
     };
+
     addMarketCard(marketName, permissions);
   }
 }
@@ -161,7 +175,7 @@ async function loadMarketData(userId) {
 async function loadUserData() {
   userId = getCookie("user");
   if (userId == "") {
-     window.location.href = "http://localhost:4000/error403";
+    window.location.href = "http://localhost:4000/error403";
     return;
   } else {
     try {
