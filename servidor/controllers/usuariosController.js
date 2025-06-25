@@ -138,9 +138,34 @@ const getUserById = async (req, res) => {
   }
 };
 
+const getUserPermissions = async (req, res) => {
+  console.log("o fetch foi rodado")
+  const { userId } = req.params;
+  try {
+    const permissions = await select("user_permissions", "WHERE userId = ?", [userId]);
+    if (permissions.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Permissions not found for this user"
+      });
+    }
+    res.status(200).json({
+      status: "success",
+      data: permissions
+    });
+  } catch (err) {
+    console.error("Error fetching user permissions:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Server error"
+    });
+  }
+};
+
 module.exports = {
     cadastro,
     login,
     loginWithId,
-    getUserById
+    getUserById,
+    getUserPermissions
 };

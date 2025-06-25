@@ -1,6 +1,6 @@
 // Dados do usuário
 let username = document.getElementById('userName');
-let userIdLabel = document.getElementById('userEnrollment');
+let userCode = document.getElementById('userCode');
 const profileImageElem = document.getElementById('profileImage');
 const fileInput = document.getElementById('fileInput');
 const btnChangeImage = document.getElementById('btnChangeImage');
@@ -23,23 +23,6 @@ function getCookie(cname) {
 }
 
 let userId;
-
-const permissoesPorLoja = {
-  "Loja Centro": {
-    estoque: true,
-    caixa: true,
-    relatorios: true,
-    rastreio: false,
-    configuracoes: false
-  },
-  "Loja Norte": {
-    estoque: true,
-    caixa: false,
-    relatorios: false,
-    rastreio: false,
-    configuracoes: false
-  }
-};
 
 main();
 
@@ -112,11 +95,11 @@ async function getImageURL(rawImagePath) {
     : 'https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';
 }
 
-function selecionarSupermercado(nomeLoja) {
-  document.getElementById('nomeLojaSelecionada').textContent = nomeLoja;
+function selecionarSupermercado(perimissions) {
+  document.getElementById('nomeLojaSelecionada').textContent = "acessos de " + perimissions.marketId;
   document.getElementById('supermercadoSelect').classList.add('d-none');
   document.getElementById('acessosPanel').classList.remove('d-none');
-  atualizarAcessos(permissoesPorLoja[nomeLoja]);
+  atualizarAcessos(perimissions);
 }
 
 function voltarParaSupermercados() {
@@ -124,20 +107,54 @@ function voltarParaSupermercados() {
   document.getElementById('acessosPanel').classList.add('d-none');
 }
 
-function atualizarAcessos(permissoes) {
+function atualizarAcessos(encodedPermissions) {
+  const decoded = decodeURIComponent(encodedPermissions);
+  const permissoes = JSON.parse(decoded);
   toggleCard('cardEstoque', permissoes.estoque);
   toggleCard('cardCaixa', permissoes.caixa);
   toggleCard('cardRelatorios', permissoes.relatorios);
   toggleCard('cardRastreio', permissoes.rastreio);
-  toggleCard('cardConfiguracoes', permissoes.configuracoes);
+  toggleCard('cardFornecedores', permissoes.fornecedor);
 }
 
 function toggleCard(id, habilitado) {
   const card = document.getElementById(id);
-  if (habilitado) {
-    card.classList.remove('disabled-card');
-  } else {
-    card.classList.add('disabled-card');
+  card.classList.toggle('disabled-card', Number(habilitado) !== 1);
+}
+
+function addMarketCard(marketName, permissions) {
+  const marketList = document.getElementById('supermercadosList');
+  const encodedPermissions = encodeURIComponent(JSON.stringify(permissions));
+  const innerHTML = `
+    <div class="col">
+      <a href="#" class="card text-center access-card" onclick="selecionarSupermercado('${encodedPermissions}')">
+        <div class="card-body">
+          <div style="font-size: 2.5rem;">🏬</div>
+          <h6 class="mt-2">${marketName}</h6>
+        </div>
+      </a>
+    </div>`;
+  marketList.innerHTML += innerHTML;
+}
+
+function irParaTela(tela) {    
+  window.location.href = `${window.location.origin}/${tela}`
+}
+
+async function loadMarketData(userId) {
+  const response = await fetch(`/api/usuarios/user_permissions/${userId}`);
+  const json = await response.json();
+  for (const permission of json.data) {
+    const marketName = permission.marketId;
+    const permissions = {
+      pdv: permission.pdv,
+      estoque: permission.estoque,
+      fornecedor: permission.fornecedor,
+      relatorios: permission.relatorios,
+      alertas: permission.alertas,
+      rastreamento: permission.rastreamento
+    };
+    addMarketCard(marketName, permissions);
   }
 }
 
@@ -148,12 +165,12 @@ async function loadUserData() {
     return;
   } else {
     try {
-      const response = await fetch(`/api/usuarios/${userId}`);
+      const response = await fetch(`/api/usuarios/users/${userId}`);
       const data = await response.json();
 
       if (data.status === "success") {
         username.textContent = data.data.name;
-        userIdLabel.textContent = userId;
+        userCode.textContent = userId;
 
         // Carregar foto de perfil
         const rawImagePath = data.data.profileImage;
@@ -161,6 +178,8 @@ async function loadUserData() {
           const urlImg = await getImageURL(rawImagePath);
           profileImageElem.src = urlImg;
         }
+
+        await loadMarketData(userId);
       } else {
         return;
       }

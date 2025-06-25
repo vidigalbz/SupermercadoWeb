@@ -33,7 +33,7 @@
                 />
                 <hr>
                 <p class="text-start"><strong>Nome:</strong> <span id="userName">[Nome]</span></p>
-                <p class="text-start"><strong>Matrícula:</strong> <span id="userEnrollment">[Matrícula]</span></p>
+                <p class="text-start"><strong>Codigo:</strong> <span id="userCode">[Codigo]</span></p>
 
                 <!-- Input de arquivo oculto e botões -->
                 <input
@@ -57,9 +57,6 @@
                   Remover Imagem
                 </button>
               </div>
-              <button class="btn btn-secondary m-2 mt-0" type="button" onclick="navigator.clipboard.writeText(document.getElementById('userEnrollment').textContent)">
-                 Copiar código
-              </button>
             </div>
           </div>
 
@@ -71,82 +68,58 @@
                 <div id="supermercadoSelect" class="flex-grow-1">
                   <h5 class="card-title text-start">Selecione um Supermercado</h5>
                   <hr>
-                  <div class="row row-cols-2 g-3">
-                    <div class="col">
-                        <a href="#" class="card text-center access-card" onclick="selecionarSupermercado('Loja Centro')">
-                        <div class="card-body">
-                            <div style="font-size: 2.5rem;">🏬</div>
-                            <h6 class="mt-2">Loja Centro</h6>
-                        </div>
-                        </a>
-                    </div>
-                    <div class="col">
-                        <a href="#" class="card text-center access-card" onclick="selecionarSupermercado('Loja Norte')">
-                        <div class="card-body">
-                            <div style="font-size: 2.5rem;">🏪</div>
-                            <h6 class="mt-2">Loja Norte</h6>
-                        </div>
-                        </a>
-                    </div>
-                    </div>
+                  <div class="row row-cols-2 g-3" id="supermercadosList">
+                  </div>
                 </div>
 
                 <!-- Telas de Acesso em Cards -->
                 <div id="acessosPanel" class="d-none flex-grow-1 d-flex flex-column">
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="card-title mb-0">Acessos - <span id="nomeLojaSelecionada"></span></h5>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="voltarParaSupermercados()">
+                  <h5 class="card-title mb-0">Acessos - <span id="nomeLojaSelecionada"></span></h5>
+                  <button class="btn btn-sm btn-outline-secondary" onclick="voltarParaSupermercados()">
                       <i class="bi bi-arrow-left"></i>
                     </button>
                   </div>
                   <hr>
                   <div class="row row-cols-2 g-3">
                     <div class="col">
-                      <a href="#" class="card text-center access-card" id="cardEstoque">
-                        <div class="card-body">
-                          <i class="bi bi-boxes access-icon"></i>
-                          <h6 class="mt-2">Estoque</h6>
-                        </div>
+                      <a href="#" class="card text-center access-card" id="cardEstoque" onclick="irParaTela('estoque')">
+                      <div class="card-body">
+                        <i class="bi bi-boxes access-icon"></i>
+                        <h6 class="mt-2">Estoque</h6>
+                      </div>
                       </a>
                     </div>
                     <div class="col">
-                      <a href="#" class="card text-center access-card" id="cardCaixa">
-                        <div class="card-body">
-                          <i class="bi bi-cash access-icon"></i>
-                          <h6 class="mt-2">Caixa</h6>
-                        </div>
+                      <a href="#" class="card text-center access-card" id="cardCaixa" onclick="irParaTela('caixa')">
+                      <div class="card-body">
+                        <i class="bi bi-cash access-icon"></i>
+                        <h6 class="mt-2">Caixa</h6>
+                      </div>
                       </a>
                     </div>
                     <div class="col">
-                      <a href="#" class="card text-center access-card" id="cardRelatorios">
-                        <div class="card-body">
-                          <i class="bi bi-bar-chart-line access-icon"></i>
-                          <h6 class="mt-2">Relatórios</h6>
-                        </div>
+                      <a href="#" class="card text-center access-card" id="cardRelatorios" onclick="irParaTela('relatorios')">
+                      <div class="card-body">
+                        <i class="bi bi-bar-chart-line access-icon"></i>
+                        <h6 class="mt-2">Relatórios</h6>
+                      </div>
                       </a>
                     </div>
                     <div class="col">
-                      <a href="#" class="card text-center access-card disabled-card" id="cardRastreio">
-                        <div class="card-body">
-                          <i class="bi bi-truck access-icon"></i>
-                          <h6 class="mt-2">Rastreio</h6>
-                        </div>
+                      <a href="#" class="card text-center access-card disabled-card" id="cardRastreio" onclick="irParaTela('historico')">
+                      <div class="card-body">
+                        <i class="bi bi-truck access-icon"></i>
+                        <h6 class="mt-2">Historico</h6>
+                      </div>
                       </a>
                     </div>
                     <div class="col">
-                      <a href="#" class="card text-center access-card disabled-card" id="cardConfiguracoes">
-                        <div class="card-body">
-                          <i class="bi bi-people-fill access-icon"></i>
-                          <h6 class="mt-2">Fornecedores</h6>
-                        </div>
-                      </a>
-                    </div>
-                    <div class="col">
-                      <a href="#" class="card text-center access-card disabled-card" id="cardConfiguracoes">
-                        <div class="card-body">
-                          <i class="bi bi-gear access-icon"></i>
-                          <h6 class="mt-2">Configurações</h6>
-                        </div>
+                      <a href="#" class="card text-center access-card disabled-card" id="cardFornecedores" onclick="irParaTela('fornecedores')">
+                      <div class="card-body">
+                        <i class="bi bi-people-fill access-icon"></i>
+                        <h6 class="mt-2">Fornecedores</h6>
+                      </div>
                       </a>
                     </div>
                   </div>
