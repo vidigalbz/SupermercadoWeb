@@ -172,7 +172,7 @@ function verificSuper(){
 }
 
 async function carregarSetoresEstoque(currentMarketId) {
-  obterNomeFornecedor();
+  carregarFornecedores();
   if (!currentMarketId) {
     console.error("ESTOQUE SCRIPT: marketId não fornecido para carregarSetoresEstoque");
     return;
@@ -273,7 +273,7 @@ async function criarCardHTML(produto) {
                     <strong>Nome:</strong> ${productName}<br>
                     <strong>Cód. Barras:</strong> ${barcode}<br>
                     <strong>ID Sistema:</strong> ${productId}<br>
-                    <strong>Fornecedor:</strong> ${nomeFornecedor}<br>
+                
                     <strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
                     <strong>Preço Total:</strong> R$ ${price}<br>
                     <strong>Categoria:</strong> ${category}<br>
@@ -732,28 +732,33 @@ function calcularValorTotalEdicao() {
  
 function abrirFornecedores(){
   var url = window.location.origin
-  window.location.href = `${url}/fornecedores/?id=${id}`
+  window.location.href = `${url}/fornecedores`
 }
 
-async function obterNomeFornecedor(cnpj) {
-  try {
-    const response = await fetch('/api/fornecedores/fornecedorData', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
-    });
-    
-    if (!response.ok) throw new Error('Erro na requisição');
-    const data = await response.json();
-    const fornecedores = data.result || [];
-    
-    const fornecedor = fornecedores.find(f => String(f.cnpj) === String(cnpj));
-    return fornecedor ? fornecedor.razao_social : cnpj;
-  } catch (error) {
-    console.error('Erro ao buscar nome do fornecedor:', error);
-    return cnpj;
-  }
+
+async function carregarFornecedores() {
+
+  const res = await fetch('/api/fornecedores/fornecedorData', { method: 'POST', 
+  headers: {'Content-Type' : 'application/json'}, 
+  body: JSON.stringify({marketId: marketIdGlobal})})
+  const json = await res.json()
+  const fornecedores = json.result
+  const select = document.getElementById('add-fornecedor')
+  select.innerHTML = '' // limpa
+
+  fornecedores.forEach(fornecedor => {
+    const option = document.createElement('option')
+    option.value = fornecedor.cnpj  // ou id, se tiver
+    option.text = fornecedor.razao_social
+    select.appendChild(option)
+  })
 }
+
+// Quando o modal de adicionar produto for aberto
+const modalAdicionar = document.getElementById('modalAdicionarItem')
+modalAdicionar.addEventListener('show.bs.modal', () => {
+  carregarFornecedores()
+})
 
  
 // Atualiza o valor total sempre que o preço ou o estoque mudar
