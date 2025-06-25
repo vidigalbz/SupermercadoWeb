@@ -157,8 +157,8 @@ function reloadPage() {
   }
 }
 
-async function verificSuper(){
-    await fetch("api/supermercados/verify", {
+function verificSuper(){
+    fetch("/api/supermercados/verify", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({busca: marketIdGlobal, column: "marketId", tableSelect :"supermarkets"})
@@ -176,6 +176,7 @@ async function verificSuper(){
 }
 
 async function carregarSetoresEstoque(currentMarketId) {
+  obterNomeFornecedor();
   if (!currentMarketId) {
     console.error("ESTOQUE SCRIPT: marketId não fornecido para carregarSetoresEstoque");
     return;
@@ -423,7 +424,7 @@ function searchEstoque() {
   };
   if (categoria && categoria !== "Todos") payload.category = categoria;
 
-  fetch('/api/produtos//estoqueData', {
+  fetch('/api/produtos/estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -748,15 +749,24 @@ function abrirFornecedores(){
 
 async function obterNomeFornecedor(cnpj) {
   try {
-    const response = await fetch('/fornecedores');
-    const fornecedores = await response.json();
-    const fornecedor = fornecedores.find(f => f.cnpj === cnpj);
-    return fornecedor ? fornecedor.nome : cnpj;
+    const response = await fetch('/api/fornecedores/fornecedorData', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    
+    if (!response.ok) throw new Error('Erro na requisição');
+    const data = await response.json();
+    const fornecedores = data.result || [];
+    
+    const fornecedor = fornecedores.find(f => String(f.cnpj) === String(cnpj));
+    return fornecedor ? fornecedor.razao_social : cnpj;
   } catch (error) {
     console.error('Erro ao buscar nome do fornecedor:', error);
     return cnpj;
   }
 }
+
  
 // Atualiza o valor total sempre que o preço ou o estoque mudar
 precoInput.addEventListener("input", calcularTotalCompra);
