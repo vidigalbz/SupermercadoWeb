@@ -1,9 +1,3 @@
-let funcionarios = [
-  { nome: "Ana Silva", online: true, tela: "PDV", foto: "https://randomuser.me/api/portraits/women/1.jpg", permissoes: ["Estoque", "PDV"] },
-  { nome: "João Pedro", online: false, tela: null, foto: "https://randomuser.me/api/portraits/men/2.jpg", permissoes: ["Relatórios"] },
-  { nome: "Maria Oliveira", online: true, tela: "Estoque", foto: "https://randomuser.me/api/portraits/women/3.jpg", permissoes: ["Estoque", "Alertas"] },
-];
-
 const container = document.querySelector('.mercados-lista .overflow-auto');
 let currentData = [];
 const urlLocal = getBaseUrl();
