@@ -15,14 +15,12 @@ const checkoutModalBody = document.getElementById("checkoutModalBody");
 const confirmCheckoutBtn = document.getElementById("confirmCheckoutBtn");
 
 document.addEventListener('DOMContentLoaded', function() {
-    const marketIdFromUrl = getQueryParam('id');
-    if (marketIdFromUrl) {
-        currentMarketId = marketIdFromUrl; // ATRIBUI O ID DA URL (COMO STRING)
-        console.log("PDV Market ID Definido:", currentMarketId);
+    currentMarketId = getCookie('marketId')
+    if (currentMarketId) {
         verificSuper(); // Chama verificSuper para buscar o nome do mercado
     } else {
         console.error("ID do Mercado não encontrado na URL para o PDV!");
-        showAlert("Erro crítico: ID do mercado não especificado na URL.", "Erro de Configuração", "error");
+        window.location.href = '/error404'
         if (confirmCheckoutBtn) { // Verifica se o botão já existe no DOM
             confirmCheckoutBtn.disabled = true;
         }
@@ -87,24 +85,12 @@ function filtrarProdutos(termoBusca) {
     });
 }
 
-function getQueryParam(paramName) {
-    const queryString = window.location.search.substring(1);
-    const params = queryString.split('&');
-    for (const param of params) {
-        const [key, value] = param.split('=');
-        if (key === paramName) {
-            return decodeURIComponent(value || '');
-        }
-    }
-    return null;
-}
-const id = getQueryParam('id');
-verificSuper()
+
+
   
 async function verificSuper() {
-    const marketIdFromUrl = getQueryParam('id'); // Pega o ID da URL para esta função
 
-    if (!marketIdFromUrl) {
+    if (!currentMarketId) {
         console.error('ID do supermercado não encontrado na URL para verificSuper.');
         showAlert("Supermercado não identificado na URL.", "Erro de Configuração", "error");
         const supermarketNameEl = document.getElementById("supermarket-name");
@@ -113,10 +99,10 @@ async function verificSuper() {
     }
 
     try {
-        const response = await fetch("/supermercado/verify", { // Endpoint correto para verificar supermercado
+        const response = await fetch("/api/supermercados/verify", { // Endpoint correto para verificar supermercado
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ marketId: marketIdFromUrl }) // Envia o marketId corretamente
+            body: JSON.stringify({busca: currentMarketId, column: 'marketId', tableSelect: 'supermarkets'}) // Envia o marketId corretamente
         });
 
         const data = await response.json(); // Lê a resposta JSON
@@ -125,9 +111,10 @@ async function verificSuper() {
             throw new Error(data.message || data.error || `Erro ${response.status} ao verificar supermercado.`);
         }
 
+
         // O backend /verify (corrigido) retorna { success: true, market: {name: "..."} }
-        if (data.success && data.market) {
-            const supermarketName = data.market.name;
+        if (data.mensagem) {
+            const supermarketName = data.mensagem.name;
             const supermarketNameEl = document.getElementById("supermarket-name");
             if (supermarketNameEl) {
                 supermarketNameEl.textContent = "Super Mercado: " + supermarketName;
@@ -142,7 +129,7 @@ async function verificSuper() {
             // window.location.href = '/Error404'; // Descomente se quiser redirecionar
         }
     } catch (err) {
-        console.error('Erro na função verificSuper:', { error: err.message, stack: err.stack, marketId: marketIdFromUrl });
+        console.error('Erro na função verificSuper:', { error: err.message, stack: err.stack, marketId: currentMarketId });
         const supermarketNameEl = document.getElementById("supermarket-name");
         if(supermarketNameEl) supermarketNameEl.textContent = "Super Mercado: Erro na Verificação";
         showAlert(`Erro ao verificar dados do supermercado: ${err.message}`, "Erro de Conexão", "error");
@@ -164,7 +151,7 @@ function init() {
 
 async function loadCartFromCookie() {
     try {
-        const response = await fetch('/getCarrinho'); // GET por padrão
+        const response = await fetch('/api/carrinho/getCarrinho'); // GET por padrão
         if (response.ok) {
             const data = await response.json();
             if (data.carrinho && Object.keys(data.carrinho).length > 0) {
@@ -195,7 +182,7 @@ async function loadCartFromCookie() {
 async function recreateProductCard(productData) {
     // If productData is missing essential fields, fetch it from server
     if (!productData.name || !productData.price) {
-        const response = await fetch('/estoqueData', {
+        const response = await fetch('/api/supermercados/estoqueData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ busca: productData.barcode, marketId: id })
@@ -388,7 +375,7 @@ async function AdicionarProdutoNovo() {
     }
 
     try {
-        const response = await fetch('/estoqueData', { // Busca o produto no estoque
+        const response = await fetch('/api/supermecados/estoqueData', { // Busca o produto no estoque
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ busca: code, marketId: currentMarketId }) // 'busca' é o código/barcode
@@ -475,7 +462,7 @@ function criarCardEstoque(produto) { // produto vindo do backend
 
 async function saveCartToCookie() {
     try {
-        const response = await fetch('/addCarrinho', {
+        const response = await fetch('/api/carrinho/addCarrinho', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ carrinho: productsOnScreen }),
@@ -616,7 +603,7 @@ async function finalizarCompra() {
         if(confirmCheckoutBtn) confirmCheckoutBtn.disabled = true;
         if(checkoutModalBody) checkoutModalBody.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Processando...</span></div><p>Enviando dados...</p></div>`;
 
-        const response = await fetch('/finalizarCompra', {
+        const response = await fetch('/api/carrinho/finalizarCompra', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(currentInvoice)
@@ -701,7 +688,7 @@ function resetCart() {
     updateTotals();
     
     // Limpar cookie do carrinho no servidor
-    fetch('/addCarrinho', { // Envia um carrinho vazio para "limpar" o cookie
+    fetch('/api/carrinho/addCarrinho', { // Envia um carrinho vazio para "limpar" o cookie
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ carrinho: {} }),

@@ -48,7 +48,6 @@ async function verificarUser() {
     const res = await fetch('/api/usuarios/users/' + userId);
     const data = await res.json();
 
-    console.log(data);
     document.getElementById('userName').textContent = data.data.name;
     document.getElementById('userRole').textContent = "Gerente";
 
@@ -205,8 +204,6 @@ async function renderizarFuncionarios(marketId) {
     user.data.profileImage = await getImageURL(user.data.profileImage);
 
     funcionarios.push(user.data);
-    console.log(user.data.profileImage)
-    console.log(user.data);
   }
 
   if (funcionarios.length === 0) {
@@ -215,7 +212,6 @@ async function renderizarFuncionarios(marketId) {
   }
 
   funcionarios.forEach(async (func, idx) => {
-    console.log(func)
     const permissoesHtml = func.permissoes && func.permissoes.length
       ? func.permissoes.map(p => `<span class="badge bg-primary me-1">${p}</span>`).join(' ')
       : '<span class="text-muted">Nenhuma</span>';
@@ -367,8 +363,6 @@ async function SalvarPermissoes() {
   permissionsBoolList.push(permissoesSelecionadas.includes("Relatório") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
-
-  console.log(func);
 
   func.permissoes = permissionsBoolList;
 
@@ -589,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById("btn-recarrega-estoque")?.addEventListener("click", () => {
-    document.cookie = 'marketId=;'
+    document.cookie = 'marketId=; path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC'
     window.location.reload();
   });
 });

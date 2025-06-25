@@ -30,7 +30,6 @@ async function carregarSupermercados() {
     return;
   }
 
-  console.log("HISTORICO: Tentando carregar supermercados para userId:", userId);
   if (selectEl) selectEl.innerHTML = `<option value="">Carregando supermercados...</option>`;
 
   try {
@@ -41,7 +40,6 @@ async function carregarSupermercados() {
     });
 
     const responseBodyText = await response.text();
-    console.log("HISTORICO: Resposta bruta de /listarSupermercados:", response.status, responseBodyText);
 
     if (!response.ok) {
       let errorMsg = `Erro ${response.status} ao buscar supermercados.`;
@@ -55,8 +53,6 @@ async function carregarSupermercados() {
     }
 
     const result = JSON.parse(responseBodyText);
-    console.log("HISTORICO: Dados de /listarSupermercados parseados:", result);
-
     if (!result.success) {
       throw new Error(result.error || "Falha ao listar supermercados (backend retornou success: false).");
     }

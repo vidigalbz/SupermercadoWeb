@@ -39,7 +39,6 @@ function limparFiltros() {
   } else {
       console.error("LINK.JS: Função para recarregar produtos (searchEstoque ou carregarProdutos) não encontrada.");
   }
-  console.log("LINK.JS: Filtros limpos.");
 }
 
 function abrirModalEdicao() { // Chamada pelo botão "Editar" principal da página (ao lado do input #codigo-editar)
@@ -186,7 +185,6 @@ async function confirmarEdicaoFinal() { // Chamado pelo "Sim, editar" do modal #
   }
 
   if (sucessoNaEdicao) {
-      console.log('LINK.JS: Alterações salvas com sucesso pelo backend.');
       const modalEdicaoPrincipalEl = document.getElementById("modalEditarProduto");
       if (modalEdicaoPrincipalEl) {
           const modalEdicaoPrincipal = bootstrap.Modal.getInstance(modalEdicaoPrincipalEl);
@@ -194,7 +192,6 @@ async function confirmarEdicaoFinal() { // Chamado pelo "Sim, editar" do modal #
       }
 
   } else {
-      console.log('LINK.JS: Falha ao salvar alterações (confirmarEdicao retornou false ou erro). O modal de edição deve permanecer aberto ou ser reaberto se necessário.');
   }
 }
 
@@ -220,11 +217,4 @@ async function confirmarExclusaoFinal() {
       return;
   }
 
-  if (sucessoNaExclusao) {
-      console.log('LINK.JS: Produto excluído com sucesso. A lista deve ter sido atualizada por excluirProduto.');
-
-  } else {
-      console.log('LINK.JS: Falha ao excluir produto (excluirProduto retornou false ou erro).');
-
-  }
 }

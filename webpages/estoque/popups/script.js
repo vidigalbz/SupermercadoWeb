@@ -91,7 +91,6 @@ async function carregarSetoresGlobais(currentMarketId) {
     
     categoriasGlobais = data.cat || [];
     departamentosGlobais = data.dept || [];
-    console.log("POPUP SCRIPT: Setores (categorias/departamentos) carregados para o market:", currentMarketId, {categoriasGlobais, departamentosGlobais});
   } catch (err) {
     console.error("POPUP SCRIPT: Erro em carregarSetoresGlobais:", err);
     categoriasGlobais = []; departamentosGlobais = [];
@@ -181,7 +180,6 @@ function abrirModalEditarProduto() {
       showAlert(`Produto com código "${productIdParaEditar}" não encontrado.`, "Não Encontrado", "error");
       return;
     }
-    console.log("POPUP SCRIPT (Editar): Produto encontrado para abrir modal:", produto);
 
     carregarSetoresGlobais(currentMarketId).then(() => {
 
@@ -231,7 +229,6 @@ function abrirModalEditarProduto() {
         const modalEl = document.getElementById('modalEditarProduto');
         if (!modalEl) { console.error("Modal #modalEditarProduto não encontrado!"); return;}
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        console.log("POPUP SCRIPT (Editar): Mostrando modal de edição.");
         modal.show();
     });
 }
@@ -295,7 +292,6 @@ async function adicionarDepartamentoCategoria() {
   const currentMarketId = getMarketIdParaPopups();
   const currentUserId = getUserIdParaPopups();
 
-  console.log(`${currentMarketId} || ${currentUserId}`)
 
   if (!currentMarketId || !currentUserId) {
       showAlert("ID do Mercado ou Usuário não identificado.", "Erro", "error");
@@ -512,7 +508,6 @@ function abrirModalExclusaoProduto() {
       return;
   }
 
-  console.log("POPUP SCRIPT (Excluir): Produto encontrado para preencher modal de exclusão:", produto);
 
   // Preenche os spans de informação no modal #modalExcluirProduto
   // Certifique-se que os IDs no HTML do modal de exclusão correspondem a estes:

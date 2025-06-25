@@ -45,7 +45,6 @@ async function verificarUser() {
     const res = await fetch('/api/usuarios/users/' + userIdGlobal);
     const data = await res.json();
 
-    console.log(data);
 
     const funcionarios =  await fetch('/api/funcionarios/funcionarios', {
       method: 'POST',
@@ -55,8 +54,6 @@ async function verificarUser() {
 
     // TODO: 
     // O Fetch não está sendo fechado
-
-    console.log("a");
 
     let funcData = await funcionarios.json();
     funcionariosData = funcData.message;
@@ -98,7 +95,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     return;
   }
 
-  console.log(`ESTOQUE SCRIPT: Market ID = ${marketIdGlobal}, User ID = ${userIdGlobal}`);
 
   // Verifica supermercado e carrega dados
   await verificSuper();
@@ -228,7 +224,6 @@ async function getImageURL(rawImagePath) {
 
 async function criarCardHTML(produto) {
 
-  console.log("CRIAR CARD HTML (Botões Editar/Excluir Removidos do Card) - Recebendo produto:", JSON.stringify(produto, null, 2));
   if (!produto || typeof produto.productId === 'undefined' || produto.productId === null) {
     console.warn("CRIAR CARD HTML: productId inválido ou ausente. Produto:", produto, "O card não será renderizado.");
     return;
@@ -324,7 +319,7 @@ async function criarCardHTML(produto) {
                         if (tooltipInstance) tooltipInstance.setContent({ '.tooltip-inner': `Copiar ID Sistema (${idParaCopiar})` });
                     }, 2000);
                     if(typeof showAlert === 'function') showAlert("ID Copiado!", `ID ${idParaCopiar} copiado.`, "success");
-                    else console.log("ID Copiado!", `ID ${idParaCopiar} copiado.`);
+                    
                 }).catch(err => {
                     console.error('Falha ao copiar ID:', err);
                     if(typeof showAlert === 'function') showAlert("Falha ao Copiar", "Não foi possível copiar o ID.", "error");
@@ -461,7 +456,6 @@ function getCookie(cname) {
 }
 
 async function adicionarProduto() {
-  console.log("ESTOQUE SCRIPT: Função adicionarProduto() chamada.");
 
   // Usando as variáveis globais definidas no DOMContentLoaded
   const currentUserId = userIdGlobal;
@@ -555,11 +549,6 @@ async function adicionarProduto() {
       formData.append("imagem", imagemInput.files[0]);
   } else {
       formData.append("imagem", ""); // Envia string vazia se não houver imagem (backend deve tratar)
-  }
-
-  console.log("ESTOQUE SCRIPT: Enviando para /adicionarProduto (FormData):");
-  for (let pair of formData.entries()) {
-      console.log(`  ${pair[0]}: ${pair[1]}`);
   }
 
   try {
@@ -659,7 +648,6 @@ async function confirmarEdicao() {
   }
 
   try {
-    console.log("ESTOQUE SCRIPT: Enviando para /editarProduto:", produtoAtualizado);
     const response = await fetch("/api/produtos/editarProduto", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
