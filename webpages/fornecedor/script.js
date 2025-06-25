@@ -59,7 +59,8 @@ async function adicionarFornecedor() {
             inscricao_estadual: inscricao_estadual,
             endereco: endereco,
             contato: contato,
-            tipo_de_produto: tipo_de_produto
+            tipo_de_produto: tipo_de_produto,
+            marketId: marketIdGlobal
         })
     }).then(res => res.json()).then(data => {
         
@@ -111,7 +112,7 @@ async function carregarFornecedor() {
     fetch("/api/fornecedores/fornecedorData", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({marketId: getCookie('marketId')})
     }).then(res => res.json()).then(data => {
         if(data.result){
             dataFornecedores = data.result

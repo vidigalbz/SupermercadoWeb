@@ -7,13 +7,14 @@ const addFornecedor = async (req, res) => {
         inscricao_estadual,
         endereco,
         contato,
-        tipo_de_produto
+        tipo_de_produto,
+        marketId
     } = req.body;
     try {
         await insert(
             "fornecedores",
-            ["cnpj", "razao_social", "inscricao_estadual", "endereco", "contato", "tipo_de_produto"],
-            [cnpj, razao_social, inscricao_estadual, endereco, contato, tipo_de_produto]
+            ["cnpj", "razao_social", "inscricao_estadual", "endereco", "contato", "tipo_de_produto", "marketId"],
+            [cnpj, razao_social, inscricao_estadual, endereco, contato, tipo_de_produto, marketId]
         );
         res.json({
             status: "success"
@@ -25,8 +26,9 @@ const addFornecedor = async (req, res) => {
 };
 
 const getFornecedores = async (req, res) => {
+    const { marketId } = req.body;
     try {
-        const data = await select("fornecedores");
+        const data = await select("fornecedores", "WHERE marketId = ?", marketId);
         res.status(200).json({ result: data });
     } catch (e) {
         res.status(500).json({ erro: e });
