@@ -157,8 +157,8 @@ function reloadPage() {
   }
 }
 
-function verificSuper(){
-    fetch("api/supermercados/verify", {
+async function verificSuper(){
+    await fetch("api/supermercados/verify", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({busca: marketIdGlobal, column: "marketId", tableSelect :"supermarkets"})
