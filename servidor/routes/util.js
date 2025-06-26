@@ -11,6 +11,7 @@ async function loadPages(app, webpages_dir) {
             if (stat.isDirectory()) {
                 const indexPath = path.join(caminho, "index.html");
                 if (fs.existsSync(indexPath)) {
+                    console.log(arquivo)
                     const routePath = arquivo.toLowerCase() === "main" ? "/" : `/${arquivo}`;
                     app.get(routePath, (req, res) => res.sendFile(indexPath));
                 }

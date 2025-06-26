@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supermercado Didático</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="bi bi-shop me-2"></i>Supermercado Didático
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#features">Recursos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#how">Como Funciona</a></li>
+          <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
+          <li class="nav-item"><a class="nav-link" href="#cadastro">Cadastrar-se</a></li>
+          <li class="nav-item"><a class="nav-link" href="#credits">Creditos</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero" id="home">
+    <div class="container hero-content">
+      <div class="row align-items-center">
+        <div class="col-lg-6 col-md-12 text-md-start text-center" data-aos="fade-right">
+          <h1>Revolucione a Gestão do Seu Supermercado</h1>
+          <p>O sistema completo para gerenciar estoques, controlar vendas e fidelizar clientes com eficiência e
+            simplicidade.</p>
+          <a href="#cadastro" class="btn btn-hero">Começar Agora <i class="bi bi-arrow-right ms-2"></i></a>
+        </div>
+        <div class="col-lg-6 col-md-12 text-center mt-4 mt-lg-0" data-aos="fade-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/4341/4341139.png" alt="Supermercado"
+            class="img-fluid hero-img">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Soluções -->
+  <section id="features" class="py-5">
+    <div class="container text-center">
+      <h2 class="section-title" data-aos="zoom-in">Tudo o que seu supermercado precisa</h2>
+
+      <div class="row g-4">
+        <!-- Item 1 -->
+        <div class="col-md-4" data-aos="fade-up">
+          <div class="feature-box">
+            <i class="bi bi-box-seam feature-icon"></i>
+            <h4>Gestão de Estoque</h4>
+            <p class="mb-0">Controle completo de produtos em tempo real com alertas de reposição e validade</p>
+          </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-box">
+            <i class="bi bi-calculator feature-icon"></i>
+            <h4>PDV Inteligente</h4>
+            <p class="mb-0">Sistema de ponto de venda rápido, intuitivo e com múltiplas formas de pagamento</p>
+          </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-box">
+            <i class="bi bi-graph-up feature-icon"></i>
+            <h4>Relatórios Avançados</h4>
+            <p class="mb-0">Gere relatórios detalhados de vendas, lucratividade e desempenho</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Como Funciona -->
+  <section id="how" class="steps">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6 col-md-12" data-aos="fade-right">
+          <h2 class="section-title">Como Funciona</h2>
+          <ul class="fs-5">
+            <li><strong>Crie sua conta</strong> em poucos minutos sem burocracia</li>
+            <li><strong>Cadastre seu supermercado</strong> com produtos, categorias e funcionários</li>
+            <li><strong>Comece a vender</strong> com controle total de caixa e estoque</li>
+            <li><strong>Acesse relatórios</strong> detalhados para tomar melhores decisões</li>
+          </ul>
+          <a href="#cadastro" class="btn btn-hero mt-3">Experimente Grátis</a>
+        </div>
+        <div class="col-lg-6 col-md-12 text-center mt-5 mt-lg-0" data-aos="fade-left">
+          <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" alt="Supermercado"
+            class="img-fluid hero-img">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq">
+    <div class="container">
+      <h2 class="section-title text-center mb-5" data-aos="zoom-in">Perguntas Frequentes</h2>
+
+      <div class="accordion" id="faqAccordion">
+        <!-- Pergunta 1 -->
+        <div class="accordion-item" data-aos="fade-up">
+          <h3 class="accordion-header" id="headingOne">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseOne">
+              <i class="bi bi-question-circle me-2"></i> Como instalar o sistema?
+            </button>
+          </h3>
+          <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              <p>O Supermercado Didático é um sistema web que não requer instalação complexa. Basta:</p>
+              <ol>
+                <li>Acessar nosso site e criar uma conta</li>
+                <li>Configurar seu perfil de supermercado</li>
+                <li>Começar a cadastrar produtos e funcionários</li>
+              </ol>
+              <p>Temos também um <a href="#">vídeo tutorial</a> que mostra o processo passo a passo.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta 2 -->
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="100">
+          <h3 class="accordion-header" id="headingTwo">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseTwo">
+              <i class="bi bi-share me-2"></i> Como compartilhar o acesso ao supermercado?
+            </button>
+          </h3>
+          <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              <p>Você pode adicionar colaboradores seguindo estes passos:</p>
+              <ol>
+                <li>Acesse a seção "Funcionários" no menu principal</li>
+                <li>Clique em "Adicionar Funcionário"</li>
+                <li>Preencha os dados e defina o nível de acesso</li>
+                <li>O funcionário receberá um e-mail com instruções para ativar sua conta</li>
+              </ol>
+              <p>Assista nosso <a href="#">vídeo tutorial</a> sobre compartilhamento de acesso.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta 3 -->
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="200">
+          <h3 class="accordion-header" id="headingThree">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseThree">
+              <i class="bi bi-basket me-2"></i> Como cadastrar novos produtos?
+            </button>
+          </h3>
+          <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              <p>O cadastro de produtos é simples e rápido:</p>
+              <ol>
+                <li>Acesse o menu "Estoque"</li>
+                <li>Clique em "Adicionar Produto"</li>
+                <li>Preencha as informações básicas (código, nome, preço)</li>
+                <li>Adicione detalhes como categoria, fornecedor e quantidade em estoque</li>
+                <li>Salve e o produto já estará disponível para venda</li>
+              </ol>
+              <p>Temos um <a href="#">vídeo demonstrativo</a> que mostra todo o processo.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta 4 -->
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="300">
+          <h3 class="accordion-header" id="headingFour">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseFour">
+              <i class="bi bi-cash-coin me-2"></i> Como realizar uma venda no sistema?
+            </button>
+          </h3>
+          <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              <p>O processo de venda é intuitivo:</p>
+              <ol>
+                <li>Acesse o PDV (Ponto de Venda)</li>
+                <li>Digite o código ou nome do produto</li>
+                <li>Informe a quantidade</li>
+                <li>Repita para todos os itens da compra</li>
+                <li>Selecione a forma de pagamento</li>
+                <li>Finalize a venda e imprima o cupom (opcional)</li>
+              </ol>
+              <p>Confira nosso <a href="#">vídeo tutorial de vendas</a> para ver na prática.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta 5 -->
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="400">
+          <h3 class="accordion-header" id="headingFive">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseFive">
+              <i class="bi bi-file-earmark-bar-graph me-2"></i> Como gerar relatórios?
+            </button>
+          </h3>
+          <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              <p>O sistema oferece diversos relatórios:</p>
+              <ul>
+                <li><strong>Vendas:</strong> Acesse o menu "Relatórios" > "Vendas" e defina o período</li>
+                <li><strong>Estoque:</strong> Encontre em "Relatórios" > "Estoque" com opções de filtro</li>
+                <li><strong>Financeiro:</strong> Disponível em "Relatórios" > "Financeiro"</li>
+              </ul>
+              <p>Todos os relatórios podem ser exportados em PDF ou Excel. Assista nosso <a href="#">vídeo sobre
+                  relatórios</a> para mais detalhes.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cadastro -->
+  <section id="cadastro" class="text-center bg-primary text-white">
+    <div class="container">
+      <h2 class="section-title text-white" data-aos="zoom-in">Pronto para transformar seu supermercado?</h2>
+      <p class="fs-5 mb-4" data-aos="fade-up">Cadastre-se gratuitamente e experimente agora mesmo o Supermercado
+        Didático.</p>
+      <a href="../login/index.html?cadastro=1" class="btn btn-hero mt-3" data-aos="fade-up">
+        Quero me cadastrar <i class="bi bi-arrow-up-right ms-2"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- Nova seção de Créditos -->
+  <section class="credits">
+    <div class="container">
+      <h2 class="section-title">Sobre o Projeto</h2>
+      <p>
+        Este projeto foi desenvolvido pela turma de Desenvolvimento de Sistemas (046.2024.0035) da unidade SENAC
+        Divinópolis, sob a proposta do instrutor <strong class="instructor">Michael Ferreira</strong>
+      </p>
+      
+      <div class="text-center my-4">
+            <a href="https://github.com/vidigalbz/SupermercadoWeb" 
+               target="_blank" 
+               class="btn btn-hero d-inline-flex align-items-center">
+                <i class="bi bi-github me-2"></i> Acessar Repositório
+            </a>
+        </div>
+
+      <h3 class="text-center mb-4">Alunos Desenvolvedores</h3>
+      <div class="marquee">
+        <div class="marquee-container">
+          <!-- Lista de nomes com fotos do GitHub -->
+          <a href="https://github.com/andre-luis" target="_blank" class="marquee-item">
+            <img src="https://github.com/andre-luis.png" class="github-avatar" alt="André Luis">
+            André Luis
+          </a>
+          <a href="https://github.com/arthur-otavio" target="_blank" class="marquee-item">
+            <img src="https://github.com/arthur-otavio.png" class="github-avatar" alt="Arthur Otavio">
+            Arthur Otavio
+          </a>
+          <a href="https://github.com/bernardo-gualberto" target="_blank" class="marquee-item">
+            <img src="https://github.com/bernardo-gualberto.png" class="github-avatar" alt="Bernado Gualberto">
+            Bernado Gualberto
+          </a>
+          <a href="https://github.com/bruna-gontijo" target="_blank" class="marquee-item">
+            <img src="https://github.com/bruna-gontijo.png" class="github-avatar" alt="Bruna Gontijo">
+            Bruna Gontijo
+          </a>
+          <a href="https://github.com/gabriel-henrique" target="_blank" class="marquee-item">
+            <img src="https://github.com/gabriel-henrique.png" class="github-avatar" alt="Gabriel Henrique">
+            Gabriel Henrique
+          </a>
+          <a href="https://github.com/hugo-pierre" target="_blank" class="marquee-item">
+            <img src="https://github.com/hugo-pierre.png" class="github-avatar" alt="Hugo Pierre">
+            Hugo Pierre
+          </a>
+          <a href="https://github.com/kaique-madureira" target="_blank" class="marquee-item">
+            <img src="https://github.com/kaique-madureira.png" class="github-avatar" alt="Kaique Madureira">
+            Kaique Madureira
+          </a>
+          <a href="https://github.com/leonardo-vidigal" target="_blank" class="marquee-item">
+            <img src="https://github.com/leonardo-vidigal.png" class="github-avatar" alt="Leonardo Vidigal">
+            Leonardo Vidigal
+          </a>
+          <a href="https://github.com/pedro-henrique" target="_blank" class="marquee-item">
+            <img src="https://github.com/pedro-henrique.png" class="github-avatar" alt="Pedro Henrique">
+            Pedro Henrique
+          </a>
+          <!-- Repetir para efeito contínuo -->
+          <a href="https://github.com/andre-luis" target="_blank" class="marquee-item">
+            <img src="https://github.com/andre-luis.png" class="github-avatar" alt="André Luis">
+            André Luis
+          </a>
+          <a href="https://github.com/arthur-otavio" target="_blank" class="marquee-item">
+            <img src="https://github.com/arthur-otavio.png" class="github-avatar" alt="Arthur Otavio">
+            Arthur Otavio
+          </a>
+          <a href="https://github.com/bernardo-gualberto" target="_blank" class="marquee-item">
+            <img src="https://github.com/bernardo-gualberto.png" class="github-avatar" alt="Bernado Gualberto">
+            Bernado Gualberto
+          </a>
+          <a href="https://github.com/bruna-gontijo" target="_blank" class="marquee-item">
+            <img src="https://github.com/bruna-gontijo.png" class="github-avatar" alt="Bruna Gontijo">
+            Bruna Gontijo
+          </a>
+          <a href="https://github.com/gabriel-henrique" target="_blank" class="marquee-item">
+            <img src="https://github.com/gabriel-henrique.png" class="github-avatar" alt="Gabriel Henrique">
+            Gabriel Henrique
+          </a>
+          <a href="https://github.com/hugo-pierre" target="_blank" class="marquee-item">
+            <img src="https://github.com/hugo-pierre.png" class="github-avatar" alt="Hugo Pierre">
+            Hugo Pierre
+          </a>
+          <a href="https://github.com/kaique-madureira" target="_blank" class="marquee-item">
+            <img src="https://github.com/kaique-madureira.png" class="github-avatar" alt="Kaique Madureira">
+            Kaique Madureira
+          </a>
+          <a href="https://github.com/leonardo-vidigal" target="_blank" class="marquee-item">
+            <img src="https://github.com/leonardo-vidigal.png" class="github-avatar" alt="Leonardo Vidigal">
+            Leonardo Vidigal
+          </a>
+          <a href="https://github.com/pedro-henrique" target="_blank" class="marquee-item">
+            <img src="https://github.com/pedro-henrique.png" class="github-avatar" alt="Pedro Henrique">
+            Pedro Henrique
+          </a>
+        </div>
+      </div>
+      <p style="color: cadetblue;"><small>(clique para acessar o Repositório)</small></p>
+    </div>
+  </section>  
+
+  <!-- Rodapé -->
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-4 mb-md-0">
+          <h4 class="mb-3"><i class="bi bi-shop me-2"></i> Supermercado Didático</h4>
+          <p>A solução completa para gestão de supermercados, padarias e mercearias.</p>
+          <p><strong>Senac Divinópolis</strong></p>
+        </div>
+        <div class="col-md-4 mb-4 mb-md-0">
+          <h5 class="mb-3">Links Rápidos</h5>
+          <div class="footer-links d-flex flex-column">
+            <a href="#features">Recursos</a>
+            <a href="#how">Como Funciona</a>
+            <a href="#faq">FAQ</a>
+            <a href="#cadastro">Cadastro</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <h5 class="mb-3">Repositório de Código Aberto</h5>
+          <div class="social-icons d-flex justify-content-center justify-content-md-start">
+            <a href="https://github.com/vidigalbz/SupermercadoWeb"><i class="bi bi-github"></i></a>
+          </div>
+        </div>
+      </div>
+      <hr class="my-4 bg-light opacity-10">
+      <div class="text-center">
+        <p class="mb-0">&copy; 2025 Supermercado Didático - Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
