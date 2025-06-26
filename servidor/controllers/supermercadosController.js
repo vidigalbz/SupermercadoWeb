@@ -112,12 +112,15 @@ const deletarSupermercado = async (req, res) => {
     }
 };
 
-const  supermercadoData = async (req, res) => {
+const supermercadoData = async (req, res) => {
     const { busca } = req.body; // 'busca' deve ser ownerId
+
     if (!busca) {
         return res.status(400).json({ erro: "ID do proprietário (busca) é obrigatório.", mensagem: [] });
     }
+
     const ownerId = parseInt(busca);
+
     if (isNaN(ownerId)) {
         return res.status(400).json({ erro: "ID do proprietário fornecido é inválido.", mensagem: [] });
     }
@@ -129,6 +132,22 @@ const  supermercadoData = async (req, res) => {
         return res.status(500).json({ erro: "Erro ao consultar supermercados." });
     }
 };
+
+const pegarSupermercadoNome = async (req, res) => {
+    const { busca } = req.body;
+
+    if (!busca) {
+        return res.status(400).json({ erro: "ID do mercado (busca) é obrigatório.", mensagem: [] });
+    }
+
+    try {
+        const results = await select("supermarkets", "WHERE marketId = ?", [busca]);
+        return res.status(200).json({ mensagem: results });
+    } catch (err) {
+        console.error("Erro ao consultar supermercados:", err);
+        return res.status(500).json({ erro: "Erro ao consultar supermercados." });
+    }
+}
 
 const updateSupermercado = async (req, res) => {
     const { id: marketId, nome, local, icon, ownerId } = req.body;
@@ -180,6 +199,7 @@ module.exports = {
     listarSupermercados,
     deletarSupermercado,
     supermercadoData,
+    pegarSupermercadoNome,
     updateSupermercado,
     verify
 }
