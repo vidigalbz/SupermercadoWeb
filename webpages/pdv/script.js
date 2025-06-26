@@ -375,7 +375,7 @@ async function AdicionarProdutoNovo() {
     }
 
     try {
-        const response = await fetch('/api/supermecados/estoqueData', { // Busca o produto no estoque
+        const response = await fetch('/api/produtos/estoqueData', { // Busca o produto no estoque
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ busca: code, marketId: currentMarketId }) // 'busca' é o código/barcode
