@@ -222,3 +222,344 @@ function renderizarProdutosEncalhados(lista) {
     });
     container.appendChild(listGroup);
 }
+
+// Função para formatar valores em moeda brasileira
+function formatCurrency(value) {
+    return parseFloat(value).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
+
+// Função auxiliar para converter canvas em imagem
+function getCanvasImage(canvas, scale = 1) {
+    return new Promise((resolve) => {
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+
+        tempCanvas.width = canvas.width * scale;
+        tempCanvas.height = canvas.height * scale;
+        tempCtx.scale(scale, scale);
+        tempCtx.drawImage(canvas, 0, 0);
+
+        tempCanvas.toBlob(blob => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = new Image();
+                img.src = reader.result;
+                img.onload = () => resolve(img);
+            };
+            reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.9);
+    });
+}
+
+// Função para exportar para PDF
+async function exportarPDF() {
+    if (!relatorioData) {
+        alert("Por favor, gere os relatórios primeiro!");
+        return;
+    }
+
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    loadingModal.show();
+    document.getElementById('spinnerSection').classList.remove('d-none');
+    document.getElementById('okSection').classList.add('d-none');
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        let yPos = 20;
+        const lineHeight = 7;
+
+        // Cabeçalho
+        doc.setFontSize(18).setTextColor(40, 40, 40);
+        doc.text("Relatório de Vendas - Mercado Didático", pageWidth / 2, yPos, { align: "center" });
+
+        yPos += 10;
+        doc.setFontSize(12).setTextColor(100, 100, 100);
+        const dataRelatorio = dataExibida.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        doc.text(`Período: ${dataRelatorio.charAt(0).toUpperCase() + dataRelatorio.slice(1)}`, pageWidth / 2, yPos, { align: "center" });
+
+        yPos += 10;
+        doc.setDrawColor(200, 200, 200).line(margin, yPos, pageWidth - margin, yPos);
+
+        // Resumo de Vendas
+        yPos += 15;
+        doc.setFontSize(14).setTextColor(40, 40, 40).text("Resumo de Vendas", margin, yPos);
+        yPos += 10;
+
+        const resumoData = [
+            ["Vendas Hoje", relatorioData.vendas.hoje[0], `${relatorioData.vendas.hoje[1]}%`],
+            ["Vendas 7 Dias", relatorioData.vendas.semana[0], `${relatorioData.vendas.semana[1]}%`],
+            ["Vendas 30 Dias", relatorioData.vendas.mes[0], "Total do Mês"]
+        ];
+
+        doc.setFontSize(10).setTextColor(80, 80, 80).setFillColor(240, 240, 240);
+        doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+        doc.text("Período", margin + 5, yPos + 5);
+        doc.text("Valor", margin + 70, yPos + 5);
+        doc.text("Variação", margin + 120, yPos + 5);
+        yPos += 8;
+
+        resumoData.forEach(row => {
+            if (yPos > 250) { doc.addPage(); yPos = 20; }
+            doc.text(row[0], margin + 5, yPos + 5);
+            doc.text(formatCurrency(row[1]), margin + 70, yPos + 5);
+            doc.text(row[2], margin + 120, yPos + 5);
+            doc.line(margin, yPos + 8, pageWidth - margin, yPos + 8);
+            yPos += 8;
+        });
+
+        // Gráfico Financeiro
+        yPos += 15;
+        if (yPos > 220) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(14).text("Desempenho Financeiro", margin, yPos);
+        yPos += 10;
+
+        const canvasFinanceiro = document.getElementById('graficoFinanceiro');
+        if (canvasFinanceiro) {
+            const canvasImg = await getCanvasImage(canvasFinanceiro, 1);
+            if (canvasImg) {
+                const imgWidth = pageWidth - 2 * margin;
+                const imgHeight = (canvasImg.height * imgWidth) / canvasImg.width;
+                if (yPos + imgHeight > 270) { doc.addPage(); yPos = 20; }
+                doc.addImage(canvasImg, 'JPEG', margin, yPos, imgWidth, imgHeight);
+                yPos += imgHeight + 10;
+            }
+        }
+
+        // Gráfico Curva ABC
+        if (yPos > 220) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(14).text("Curva ABC de Produtos", margin, yPos);
+        yPos += 10;
+
+        const canvasABC = document.getElementById('curvaABCChart');
+        if (canvasABC) {
+            const canvasImg = await getCanvasImage(canvasABC, 0.8);
+            const imgWidth = (pageWidth - 2 * margin) * 0.8;
+            const imgHeight = (canvasImg.height * imgWidth) / canvasImg.width;
+            const imgX = margin + ((pageWidth - 2 * margin - imgWidth) / 2);
+            if (yPos + imgHeight > 270) { doc.addPage(); yPos = 20; }
+            doc.addImage(canvasImg, 'JPEG', imgX, yPos, imgWidth, imgHeight);
+            yPos += imgHeight + 10;
+        }
+
+        // Produtos Mais Vendidos
+        yPos += 15;
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(14).text("Produtos Mais Vendidos", margin, yPos);
+        yPos += 10;
+        doc.setFontSize(10).setFillColor(240, 240, 240);
+        doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+        doc.text("Posição", margin + 5, yPos + 5);
+        doc.text("Produto", margin + 25, yPos + 5);
+        doc.text("Quantidade", margin + 100, yPos + 5);
+        doc.text("Valor Total", margin + 140, yPos + 5);
+        yPos += 8;
+
+        relatorioData.maisVendidos.forEach((produto, index) => {
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+                doc.text("Posição", margin + 5, yPos + 5);
+                doc.text("Produto", margin + 25, yPos + 5);
+                doc.text("Quantidade", margin + 100, yPos + 5);
+                doc.text("Valor Total", margin + 140, yPos + 5);
+                yPos += 8;
+            }
+
+            doc.text((index + 1).toString(), margin + 5, yPos + 5);
+            const productLines = doc.splitTextToSize(produto.nome, 60);
+            doc.text(productLines, margin + 25, yPos + 5);
+            doc.text(produto.qtd.toString(), margin + 100, yPos + 5);
+            doc.text(formatCurrency(produto.precoTotal), margin + 140, yPos + 5);
+            doc.line(margin, yPos + 8, pageWidth - margin, yPos + 8);
+            yPos += Math.max(8, productLines.length * lineHeight);
+        });
+
+        // Produtos Encalhados
+        yPos += 15;
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(14).text("Produtos Encalhados", margin, yPos);
+        yPos += 15;
+        doc.setFontSize(10).setFillColor(240, 240, 240);
+        doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+        doc.text("Produto", margin + 5, yPos + 5);
+        doc.text("Estoque", margin + 70, yPos + 5);
+        doc.text("Validade", margin + 100, yPos + 5);
+        doc.text("Última Venda", margin + 140, yPos + 5);
+        yPos += 8;
+
+        relatorioData.produtosEncalhados.forEach(produto => {
+            if (yPos > 250) {
+                doc.addPage(); yPos = 20;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+                doc.text("Produto", margin + 5, yPos + 5);
+                doc.text("Estoque", margin + 70, yPos + 5);
+                doc.text("Validade", margin + 100, yPos + 5);
+                doc.text("Última Venda", margin + 140, yPos + 5);
+                yPos += 8;
+            }
+
+            const productLines = doc.splitTextToSize(produto.nome, 60);
+            doc.text(productLines, margin + 5, yPos + 5);
+            doc.text(produto.estoque.toString(), margin + 70, yPos + 5);
+            doc.text(new Date(produto.validade + 'T00:00:00').toLocaleDateString('pt-BR'), margin + 100, yPos + 5);
+            doc.text(produto.ultimaVenda ? new Date(produto.ultimaVenda).toLocaleDateString('pt-BR') : 'Nunca', margin + 140, yPos + 5);
+            doc.line(margin, yPos + 8, pageWidth - margin, yPos + 8);
+            yPos += Math.max(8, productLines.length * lineHeight);
+        });
+
+        // Rodapé com numeração de páginas
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8).setTextColor(150, 150, 150);
+            doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin - 20, 290, { align: "right" });
+            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, margin, 290);
+        }
+
+        doc.save(`Relatorio_MercadoDidatico_${dataExibida.getMonth() + 1}_${dataExibida.getFullYear()}.pdf`);
+    } catch (error) {
+        console.error("Erro ao gerar PDF:", error);
+        alert("Erro ao gerar PDF.");
+    } finally {
+        document.getElementById('spinnerSection').classList.add('d-none');
+        document.getElementById('okSection').classList.remove('d-none');
+    }
+}
+
+// Exportar para CSV
+function exportarCSV() {
+    if (!relatorioData) {
+        alert("Por favor, gere os relatórios primeiro!");
+        return;
+    }
+
+    const csvData = [];
+    const dataRelatorio = dataExibida.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+    // Cabeçalho
+    csvData.push(`"Relatório de Vendas - Mercado Didático"`);
+    csvData.push(`"Período: ${dataRelatorio}"`);
+    csvData.push("");
+
+    // Resumo de Vendas
+    csvData.push('"Resumo de Vendas"');
+    csvData.push('"Período","Valor","Variação"');
+    csvData.push(`"Vendas Hoje","${formatCurrency(relatorioData.vendas.hoje[0])}","${relatorioData.vendas.hoje[1]}%"`);
+    csvData.push(`"Vendas 7 Dias","${formatCurrency(relatorioData.vendas.semana[0])}","${relatorioData.vendas.semana[1]}%"`);
+    csvData.push(`"Vendas 30 Dias","${formatCurrency(relatorioData.vendas.mes[0])}","Total do Mês"`);
+    csvData.push("");
+
+    // Produtos Mais Vendidos
+    csvData.push('"Produtos Mais Vendidos"');
+    csvData.push('"Posição","Produto","Quantidade","Valor Total"');
+    relatorioData.maisVendidos.forEach((produto, index) => {
+        csvData.push(`"${index + 1}","${produto.nome}","${produto.qtd}","${formatCurrency(produto.precoTotal)}"`);
+    });
+    csvData.push("");
+
+    // Produtos Encalhados
+    csvData.push('"Produtos Encalhados"');
+    csvData.push('"Produto","Estoque","Validade","Última Venda"');
+    relatorioData.produtosEncalhados.forEach(produto => {
+        const validade = new Date(produto.validade + 'T00:00:00').toLocaleDateString('pt-BR');
+        const ultimaVenda = produto.ultimaVenda ? new Date(produto.ultimaVenda).toLocaleDateString('pt-BR') : 'Nunca';
+        csvData.push(`"${produto.nome}","${produto.estoque}","${validade}","${ultimaVenda}"`);
+    });
+
+    // Junta tudo e adiciona BOM UTF-8
+    const csvContent = csvData.join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", `Relatorio_MercadoDidatico_${dataExibida.getMonth() + 1}_${dataExibida.getFullYear()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Imprimir Relatório
+function imprimirRelatorio() {
+    if (!relatorioData) {
+        alert("Por favor, gere os relatórios primeiro!");
+        return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    const dataRelatorio = dataExibida.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <title>Relatório de Vendas - Mercado Didático</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1 { text-align: center; margin-bottom: 5px; }
+                .subtitle { text-align: center; color: #666; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                th { background: #f2f2f2; padding: 8px; text-align: left; }
+                td { padding: 8px; border-bottom: 1px solid #ddd; }
+                .summary-card { display: inline-block; width: 30%; margin: 0 1.5%; text-align: center; }
+                .summary-value { font-size: 20px; font-weight: bold; }
+                .summary-label { font-size: 14px; color: #555; }
+            </style>
+        </head>
+        <body>
+            <h1>Relatório de Vendas</h1>
+            <div class="subtitle">Mercado Didático - ${dataRelatorio}</div>
+
+            <div class="summary-section">
+                <div class="summary-card">
+                    <div class="summary-label">Vendas Hoje</div>
+                    <div class="summary-value">${formatCurrency(relatorioData.vendas.hoje[0])}</div>
+                    <div class="summary-label">${relatorioData.vendas.hoje[1]}%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Vendas 7 Dias</div>
+                    <div class="summary-value">${formatCurrency(relatorioData.vendas.semana[0])}</div>
+                    <div class="summary-label">${relatorioData.vendas.semana[1]}%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Vendas 30 Dias</div>
+                    <div class="summary-value">${formatCurrency(relatorioData.vendas.mes[0])}</div>
+                    <div class="summary-label">Total do Mês</div>
+                </div>
+            </div>
+
+            <h2>Produtos Mais Vendidos</h2>
+            <table>
+                <thead><tr><th>Posição</th><th>Produto</th><th>Quantidade</th><th>Valor Total</th></tr></thead>
+                <tbody>
+                    ${relatorioData.maisVendidos.map((p, i) => `
+                        <tr><td>${i + 1}</td><td>${p.nome}</td><td>${p.qtd}</td><td>${formatCurrency(p.precoTotal)}</td></tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            <h2>Produtos Encalhados</h2>
+            <table>
+                <thead><tr><th>Produto</th><th>Estoque</th><th>Validade</th><th>Última Venda</th></tr></thead>
+                <tbody>
+                    ${relatorioData.produtosEncalhados.map(p => `
+                        <tr><td>${p.nome}</td><td>${p.estoque}</td><td>${new Date(p.validade + 'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${p.ultimaVenda ? new Date(p.ultimaVenda).toLocaleDateString('pt-BR') : 'Nunca'}</td></tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
