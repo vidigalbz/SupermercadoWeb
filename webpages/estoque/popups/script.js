@@ -183,7 +183,7 @@ function abrirModalEditarProduto() {
 
     carregarSetoresGlobais(currentMarketId).then(() => {
 
-        const elProductIdHidden = document.getElementById('editar-productId');
+        const elProductIdHidden = document.getElementById('codigo-editar');
         if (elProductIdHidden) {
             elProductIdHidden.value = produto.productId;
         } else {
