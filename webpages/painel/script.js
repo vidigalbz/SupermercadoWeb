@@ -111,9 +111,9 @@ function atualizarAcessos(encodedPermissions) {
   const decoded = decodeURIComponent(encodedPermissions);
   const permissoes = JSON.parse(decoded);
   toggleCard('cardEstoque', permissoes.estoque);
-  toggleCard('cardCaixa', permissoes.caixa);
+  toggleCard('cardCaixa', permissoes.pdv);
   toggleCard('cardRelatorios', permissoes.relatorios);
-  toggleCard('cardRastreio', permissoes.rastreio);
+  toggleCard('cardRastreio', permissoes.rastreamento);
   toggleCard('cardFornecedores', permissoes.fornecedor);
 }
 
