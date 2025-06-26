@@ -501,7 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
         id: idMarket,
         nome: inputSuper.value.trim(),
         local: inputLocal.value.trim(),
-        icon: inputIcon.value.trim()
+        icon: inputIcon.value.trim(),
+        ownerId: userId
       })
     })
       .then(res => res.json())

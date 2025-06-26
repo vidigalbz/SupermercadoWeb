@@ -65,7 +65,8 @@ async function verificarUser() {
       window.location.href = "/error403";
     }
   } catch (err) {
-    window.location.href = "/error404";
+    console.error("Erro ao verificar usuário:", err);
+   // window.location.href = "/error404";
   }
 }
 
@@ -82,6 +83,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // Validações iniciais
   if (!marketIdGlobal) {
+    console.error("ESTOQUE SCRIPT: Market ID não encontrado na URL!");
     if (supermarketNameEl) supermarketNameEl.textContent = "Supermercado: ID NÃO ENCONTRADO NA URL";
     if (container) container.innerHTML = "<p class='alert alert-danger'>Erro crítico: ID do mercado não fornecido na URL.</p>";
     if (pesquisaInput) pesquisaInput.disabled = true;
@@ -166,11 +168,13 @@ function verificSuper(){
         document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
       }
     })
+    .catch(err => console.error('Erro ao verificar supermercado:', err));
 }
 
 async function carregarSetoresEstoque(currentMarketId) {
   carregarFornecedores();
   if (!currentMarketId) {
+    console.error("ESTOQUE SCRIPT: marketId não fornecido para carregarSetoresEstoque");
     return;
   }
   try {
@@ -194,6 +198,7 @@ async function carregarSetoresEstoque(currentMarketId) {
     popularSelectLocal(filterCategoriaSelect, data.cat, 'Todas Categorias');
     popularSelectLocal(filterDepartamentoSelect, data.dept, 'Todos Departamentos');
   } catch (error) {
+    console.error('ESTOQUE SCRIPT: Erro ao carregar setores para filtros:', error);
     if (typeof showAlert === 'function') showAlert('Erro Filtros', 'Falha ao carregar categorias/departamentos para filtros.', 'error');
   }
 }
@@ -212,6 +217,7 @@ async function getImageURL(rawImagePath) {
     let finalPath = rawImagePath.replace(/\\/g, '/').replace(/^\\?/, '');
     return `http://${ip}:4000/${finalPath}`;
   } catch (error) {
+    console.error("ESTOQUE SCRIPT: Erro ao obter IP para URL da imagem:", error);
     return `/${rawImagePath.replace(/\\/g, '/').replace(/^\\?/, '')}`;
   }
 }
@@ -240,53 +246,58 @@ async function criarCardHTML(produto) {
 
   const tempDiv = document.createElement('div');
 
-
   tempDiv.innerHTML = `
-    <div class="card-produto d-flex mb-3" data-id="${productId}" style="border-radius: 10px; overflow: hidden; border: 1px solid #ccc; background-color: #fff;">
-      <div class="imagem-produto" style="background-image: url('${imagemURL}'); width: 120px; height: 150px; background-size: cover; background-position: center; border-top-left-radius: 9px; border-bottom-left-radius: 9px;">
-        <img src="${imagemURL}" style="display:none;" onerror="this.parentElement.style.backgroundImage='url(https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1)'; this.style.display='none';"/>
-      </div>
-      <div class="info-produto p-2 text-white d-flex flex-column justify-content-between" style="background-color: #007bff; flex: 1; font-size: 0.85rem;">
-        <div>
-            <h6 class="card-title text-white" title="${productName}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem;">${productName}</h6>
-            <p class="card-text mb-1 small"><strong>Cód. Barras:</strong> ${barcode}</p>
-            <p class="card-text mb-1 small"><strong>Preço:</strong> R$ ${price}</p>
-            <p class="card-text small"><strong>Estoque:</strong> ${stock} unid.</p>
-        </div>
-        <div class="mt-2 d-flex justify-content-start flex-wrap gap-1">
-          <button type="button" class="btn btn-light btn-sm btn-copiar"
-                  data-productid-copiar="${productId}" 
-                  data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="Copiar ID Sistema (${productId})">
-            <i class="bi bi-clipboard"></i> ID
-          </button>
-          <button type="button" class="btn btn-light btn-sm btn-detalhes-card" 
-                  data-bs-toggle="popover" data-bs-html="true" data-bs-trigger="hover focus"
-                  title="Detalhes do Produto"
-                  data-bs-content="
-                    <strong>Nome:</strong> ${productName}<br>
-                    <strong>Cód. Barras:</strong> ${barcode}<br>
-                    <strong>ID Sistema:</strong> ${productId}<br>
-                
-                    <strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
-                    <strong>Preço Total:</strong> R$ ${price}<br>
-                    <strong>Categoria:</strong> ${category}<br>
-                    <strong>Estoque:</strong> ${stock} unidades<br>
-                    <strong>Lote:</strong> ${lot}<br>
-                    <strong>Departamento:</strong> ${department}<br>
-                    <strong>Validade:</strong> ${expirationDate}<br>
-                    <strong>Fabricação:</strong> ${manufactureDate}">
-            <i class="bi bi-info-circle"></i> Detalhes
-          </button>
-          <button type="button" class="btn btn-light btn-sm btn-codigoBar"
-                  data-barcode-imprimir="${barcode}" title="Imprimir Código de Barras" 
-                  onclick="typeof impressao === 'function' ? impressao('${barcode}') : console.warn('Função impressao() não definida.')">
-            <i class="bi bi-upc"></i> Barras
-          </button>
-          </div>
-      </div>
+  <div class="card-produto d-flex mb-3" data-id="${productId}" style="border-radius: 10px; overflow: hidden; border: 1px solid #ccc; background-color: #fff;">
+    <div class="imagem-produto" style="background-image: url('${imagemURL}'); width: 120px; height: 150px; background-size: cover; background-position: center; border-top-left-radius: 9px; border-bottom-left-radius: 9px;">
+      <img src="${imagemURL}" style="display:none;" onerror="this.parentElement.style.backgroundImage='url(https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1)'; this.style.display='none';"/>
     </div>
-  `;
+    
+    <div class="info-produto d-flex flex-column text-white" style="background-color: #007bff; flex: 1; font-size: 0.85rem; height: 150px;">
+      
+      <!-- Área de informações com scroll -->
+      <div class="conteudo-info p-2" style="overflow-y: auto; flex: 1;">
+        <h6 class="card-title text-white" title="${productName}" style="font-size: 0.95rem; word-break: break-word;">${productName}</h6>
+        <p class="card-text mb-1 small"><strong>Cód. Barras:</strong> ${barcode}</p>
+        <p class="card-text mb-1 small"><strong>Preço:</strong> R$ ${price}</p>
+        <p class="card-text small"><strong>Estoque:</strong> ${stock} unid.</p>
+      </div>
+      
+      <!-- Botões fixos embaixo -->
+      <div class="botoes-produto d-flex justify-content-start flex-wrap gap-1 border-top" style="background-color: #007bff;">
+        <button type="button" class="btn btn-light btn-sm btn-copiar"
+                data-productid-copiar="${productId}" 
+                data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Copiar ID Sistema (${productId})">
+          <i class="bi bi-clipboard"></i>
+        </button>
+        <button type="button" class="btn btn-light btn-sm btn-detalhes-card" 
+                data-bs-toggle="popover" data-bs-html="true" data-bs-trigger="hover focus"
+                title="Detalhes do Produto"
+                data-bs-content="
+                  <strong>Nome:</strong> ${productName}<br>
+                  <strong>Cód. Barras:</strong> ${barcode}<br>
+                  <strong>ID Sistema:</strong> ${productId}<br>
+                  <strong>Preço por unidade:</strong> R$ ${produto.price_per_unity}<br>
+                  <strong>Preço Total:</strong> R$ ${price}<br>
+                  <strong>Categoria:</strong> ${category}<br>
+                  <strong>Estoque:</strong> ${stock} unidades<br>
+                  <strong>Lote:</strong> ${lot}<br>
+                  <strong>Departamento:</strong> ${department}<br>
+                  <strong>Validade:</strong> ${expirationDate}<br>
+                  <strong>Fabricação:</strong> ${manufactureDate}">
+          <i class="bi bi-info-circle"></i>
+        </button>
+        <button type="button" class="btn btn-light btn-sm btn-codigoBar"
+                data-barcode-imprimir="${barcode}" title="Imprimir Código de Barras" 
+                onclick="typeof impressao === 'function' ? impressao('${barcode}') : console.warn('Função impressao() não definida.')">
+          <i class="bi bi-upc"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+`;
+
   
   const cardElement = tempDiv.firstElementChild; 
   if (container && cardElement) {
@@ -315,10 +326,14 @@ async function criarCardHTML(produto) {
                     if(typeof showAlert === 'function') showAlert("ID Copiado!", `ID ${idParaCopiar} copiado.`, "success");
                     
                 }).catch(err => {
+                    console.error('Falha ao copiar ID:', err);
                     if(typeof showAlert === 'function') showAlert("Falha ao Copiar", "Não foi possível copiar o ID.", "error");
+                    else console.error("Falha ao copiar ID, showAlert não definida.");
                 });
               } else {
+                  console.error('ID para copiar é inválido:', idParaCopiar);
                   if(typeof showAlert === 'function') showAlert("Erro ao Copiar", "ID do produto inválido para cópia.", "error");
+                  else console.error("Erro ao copiar: ID do produto inválido.");
               }
           });
       }
@@ -336,11 +351,13 @@ async function criarCardHTML(produto) {
           // O onclick já está no HTML.
       }
 
+  } else {
+      console.error("ESTOQUE SCRIPT: Container de produtos (variável 'container') não encontrado para adicionar card ou cardElement não foi criado.");
   }
 }
 
 async function renderizarProdutos(produtos) {
-  if (!container) { return; }
+  if (!container) { console.error("Container de produtos não existe no DOM."); return; }
   container.innerHTML = '';
   if (!produtos || produtos.length === 0) {
     container.innerHTML = "<p class='alert alert-info col-12'>Nenhum produto encontrado no estoque com os filtros atuais.</p>";
@@ -381,6 +398,7 @@ async function carregarProdutos(currentMarketId) {
       throw new Error(data.erro || "Formato de resposta inesperado do servidor ao carregar produtos.");
     }
   } catch (err) {
+    console.error('ESTOQUE SCRIPT: Erro ao carregar produtos:', err);
     if (container) container.innerHTML = `<p class='alert alert-danger col-12'>Erro ao carregar produtos: ${err.message}</p>`;
     window.currentData = [];
     if (typeof atualizarAlertas === 'function' && currentMarketId) {
@@ -420,6 +438,7 @@ function searchEstoque() {
       }
     })
     .catch(err => {
+      console.error('ESTOQUE SCRIPT: Erro na busca:', err);
       if (container) container.innerHTML = `<p class='alert alert-danger col-12'>Erro na busca: ${err.message}</p>`;
       window.currentData = [];
       if (typeof atualizarAlertas === 'function' && marketIdGlobal) {
@@ -460,6 +479,7 @@ async function adicionarProduto() {
 
   const form = document.getElementById("form-adicionar-item");
   if (!form) {
+      console.error("ESTOQUE SCRIPT: Formulário #form-adicionar-item não encontrado.");
       if (typeof showAlert === 'function') showAlert('Erro Interno', 'Formulário de adição não encontrado no HTML.', 'error');
       return false;
   }
@@ -560,6 +580,7 @@ async function adicionarProduto() {
           throw new Error(resultado.erro || resultado.message || "Erro desconhecido do servidor ao adicionar produto.");
       }
   } catch (err) {
+      console.error("ESTOQUE SCRIPT: Erro na função adicionarProduto:", err);
       if (typeof showAlert === 'function') showAlert('Erro ao Adicionar Produto', err.message, 'error');
       else alert(`Erro ao Adicionar Produto: ${err.message}`);
       return false;
@@ -579,11 +600,13 @@ async function confirmarEdicao() {
   if (!productIdDoForm) {
     if (typeof showAlert === 'function') showAlert('Erro de Interface', 'ID do produto para edição não encontrado (campo oculto).', 'error');
     else alert('Erro de Interface: ID do produto para edição não encontrado.');
+    console.error("ESTOQUE SCRIPT: Não foi possível ler #editar-productId.value em confirmarEdicao.");
     return false;
   }
   if (!marketIdDoFormulario) {
     if (typeof showAlert === 'function') showAlert('Erro de Interface', 'ID do mercado do produto não encontrado no formulário de edição.', 'error');
     else alert('Erro de Interface: ID do mercado do produto não encontrado.');
+    console.error("ESTOQUE SCRIPT: Não foi possível ler #editar-marketId.value em confirmarEdicao.");
     return false;
   }
 
@@ -650,6 +673,7 @@ async function confirmarEdicao() {
       throw new Error(resultado.message || resultado.erro || "Erro desconhecido ao editar produto.");
     }
   } catch (error) {
+    console.error("ESTOQUE SCRIPT: Erro ao confirmar edição:", error);
     if (typeof showAlert === 'function') showAlert('Erro na Edição', error.message, 'error');
     else alert(`Erro na Edição: ${error.message}`);
     return false;
