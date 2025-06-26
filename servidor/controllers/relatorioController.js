@@ -7,7 +7,6 @@ exports.getRelatorioData = async (req, res) => {
 
         console.log(`--> Gerando relatório para Mercado: ${marketId}, Período: ${mesAnoFiltro}`);
 
-
         const [hojeResult] = await selectFromRaw(
             `SELECT IFNULL(SUM(total), 0) AS totalVendas FROM sales WHERE marketId = ? AND DATE(saleDate) = DATE('now', 'localtime')`,
             [marketId]
@@ -43,8 +42,15 @@ exports.getRelatorioData = async (req, res) => {
             [marketId, mesAnoFiltro]
         );
 
+        // ===================================================================
+        // ✨ CORREÇÃO APLICADA AQUI com "AS nome" e "AS estoque" ✨
+        // ===================================================================
         const produtosEncalhados = await selectFromRaw(
-            `SELECT name, stock, expirationDate as validade, barcode as codigo 
+            `SELECT 
+                name AS nome, 
+                stock AS estoque, 
+                expirationDate as validade, 
+                barcode as codigo 
              FROM products 
              WHERE marketId = ? AND stock > 0 AND productId NOT IN (
                  SELECT DISTINCT si.productId FROM sale_items si
@@ -53,6 +59,7 @@ exports.getRelatorioData = async (req, res) => {
              )`,
             [marketId, marketId, mesAnoFiltro]
         );
+        // ===================================================================
 
         const vendasPorCategoria = await selectFromRaw(
            `SELECT 
