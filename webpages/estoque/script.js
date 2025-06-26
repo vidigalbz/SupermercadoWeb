@@ -582,7 +582,7 @@ async function adicionarProduto() {
 
 async function confirmarEdicao() {
   const userId = userIdGlobal;
-  const productIdDoForm = document.getElementById("editar-productId")?.value;
+  const productIdDoForm = document.getElementById("codigo-editar")?.value;
   const marketIdDoFormulario = document.getElementById('editar-marketId')?.value.trim();
 
   if (!userId) {
