@@ -85,17 +85,7 @@ function filtrarProdutos(termoBusca) {
     });
 }
 
-
-
-  
 async function verificSuper() {
-    if (!currentMarketId) {
-        showAlert("Supermercado não identificado na URL.", "Erro de Configuração", "error");
-        const supermarketNameEl = document.getElementById("supermarket-name");
-        if(supermarketNameEl) supermarketNameEl.textContent = "Super Mercado: Não Identificado";
-        return;
-    }
-
     try {
         const response = await fetch("/api/supermercados/verify", { // Endpoint correto para verificar supermercado
             method: 'POST',
@@ -112,7 +102,7 @@ async function verificSuper() {
 
         // O backend /verify (corrigido) retorna { success: true, market: {name: "..."} }
         if (data.mensagem) {
-            const supermarketName = data.mensagem.name;
+            const supermarketName = data.mensagem[0].name;
             const supermarketNameEl = document.getElementById("supermarket-name");
             if (supermarketNameEl) {
                 supermarketNameEl.textContent = "Super Mercado: " + supermarketName;
