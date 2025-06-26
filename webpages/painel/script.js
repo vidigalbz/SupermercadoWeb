@@ -55,10 +55,10 @@ function main() {
         profileImageElem.src = novaUrl;
         fileInput.value = "";
       } else {
-        console.error("Falha no upload:", data.message);
+        //console.error("Falha no upload:", data.message);
       }
     } catch (err) {
-      console.error("Erro ao fazer upload:", err);
+      //console.error("Erro ao fazer upload:", err);
     }
   });
 
@@ -77,10 +77,10 @@ function main() {
         profileImageElem.src =
           "https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1";
       } else {
-        console.error("Falha ao remover imagem:", data.message);
+        //console.error("Falha ao remover imagem:", data.message);
       }
     } catch (err) {
-      console.error("Erro ao chamar /removeProfileImage:", err);
+      //console.error("Erro ao chamar /removeProfileImage:", err);
     }
   });
 }
@@ -95,8 +95,8 @@ async function getImageURL(rawImagePath) {
     : 'https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';
 }
 
-function selecionarSupermercado(perimissions) {
-  document.getElementById('nomeLojaSelecionada').textContent = "acessos de " + perimissions.marketId;
+function selecionarSupermercado(perimissions, name) {
+  document.getElementById('nomeLojaSelecionada').textContent = "acessos para " + name;
   document.getElementById('supermercadoSelect').classList.add('d-none');
   document.getElementById('acessosPanel').classList.remove('d-none');
   atualizarAcessos(perimissions);
@@ -122,14 +122,14 @@ function toggleCard(id, habilitado) {
   card.classList.toggle('disabled-card', Number(habilitado) !== 1);
 }
 
-function addMarketCard(marketName, permissions) {
+function addMarketCard(marketIcon, marketName, permissions) {
   const marketList = document.getElementById('supermercadosList');
   const encodedPermissions = encodeURIComponent(JSON.stringify(permissions));
   const innerHTML = `
     <div class="col">
-      <a href="#" class="card text-center access-card" onclick="selecionarSupermercado('${encodedPermissions}')">
+      <a href="#" class="card text-center access-card" onclick="selecionarSupermercado('${encodedPermissions}','${marketName}')">
         <div class="card-body">
-          <div style="font-size: 2.5rem;">🏬</div>
+          <div style="font-size: 2.5rem;">${marketIcon}</div>
           <h6 class="mt-2">${marketName}</h6>
         </div>
       </a>
@@ -147,17 +147,17 @@ async function loadMarketData(userId) {
 
   for (const permission of json.data) {
     // Agora que 'permission' está definido, podemos usar permission.marketId
-    const marketResponse = await fetch("/api/supermercados/supermercadoData", {
+    const marketResponse = await fetch("/api/supermercados/pegarSupermercadoNome", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ busca: permission.marketId })
     });
-
-
+    
     const marketData = await marketResponse.json();
-    const marketName = marketData.mensagem.nome;
+    const marketName = marketData.mensagem[0].name;
+    const marketIcon = marketData.mensagem[0].icon;
 
     const permissions = {
       pdv: permission.pdv,
@@ -168,14 +168,17 @@ async function loadMarketData(userId) {
       rastreamento: permission.rastreamento
     };
 
-    addMarketCard(marketName, permissions);
+    addMarketCard(marketIcon, marketName, permissions);
   }
 }
 
 async function loadUserData() {
   userId = getCookie("user");
   if (userId == "") {
-    window.location.href = "http://localhost:4000/error403";
+    const response = await fetch('/api/ip');
+    const data = await response.json();
+    const ip = data.ip;
+    window.location.href = `http://${ip}:4000/error403`;
     return;
   } else {
     try {
