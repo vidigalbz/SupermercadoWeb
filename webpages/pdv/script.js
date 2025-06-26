@@ -7,6 +7,7 @@ let totalQuantity = 0;
 let currentInvoice = null;
 let modalInstance = null; // Para o globalAlertModal
 const codigoInput = document.getElementById("codigoProdutoInput");
+const amountInput = document.getElementById("quantidadeInput");
 let currentMarketId; // Será definido no DOMContentLoaded a partir da URL
 
 const labelPrice = document.getElementById("preco-total");
@@ -356,6 +357,7 @@ function updateTotals() {
 async function AdicionarProdutoNovo() {
     if(!codigoInput) return;
     const code = codigoInput.value.trim();
+    const amount = parseInt(amountInput.value.trim()) || 1;
     if (!code) {
         showAlert("Por favor, insira um código de produto.", "Campo Obrigatório", "warning");
         focusCodigoInput();
@@ -373,7 +375,7 @@ async function AdicionarProdutoNovo() {
         const response = await fetch('/api/produtos/estoqueData', { // Busca o produto no estoque
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ busca: code, marketId: currentMarketId, quant: 1 }) // 'busca' é o código/barcode
+            body: JSON.stringify({ busca: code, marketId: currentMarketId, quant: amount }) // 'busca' é o código/barcode
         });
         const data = await response.json();
 
@@ -394,7 +396,7 @@ async function AdicionarProdutoNovo() {
                 focusCodigoInput();
                 return;
             }
-            criarCardEstoque(produtoEncontrado); // Adiciona ou incrementa no PDV
+            criarCardEstoque(produtoEncontrado, amount); // Adiciona ou incrementa no PDV
             focusCodigoInput(); // Limpa e foca o input
         } else {
             showAlert("Produto não encontrado no estoque deste mercado.", "Não Encontrado", "error");
@@ -406,13 +408,12 @@ async function AdicionarProdutoNovo() {
     }
 }
 
-function criarCardEstoque(produto) { // produto vindo do backend
+function criarCardEstoque(produto, amount) { // produto vindo do backend
     if (!produto || !produto.barcode) {
         return;
     }
     const barcode = produto.barcode;
     const price = parseFloat(produto.price);
-
     if (isNaN(price)) {
         showAlert(`Produto "${produto.name}" com preço inválido.`, "Erro de Dados", "error");
         return;
@@ -421,7 +422,7 @@ function criarCardEstoque(produto) { // produto vindo do backend
     if (productsOnScreen[barcode]) { // Produto já na tela, apenas incrementa
         // Verifica estoque antes de incrementar
         if (productsOnScreen[barcode].quant < produto.stock) {
-            productsOnScreen[barcode].quant += 1;
+            productsOnScreen[barcode].quant += amount;
             productsOnScreen[barcode].totalPrice = price * productsOnScreen[barcode].quant;
         } else {
             showAlert(`Estoque máximo atingido para "${produto.name}".`, "Aviso", "warning");
@@ -442,7 +443,7 @@ function criarCardEstoque(produto) { // produto vindo do backend
         }
         productsOnScreen[barcode] = {
             totalPrice: price, // Preço total inicial é o preço unitário
-            quant: 1,
+            quant: amount,
             productData: { ...produto } // Armazena todos os dados do produto
         };
         // Chama recreateProductCard para criar o visual do card, passando a quantidade inicial 1
