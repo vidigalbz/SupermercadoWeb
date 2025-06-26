@@ -168,7 +168,7 @@ function updateFornecedor(){
 function excluirFornecedor() {
     const cnpjExcluir = document.getElementById("codigo-excluir").value;
     if(cnpjExcluir == null) return;
-    fetch('/excluirFornecedor',{
+    fetch('/api/fornecedores/excluirFornecedor',{
         method: 'POST',
         headers: {'Content-Type': 'application/json' },
         body: JSON.stringify({cnpj : cnpjExcluir})

@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS products (
     marketId TEXT NOT NULL,
     name TEXT NOT NULL,
     price REAL NOT NULL,
+    fornecedor TEXT NOT NULL,
     category TEXT,
     departament TEXT,
     stock INTEGER DEFAULT 0,
