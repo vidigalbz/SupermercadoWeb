@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (currentMarketId) {
         verificSuper(); // Chama verificSuper para buscar o nome do mercado
     } else {
-        console.error("ID do Mercado não encontrado na URL para o PDV!");
         window.location.href = '/error404'
         if (confirmCheckoutBtn) { // Verifica se o botão já existe no DOM
             confirmCheckoutBtn.disabled = true;
@@ -89,9 +88,7 @@ function filtrarProdutos(termoBusca) {
 
   
 async function verificSuper() {
-
     if (!currentMarketId) {
-        console.error('ID do supermercado não encontrado na URL para verificSuper.');
         showAlert("Supermercado não identificado na URL.", "Erro de Configuração", "error");
         const supermarketNameEl = document.getElementById("supermarket-name");
         if(supermarketNameEl) supermarketNameEl.textContent = "Super Mercado: Não Identificado";
@@ -122,14 +119,12 @@ async function verificSuper() {
             // Não precisa redefinir currentMarketId global aqui, ele já foi pego no DOMContentLoaded.
             // Apenas confirma que é válido.
         } else {
-            console.error("Falha ao verificar supermercado, resposta do backend:", data);
             const supermarketNameEl = document.getElementById("supermarket-name");
             if(supermarketNameEl) supermarketNameEl.textContent = "Super Mercado: Inválido ou Não Encontrado";
             showAlert(data.message || "Supermercado não encontrado ou resposta inválida.", "Erro de Verificação", "error");
             // window.location.href = '/Error404'; // Descomente se quiser redirecionar
         }
     } catch (err) {
-        console.error('Erro na função verificSuper:', { error: err.message, stack: err.stack, marketId: currentMarketId });
         const supermarketNameEl = document.getElementById("supermarket-name");
         if(supermarketNameEl) supermarketNameEl.textContent = "Super Mercado: Erro na Verificação";
         showAlert(`Erro ao verificar dados do supermercado: ${err.message}`, "Erro de Conexão", "error");
@@ -171,10 +166,10 @@ async function loadCartFromCookie() {
                 updateTotals();
             }
         } else {
-            console.error("Erro ao buscar carrinho do cookie:", response.status, await response.text().catch(()=>""));
+
         }
     } catch (err) {
-        console.error('Erro ao carregar carrinho do cookie:', err);
+
     }
 }
 
@@ -406,7 +401,6 @@ async function AdicionarProdutoNovo() {
             focusCodigoInput();
         }
     } catch (err) {
-        console.error('Erro ao adicionar produto novo:', err);
         showAlert(`Erro ao buscar produto: ${err.message}`, "Erro de Busca", "error");
         focusCodigoInput();
     }
@@ -414,14 +408,12 @@ async function AdicionarProdutoNovo() {
 
 function criarCardEstoque(produto) { // produto vindo do backend
     if (!produto || !produto.barcode) {
-        console.error("criarCardEstoque: Dados do produto inválidos", produto);
         return;
     }
     const barcode = produto.barcode;
     const price = parseFloat(produto.price);
 
     if (isNaN(price)) {
-        console.error("criarCardEstoque: Preço inválido para o produto", produto);
         showAlert(`Produto "${produto.name}" com preço inválido.`, "Erro de Dados", "error");
         return;
     }
@@ -468,10 +460,9 @@ async function saveCartToCookie() {
             body: JSON.stringify({ carrinho: productsOnScreen }),
         });
         if (!response.ok) {
-            console.error("Falha ao salvar carrinho no cookie:", response.status, await response.text().catch(()=>""));
         }
     } catch (err) {
-        console.error('Erro ao salvar carrinho:', err);
+
     }
 }
 
@@ -614,7 +605,6 @@ async function finalizarCompra() {
         }
         processPayment(); // Chama a função que simula o processamento do pagamento
     } catch (err) {
-        console.error('Error finalizing sale:', { error: err.message, stack: err.stack, invoice: currentInvoice });
         if(confirmCheckoutBtn) confirmCheckoutBtn.disabled = false;
         if(checkoutModalBody) checkoutModalBody.innerHTML = `<div class="alert alert-danger"><h5>Erro ao finalizar</h5><p>${err.message}</p><button class="btn btn-sm btn-secondary" onclick="prepareCheckoutModal()">Tentar Novamente</button></div>`;
     }
@@ -692,7 +682,7 @@ function resetCart() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ carrinho: {} }),
-    }).catch(err => console.error('Erro ao limpar carrinho no servidor:', err));
+    })
 }
 
 function printReceipt() {

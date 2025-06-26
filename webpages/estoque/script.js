@@ -65,8 +65,7 @@ async function verificarUser() {
       window.location.href = "/error403";
     }
   } catch (err) {
-    console.error("Erro ao verificar usuário:", err);
-   // window.location.href = "/error404";
+    window.location.href = "/error404";
   }
 }
 
@@ -83,7 +82,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // Validações iniciais
   if (!marketIdGlobal) {
-    console.error("ESTOQUE SCRIPT: Market ID não encontrado na URL!");
     if (supermarketNameEl) supermarketNameEl.textContent = "Supermercado: ID NÃO ENCONTRADO NA URL";
     if (container) container.innerHTML = "<p class='alert alert-danger'>Erro crítico: ID do mercado não fornecido na URL.</p>";
     if (pesquisaInput) pesquisaInput.disabled = true;
@@ -168,13 +166,11 @@ function verificSuper(){
         document.getElementById("supermarket-name").textContent = "Super Mercado: " + supermarketName;
       }
     })
-    .catch(err => console.error('Erro ao verificar supermercado:', err));
 }
 
 async function carregarSetoresEstoque(currentMarketId) {
   carregarFornecedores();
   if (!currentMarketId) {
-    console.error("ESTOQUE SCRIPT: marketId não fornecido para carregarSetoresEstoque");
     return;
   }
   try {
@@ -198,7 +194,6 @@ async function carregarSetoresEstoque(currentMarketId) {
     popularSelectLocal(filterCategoriaSelect, data.cat, 'Todas Categorias');
     popularSelectLocal(filterDepartamentoSelect, data.dept, 'Todos Departamentos');
   } catch (error) {
-    console.error('ESTOQUE SCRIPT: Erro ao carregar setores para filtros:', error);
     if (typeof showAlert === 'function') showAlert('Erro Filtros', 'Falha ao carregar categorias/departamentos para filtros.', 'error');
   }
 }
@@ -217,7 +212,6 @@ async function getImageURL(rawImagePath) {
     let finalPath = rawImagePath.replace(/\\/g, '/').replace(/^\\?/, '');
     return `http://${ip}:4000/${finalPath}`;
   } catch (error) {
-    console.error("ESTOQUE SCRIPT: Erro ao obter IP para URL da imagem:", error);
     return `/${rawImagePath.replace(/\\/g, '/').replace(/^\\?/, '')}`;
   }
 }
@@ -321,14 +315,10 @@ async function criarCardHTML(produto) {
                     if(typeof showAlert === 'function') showAlert("ID Copiado!", `ID ${idParaCopiar} copiado.`, "success");
                     
                 }).catch(err => {
-                    console.error('Falha ao copiar ID:', err);
                     if(typeof showAlert === 'function') showAlert("Falha ao Copiar", "Não foi possível copiar o ID.", "error");
-                    else console.error("Falha ao copiar ID, showAlert não definida.");
                 });
               } else {
-                  console.error('ID para copiar é inválido:', idParaCopiar);
                   if(typeof showAlert === 'function') showAlert("Erro ao Copiar", "ID do produto inválido para cópia.", "error");
-                  else console.error("Erro ao copiar: ID do produto inválido.");
               }
           });
       }
@@ -346,13 +336,11 @@ async function criarCardHTML(produto) {
           // O onclick já está no HTML.
       }
 
-  } else {
-      console.error("ESTOQUE SCRIPT: Container de produtos (variável 'container') não encontrado para adicionar card ou cardElement não foi criado.");
   }
 }
 
 async function renderizarProdutos(produtos) {
-  if (!container) { console.error("Container de produtos não existe no DOM."); return; }
+  if (!container) { return; }
   container.innerHTML = '';
   if (!produtos || produtos.length === 0) {
     container.innerHTML = "<p class='alert alert-info col-12'>Nenhum produto encontrado no estoque com os filtros atuais.</p>";
@@ -393,7 +381,6 @@ async function carregarProdutos(currentMarketId) {
       throw new Error(data.erro || "Formato de resposta inesperado do servidor ao carregar produtos.");
     }
   } catch (err) {
-    console.error('ESTOQUE SCRIPT: Erro ao carregar produtos:', err);
     if (container) container.innerHTML = `<p class='alert alert-danger col-12'>Erro ao carregar produtos: ${err.message}</p>`;
     window.currentData = [];
     if (typeof atualizarAlertas === 'function' && currentMarketId) {
@@ -433,7 +420,6 @@ function searchEstoque() {
       }
     })
     .catch(err => {
-      console.error('ESTOQUE SCRIPT: Erro na busca:', err);
       if (container) container.innerHTML = `<p class='alert alert-danger col-12'>Erro na busca: ${err.message}</p>`;
       window.currentData = [];
       if (typeof atualizarAlertas === 'function' && marketIdGlobal) {
@@ -474,7 +460,6 @@ async function adicionarProduto() {
 
   const form = document.getElementById("form-adicionar-item");
   if (!form) {
-      console.error("ESTOQUE SCRIPT: Formulário #form-adicionar-item não encontrado.");
       if (typeof showAlert === 'function') showAlert('Erro Interno', 'Formulário de adição não encontrado no HTML.', 'error');
       return false;
   }
@@ -573,7 +558,6 @@ async function adicionarProduto() {
           throw new Error(resultado.erro || resultado.message || "Erro desconhecido do servidor ao adicionar produto.");
       }
   } catch (err) {
-      console.error("ESTOQUE SCRIPT: Erro na função adicionarProduto:", err);
       if (typeof showAlert === 'function') showAlert('Erro ao Adicionar Produto', err.message, 'error');
       else alert(`Erro ao Adicionar Produto: ${err.message}`);
       return false;
@@ -593,13 +577,11 @@ async function confirmarEdicao() {
   if (!productIdDoForm) {
     if (typeof showAlert === 'function') showAlert('Erro de Interface', 'ID do produto para edição não encontrado (campo oculto).', 'error');
     else alert('Erro de Interface: ID do produto para edição não encontrado.');
-    console.error("ESTOQUE SCRIPT: Não foi possível ler #editar-productId.value em confirmarEdicao.");
     return false;
   }
   if (!marketIdDoFormulario) {
     if (typeof showAlert === 'function') showAlert('Erro de Interface', 'ID do mercado do produto não encontrado no formulário de edição.', 'error');
     else alert('Erro de Interface: ID do mercado do produto não encontrado.');
-    console.error("ESTOQUE SCRIPT: Não foi possível ler #editar-marketId.value em confirmarEdicao.");
     return false;
   }
 
@@ -666,7 +648,6 @@ async function confirmarEdicao() {
       throw new Error(resultado.message || resultado.erro || "Erro desconhecido ao editar produto.");
     }
   } catch (error) {
-    console.error("ESTOQUE SCRIPT: Erro ao confirmar edição:", error);
     if (typeof showAlert === 'function') showAlert('Erro na Edição', error.message, 'error');
     else alert(`Erro na Edição: ${error.message}`);
     return false;

@@ -65,7 +65,6 @@ async function buscarERenderizarRelatorio() {
         
     } catch (error) {
         // 8. Se qualquer erro for lançado no bloco 'try', ele será capturado e exibido aqui.
-        console.error("Erro ao carregar dados do relatório:", error);
         document.body.innerHTML = `<div class="container mt-5"><div class="alert alert-danger"><strong>Erro:</strong> ${error.message}</div></div>`;
     }
 }
