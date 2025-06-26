@@ -373,7 +373,7 @@ async function AdicionarProdutoNovo() {
         const response = await fetch('/api/produtos/estoqueData', { // Busca o produto no estoque
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ busca: code, marketId: currentMarketId }) // 'busca' é o código/barcode
+            body: JSON.stringify({ busca: code, marketId: currentMarketId, quant: 1 }) // 'busca' é o código/barcode
         });
         const data = await response.json();
 
@@ -466,37 +466,47 @@ async function saveCartToCookie() {
     }
 }
 
-function removerUnidade(barcode) {
+async function removerUnidade(barcode) {
     if (productsOnScreen[barcode]) {
-        const productInfo = productsOnScreen[barcode];
-        const unitPrice = parseFloat(productInfo.productData.price);
+        const product = productsOnScreen[barcode];
+        const price = parseFloat(product.productData.price);
         
-        if (productInfo.quant > 1) {
-            productInfo.quant -= 1;
-            productInfo.totalPrice = unitPrice * productInfo.quant;
+        if (product.quant > 1) {
+            product.quant -= 1;
+            product.totalPrice = price * product.quant;
             
             const card = document.getElementById(`card(${barcode})`);
             if (card) {
-                const priceTextEl = card.querySelector('.card-text:nth-of-type(1)');
-                const quantTextEl = card.querySelector('.card-text:nth-of-type(2)');
-                if(priceTextEl) priceTextEl.textContent = `Preço Total: R$ ${productInfo.totalPrice.toFixed(2)}`;
-                if(quantTextEl) quantTextEl.textContent = `Qtd: ${productInfo.quant}`;
+                card.querySelector('.card-text:nth-of-type(1)').textContent = 
+                    `Preço Total: R$ ${product.totalPrice.toFixed(2)}`;
+                card.querySelector('.card-text:nth-of-type(2)').textContent = 
+                    `Qtd: ${product.quant}`;
             }
         } else {
-            // Se a quantidade é 1, remover o produto inteiro
             removerProduto(barcode);
         }
+        await fetch('/api/produtos/estoqueData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busca: barcode, marketId: currentMarketId, quant: -1 }) 
+        });
         updateTotals();
         saveCartToCookie();
     }
 }
 
-function removerProduto(barcode) {
+async function removerProduto(barcode) {
     if (productsOnScreen[barcode]) {
         const card = document.getElementById(`card(${barcode})`);
         if (card) {
             card.remove();
         }
+        await fetch("/api/produtos/estoqueData", { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busca: barcode, marketId: currentMarketId, quant: -(productsOnScreen[barcode].quant)})
+
+        })
         delete productsOnScreen[barcode];
         updateTotals();
         saveCartToCookie();
@@ -568,6 +578,7 @@ async function finalizarCompra() {
         if (productItem.productData && productItem.productData.productId != null) {
             invoiceItems.push({
                 name: productItem.productData.name,
+                lot: productItem.productData.lot,
                 barcode: barcode,
                 productId: productItem.productData.productId, // ID do produto do banco
                 unitPrice: parseFloat(productItem.productData.price),
@@ -716,7 +727,7 @@ function printReceipt() {
             <div>--------------------------------------------------</div>
             <div>CUPOM FISCAL ELETRÔNICO SAT</div>
             <div>--------------------------------------------------</div>
-            <table><thead><tr><th>Item</th><th>Qtd.</th><th class="text-end">Vl. Unit.</th><th class="text-end">Total</th></tr></thead>
+            <table><thead><tr><th>Item</th><th>Qtd.</th><th>Lote.</th><th class="text-end">Vl. Unit.</th><th class="text-end">Total</th></tr></thead>
             <tbody>
             ${currentInvoice.items.map(item => `
                 <tr>
@@ -725,6 +736,7 @@ function printReceipt() {
                 <tr>
                     <td></td>
                     <td>${item.quantity} UN x</td>
+                    <td>${item.lot}</td>
                     <td class="text-end">R$ ${item.unitPrice.toFixed(2)}</td>
                     <td class="text-end">R$ ${item.subtotal.toFixed(2)}</td>
                 </tr>`).join('')}
