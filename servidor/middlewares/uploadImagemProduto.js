@@ -3,7 +3,7 @@ const fs = require("fs");
 const multer = require("multer");
 
 // Configuração de pastas de upload
-const uploadsDir = path.join(__dirname, 'servidor/uploads');
+const uploadsDir = path.join(__dirname, '../servidor/uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
