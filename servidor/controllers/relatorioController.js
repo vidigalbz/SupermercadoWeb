@@ -1,15 +1,12 @@
-
 const { selectFromRaw } = require('../database');
-
 
 exports.getRelatorioData = async (req, res) => {
     try {
-
         const { marketId, mes, ano } = req.body;
-
         const mesAnoFiltro = `${ano}-${String(mes + 1).padStart(2, '0')}`;
 
         console.log(`--> Gerando relatório para Mercado: ${marketId}, Período: ${mesAnoFiltro}`);
+
 
         const [hojeResult] = await selectFromRaw(
             `SELECT IFNULL(SUM(total), 0) AS totalVendas FROM sales WHERE marketId = ? AND DATE(saleDate) = DATE('now', 'localtime')`,
@@ -57,7 +54,28 @@ exports.getRelatorioData = async (req, res) => {
             [marketId, marketId, mesAnoFiltro]
         );
 
-        const curvaABC = { labels: ['Categoria A', 'Categoria B', 'Categoria C'], dados: [70, 20, 10] };
+        const vendasPorCategoria = await selectFromRaw(
+           `SELECT 
+                p.category as categoria, 
+                SUM(si.subtotal) as totalVendido
+            FROM sale_items si
+            JOIN products p ON p.productId = si.productId
+            JOIN sales s ON s.saleId = si.saleId
+            WHERE 
+                s.marketId = ? AND 
+                STRFTIME('%Y-%m', s.saleDate) = ? AND
+                p.category IS NOT NULL AND p.category != ''
+            GROUP BY 
+                p.category
+            ORDER BY 
+                totalVendido DESC`,
+            [marketId, mesAnoFiltro]
+        );
+
+        const curvaABC_Dinamica = {
+            labels: vendasPorCategoria.map(item => item.categoria),
+            dados: vendasPorCategoria.map(item => item.totalVendido)
+        };
 
         const dadosFinais = {
             vendas: {
@@ -66,12 +84,11 @@ exports.getRelatorioData = async (req, res) => {
                 mes: [mesResult.totalVendas, 0]
             },
             desempenhoFinanceiro: desempenhoFinanceiro,
-            curvaABC: curvaABC,
+            curvaABC: curvaABC_Dinamica,
             maisVendidos: maisVendidos,
             produtosEncalhados: produtosEncalhados
         };
 
-        // 5. ENVIANDO A RESPOSTA
         res.status(200).json(dadosFinais);
 
     } catch (error) {
