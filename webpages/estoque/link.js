@@ -218,3 +218,46 @@ async function confirmarExclusaoFinal() {
   }
 
 }
+
+function impressao(codigo){
+    JsBarcode("#barcode", codigo, {
+      format: "CODE128",
+      displayValue: true,
+      fontSize: 18,
+      width: 2,
+      height: 100
+    })
+  
+    const janela = window.open("", "_blank");
+  
+    janela.document.write(
+      `<html>
+        <head>
+          <title>Imprimir Código de Barras</title>
+          <style>
+            body {
+              text-align: center;
+              margin: 0;
+              padding: 20px;
+              font-family: sans-serif;
+            }
+            svg {
+              width: 300px;
+              height: auto;
+            }
+          </style>
+        </head>
+        <body>
+          <h2>Código de Barras</h2>
+          ${barcode.outerHTML}
+          <script>
+            setTimeout(() => {
+                          window.print();
+                          setTimeout(() => window.close(), 500);
+                      }, 200);
+          </script>
+        </body>
+      </html>`
+    )
+    barcode.innerHTML = ""
+  }

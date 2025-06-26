@@ -30,23 +30,6 @@
       </div>
     </div>
   
-    <div class="row g-3 align-items-end mb-3">
-      <div class="col-md-4">
-        <label for="select-market" class="form-label">Selecionar Supermercado</label>
-        <select id="select-market" class="form-select" onchange="trocarSupermercado()">
-          <option value="">Carregando...</option>
-        </select>
-      </div>
-      <div class="col-md-8">
-        <label for="pesquisa" class="form-label">Pesquisar produto (nome, código de barras, ID)</label>
-        <div class="input-group">
-          <input type="text" class="form-control" id="pesquisa" placeholder="Ex: Arroz, 789..., 123" oninput="debounce(carregarHistorico, 500)()">
-          <button class="input-group-text btn btn-outline-secondary" onclick="carregarHistorico()"><i class="bi bi-search"></i></button>
-        </div>
-      </div>
-    </div>
-</div>
-  
 <div class="container-principal"> 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0 text-primary"><i class="bi bi-archive me-2"></i>Registros de Histórico</h4>
