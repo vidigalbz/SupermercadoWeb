@@ -239,6 +239,10 @@ function getCanvasImage(canvas, scale = 1) {
 
         tempCanvas.width = canvas.width * scale;
         tempCanvas.height = canvas.height * scale;
+
+        tempCtx.fillStyle = "#FFFFFF";
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
         tempCtx.scale(scale, scale);
         tempCtx.drawImage(canvas, 0, 0);
 
@@ -253,6 +257,7 @@ function getCanvasImage(canvas, scale = 1) {
         }, 'image/jpeg', 0.9);
     });
 }
+
 
 // Função para exportar para PDF
 async function exportarPDF() {
