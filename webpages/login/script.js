@@ -40,8 +40,6 @@ async function loginWithCookie() {
       else {
         window.location.href = "/painel"
       }
-    } else {
-      console.error("Login failed:", data.message);
     }
   }
 }
@@ -115,7 +113,6 @@ fetch("/api/usuarios/cadastro", {
     }
   })
   .catch((error) => {
-    console.error("[FETCH] Erro na requisição:", error);
     showToast("Erro ao conectar com o servidor!", "danger");
   });
 });
@@ -161,7 +158,6 @@ document.getElementById("loginButton").addEventListener("click", async function 
     }
 
   } catch (error) {
-    console.error("Erro ao fazer login:", error);
     showToast("Erro na conexão com o servidor.", "danger");
   }
 });

@@ -137,7 +137,18 @@ const consultarEstoque = async (req, res) => {
             params.push(category.trim()); //
         }
         const condicaoSQL = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''; //
-        const results = await select("products", condicaoSQL, params); //
+        const results = await select("products", condicaoSQL, params);
+        if(req.body.quant)
+        {
+            var quantidadeEstoque = results[0]["stock"];
+            if(req.body.quant > quantidadeEstoque) {
+                return res.status(200).json({erro: "A quantidade solicitada excede o estoque disponível"})
+            }
+            else{
+                var quantidadeEstoque = quantidadeEstoque - (req.body.quant)
+                update("products", ["stock"], [quantidadeEstoque], `marketId = '${marketId}'`)
+            }
+        } //
         return res.status(200).json({ mensagem: results }); //
     } catch (err) {
         console.error("Erro ao consultar estoque:", err); //

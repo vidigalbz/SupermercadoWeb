@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS history (
     beforeData TEXT,
     afterData TEXT,
     createdAt TEXT NOT NULL,
-    FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE SET NULL,
+    -- A linha da chave estrangeira para productId foi removida
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
 );

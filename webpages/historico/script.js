@@ -106,7 +106,6 @@ async function carregarHistorico() {
       renderHistoricoItems(grouped.remocao, accordions.remocoes, 'remocao');
 
   } catch (err) {
-      console.error("Erro detalhado ao carregar histórico:", err);
       const errorHTML = `<div class="alert alert-danger mt-3"><i class="bi bi-exclamation-triangle"></i> <strong>Erro:</strong> ${err.message}</div>`;
       Object.values(accordions).forEach(el => { if (el) el.innerHTML = errorHTML; });
   }

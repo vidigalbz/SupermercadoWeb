@@ -92,7 +92,6 @@ async function carregarSetoresGlobais(currentMarketId) {
     categoriasGlobais = data.cat || [];
     departamentosGlobais = data.dept || [];
   } catch (err) {
-    console.error("POPUP SCRIPT: Erro em carregarSetoresGlobais:", err);
     categoriasGlobais = []; departamentosGlobais = [];
     showAlert(`Erro ao carregar Categoria/Departamento: ${err.message}`, "Erro de Dados", "error");
   }
@@ -142,7 +141,7 @@ function abrirModalAdicionarItem() {
 
 
         const modalEl = document.getElementById('modalAdicionarItem');
-        if (!modalEl) { console.error("Modal #modalAdicionarItem não encontrado."); return; }
+        if (!modalEl) {  return; }
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
 
@@ -155,7 +154,7 @@ function abrirModalAdicionarItem() {
                 if (typeof adicionarProduto === 'function') {
                     const sucesso = await adicionarProduto();
                     if (sucesso) modal.hide();
-                } else { console.error("Função global adicionarProduto() não encontrada."); }
+                }
             };
         }
     });
@@ -187,7 +186,6 @@ function abrirModalEditarProduto() {
         if (elProductIdHidden) {
             elProductIdHidden.value = produto.productId;
         } else {
-            console.error("POPUP SCRIPT: Campo oculto #editar-productId não encontrado no modal!");
             showAlert("Erro de interface: campo ID do produto ausente no formulário.", "Erro", "error");
             return;
         }
@@ -215,7 +213,6 @@ function abrirModalEditarProduto() {
                     elemento.disabled = false;
                 }
             } else {
-                console.error(`POPUP SCRIPT: Elemento do form de edição com ID '${idCampo}' não encontrado!`);
                 todosCamposEncontrados = false;
             }
         }
@@ -227,7 +224,7 @@ function abrirModalEditarProduto() {
         if(elImagem) elImagem.value = '';
 
         const modalEl = document.getElementById('modalEditarProduto');
-        if (!modalEl) { console.error("Modal #modalEditarProduto não encontrado!"); return;}
+        if (!modalEl) {return;}
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
     });
@@ -247,7 +244,7 @@ function abrirModalDepCat() {
         preencherComboExcluirSetor();
 
         const modalEl = document.getElementById("modal-dep-cat");
-        if (!modalEl) { console.error("Modal #modal-dep-cat não encontrado."); return; }
+        if (!modalEl) { return; }
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
     });
@@ -281,7 +278,7 @@ function preencherComboExcluirSetor() {
 
 async function adicionarDepartamentoCategoria() {
   const valorInput = document.getElementById("input-novo");
-  if (!valorInput) { console.error("Input #input-novo não encontrado."); return; }
+  if (!valorInput) { return; }
   const valor = valorInput.value.trim();
 
   if (!valor) {
@@ -314,14 +311,13 @@ async function adicionarDepartamentoCategoria() {
         carregarSetoresEstoque(currentMarketId);
     }
   } catch(err) {
-    console.error("Erro em adicionarDepartamentoCategoria:", err);
     showAlert(err.message || "Erro desconhecido.", "Erro", "error");
   }
 }
   
 async function excluirDepartamentoCategoria() {
   const selectDelEl = document.getElementById("select-del");
-  if(!selectDelEl) { console.error("Select #select-del não encontrado."); return; }
+  if(!selectDelEl) { return; }
   const valor = selectDelEl.value;
 
   if (!valor) {
@@ -351,7 +347,6 @@ async function excluirDepartamentoCategoria() {
         carregarSetoresEstoque(currentMarketId);
     }
   } catch(err) {
-    console.error("Erro em excluirDepartamentoCategoria:", err);
     showAlert(err.message || "Erro desconhecido.", "Erro", "error");
   }
 }
@@ -364,7 +359,6 @@ async function atualizarAlertas(currentMarketId) {
   const qtdAlertasEl = document.getElementById('quantidade-alertas');
 
   if (!alertasUnidadesEl || !alertasValidadeEl || !qtdAlertasEl) {
-      console.error("POPUP SCRIPT: Elementos de UI para alertas não encontrados.");
       return;
   }
   if (!currentMarketId) {
@@ -404,7 +398,6 @@ async function atualizarAlertas(currentMarketId) {
                          Object.values(alertasValidade).reduce((sum, arr) => sum + arr.length, 0);
     qtdAlertasEl.textContent = totalAlertas;
   } catch (err) {
-    console.error('POPUP SCRIPT: Erro ao atualizar alertas:', err.message);
     alertasUnidadesEl.innerHTML = `<p class="alert alert-danger p-2 mb-0">Erro ao carregar alertas: ${err.message}</p>`;
     alertasValidadeEl.innerHTML = `<p class="alert alert-danger p-2 mb-0">Erro ao carregar alertas: ${err.message}</p>`;
     qtdAlertasEl.textContent = 'X';
@@ -482,7 +475,6 @@ function abrirModalExclusaoProduto() {
   // Pega o productId do input principal da página (que deve ter sido preenchido pelo clique no botão do card)
   const productIdParaExcluirInput = document.getElementById("codigo-excluir");
   if (!productIdParaExcluirInput) {
-      console.error("POPUP SCRIPT: Input #codigo-excluir não encontrado na página.");
       showAlert("Erro de Interface", "Campo para código de exclusão não encontrado.", "error");
       return;
   }
@@ -497,7 +489,6 @@ function abrirModalExclusaoProduto() {
   // Assume que 'window.currentData' é a lista de produtos carregada pelo script principal (estoque/script.js)
   if (typeof window.currentData === 'undefined' || !Array.isArray(window.currentData)) {
       showAlert("Lista de produtos não carregada. Não é possível obter detalhes para exclusão.", "Erro de Dados", "error");
-      console.error("POPUP SCRIPT (Excluir): window.currentData não está disponível ou não é um array.");
       return;
   }
 
@@ -531,7 +522,6 @@ function abrirModalExclusaoProduto() {
   // Mostra o modal de "detalhes do produto a ser excluído"
   const modalExcluirEl = document.getElementById("modalExcluirProduto");
   if (!modalExcluirEl) {
-      console.error("POPUP SCRIPT (Excluir): Modal #modalExcluirProduto não encontrado no HTML!");
       showAlert("Erro Crítico de Interface", "O modal de detalhes da exclusão não pode ser encontrado.", "error");
       return;
   }

@@ -7,6 +7,7 @@ let totalQuantity = 0;
 let currentInvoice = null;
 let modalInstance = null; // Para o globalAlertModal
 const codigoInput = document.getElementById("codigoProdutoInput");
+const amountInput = document.getElementById("quantidadeInput");
 let currentMarketId; // Será definido no DOMContentLoaded a partir da URL
 
 const labelPrice = document.getElementById("preco-total");
@@ -19,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (currentMarketId) {
         verificSuper(); // Chama verificSuper para buscar o nome do mercado
     } else {
-        console.error("ID do Mercado não encontrado na URL para o PDV!");
         window.location.href = '/error404'
         if (confirmCheckoutBtn) { // Verifica se o botão já existe no DOM
             confirmCheckoutBtn.disabled = true;
@@ -89,9 +89,7 @@ function filtrarProdutos(termoBusca) {
 
   
 async function verificSuper() {
-
     if (!currentMarketId) {
-        console.error('ID do supermercado não encontrado na URL para verificSuper.');
         showAlert("Supermercado não identificado na URL.", "Erro de Configuração", "error");
         const supermarketNameEl = document.getElementById("supermarket-name");
         if(supermarketNameEl) supermarketNameEl.textContent = "Super Mercado: Não Identificado";
@@ -122,14 +120,12 @@ async function verificSuper() {
             // Não precisa redefinir currentMarketId global aqui, ele já foi pego no DOMContentLoaded.
             // Apenas confirma que é válido.
         } else {
-            console.error("Falha ao verificar supermercado, resposta do backend:", data);
             const supermarketNameEl = document.getElementById("supermarket-name");
             if(supermarketNameEl) supermarketNameEl.textContent = "Super Mercado: Inválido ou Não Encontrado";
             showAlert(data.message || "Supermercado não encontrado ou resposta inválida.", "Erro de Verificação", "error");
             // window.location.href = '/Error404'; // Descomente se quiser redirecionar
         }
     } catch (err) {
-        console.error('Erro na função verificSuper:', { error: err.message, stack: err.stack, marketId: currentMarketId });
         const supermarketNameEl = document.getElementById("supermarket-name");
         if(supermarketNameEl) supermarketNameEl.textContent = "Super Mercado: Erro na Verificação";
         showAlert(`Erro ao verificar dados do supermercado: ${err.message}`, "Erro de Conexão", "error");
@@ -171,10 +167,10 @@ async function loadCartFromCookie() {
                 updateTotals();
             }
         } else {
-            console.error("Erro ao buscar carrinho do cookie:", response.status, await response.text().catch(()=>""));
+
         }
     } catch (err) {
-        console.error('Erro ao carregar carrinho do cookie:', err);
+
     }
 }
 
@@ -361,6 +357,7 @@ function updateTotals() {
 async function AdicionarProdutoNovo() {
     if(!codigoInput) return;
     const code = codigoInput.value.trim();
+    const amount = parseInt(amountInput.value.trim()) || 1;
     if (!code) {
         showAlert("Por favor, insira um código de produto.", "Campo Obrigatório", "warning");
         focusCodigoInput();
@@ -378,7 +375,7 @@ async function AdicionarProdutoNovo() {
         const response = await fetch('/api/produtos/estoqueData', { // Busca o produto no estoque
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ busca: code, marketId: currentMarketId }) // 'busca' é o código/barcode
+            body: JSON.stringify({ busca: code, marketId: currentMarketId, quant: amount }) // 'busca' é o código/barcode
         });
         const data = await response.json();
 
@@ -399,29 +396,25 @@ async function AdicionarProdutoNovo() {
                 focusCodigoInput();
                 return;
             }
-            criarCardEstoque(produtoEncontrado); // Adiciona ou incrementa no PDV
+            criarCardEstoque(produtoEncontrado, amount); // Adiciona ou incrementa no PDV
             focusCodigoInput(); // Limpa e foca o input
         } else {
             showAlert("Produto não encontrado no estoque deste mercado.", "Não Encontrado", "error");
             focusCodigoInput();
         }
     } catch (err) {
-        console.error('Erro ao adicionar produto novo:', err);
         showAlert(`Erro ao buscar produto: ${err.message}`, "Erro de Busca", "error");
         focusCodigoInput();
     }
 }
 
-function criarCardEstoque(produto) { // produto vindo do backend
+function criarCardEstoque(produto, amount) { // produto vindo do backend
     if (!produto || !produto.barcode) {
-        console.error("criarCardEstoque: Dados do produto inválidos", produto);
         return;
     }
     const barcode = produto.barcode;
     const price = parseFloat(produto.price);
-
     if (isNaN(price)) {
-        console.error("criarCardEstoque: Preço inválido para o produto", produto);
         showAlert(`Produto "${produto.name}" com preço inválido.`, "Erro de Dados", "error");
         return;
     }
@@ -429,7 +422,7 @@ function criarCardEstoque(produto) { // produto vindo do backend
     if (productsOnScreen[barcode]) { // Produto já na tela, apenas incrementa
         // Verifica estoque antes de incrementar
         if (productsOnScreen[barcode].quant < produto.stock) {
-            productsOnScreen[barcode].quant += 1;
+            productsOnScreen[barcode].quant += amount;
             productsOnScreen[barcode].totalPrice = price * productsOnScreen[barcode].quant;
         } else {
             showAlert(`Estoque máximo atingido para "${produto.name}".`, "Aviso", "warning");
@@ -450,7 +443,7 @@ function criarCardEstoque(produto) { // produto vindo do backend
         }
         productsOnScreen[barcode] = {
             totalPrice: price, // Preço total inicial é o preço unitário
-            quant: 1,
+            quant: amount,
             productData: { ...produto } // Armazena todos os dados do produto
         };
         // Chama recreateProductCard para criar o visual do card, passando a quantidade inicial 1
@@ -468,44 +461,53 @@ async function saveCartToCookie() {
             body: JSON.stringify({ carrinho: productsOnScreen }),
         });
         if (!response.ok) {
-            console.error("Falha ao salvar carrinho no cookie:", response.status, await response.text().catch(()=>""));
         }
     } catch (err) {
-        console.error('Erro ao salvar carrinho:', err);
+
     }
 }
 
-function removerUnidade(barcode) {
+async function removerUnidade(barcode) {
     if (productsOnScreen[barcode]) {
-        const productInfo = productsOnScreen[barcode];
-        const unitPrice = parseFloat(productInfo.productData.price);
+        const product = productsOnScreen[barcode];
+        const price = parseFloat(product.productData.price);
         
-        if (productInfo.quant > 1) {
-            productInfo.quant -= 1;
-            productInfo.totalPrice = unitPrice * productInfo.quant;
+        if (product.quant > 1) {
+            product.quant -= 1;
+            product.totalPrice = price * product.quant;
             
             const card = document.getElementById(`card(${barcode})`);
             if (card) {
-                const priceTextEl = card.querySelector('.card-text:nth-of-type(1)');
-                const quantTextEl = card.querySelector('.card-text:nth-of-type(2)');
-                if(priceTextEl) priceTextEl.textContent = `Preço Total: R$ ${productInfo.totalPrice.toFixed(2)}`;
-                if(quantTextEl) quantTextEl.textContent = `Qtd: ${productInfo.quant}`;
+                card.querySelector('.card-text:nth-of-type(1)').textContent = 
+                    `Preço Total: R$ ${product.totalPrice.toFixed(2)}`;
+                card.querySelector('.card-text:nth-of-type(2)').textContent = 
+                    `Qtd: ${product.quant}`;
             }
         } else {
-            // Se a quantidade é 1, remover o produto inteiro
             removerProduto(barcode);
         }
+        await fetch('/api/produtos/estoqueData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busca: barcode, marketId: currentMarketId, quant: -1 }) 
+        });
         updateTotals();
         saveCartToCookie();
     }
 }
 
-function removerProduto(barcode) {
+async function removerProduto(barcode) {
     if (productsOnScreen[barcode]) {
         const card = document.getElementById(`card(${barcode})`);
         if (card) {
             card.remove();
         }
+        await fetch("/api/produtos/estoqueData", { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busca: barcode, marketId: currentMarketId, quant: -(productsOnScreen[barcode].quant)})
+
+        })
         delete productsOnScreen[barcode];
         updateTotals();
         saveCartToCookie();
@@ -577,6 +579,7 @@ async function finalizarCompra() {
         if (productItem.productData && productItem.productData.productId != null) {
             invoiceItems.push({
                 name: productItem.productData.name,
+                lot: productItem.productData.lot,
                 barcode: barcode,
                 productId: productItem.productData.productId, // ID do produto do banco
                 unitPrice: parseFloat(productItem.productData.price),
@@ -614,7 +617,6 @@ async function finalizarCompra() {
         }
         processPayment(); // Chama a função que simula o processamento do pagamento
     } catch (err) {
-        console.error('Error finalizing sale:', { error: err.message, stack: err.stack, invoice: currentInvoice });
         if(confirmCheckoutBtn) confirmCheckoutBtn.disabled = false;
         if(checkoutModalBody) checkoutModalBody.innerHTML = `<div class="alert alert-danger"><h5>Erro ao finalizar</h5><p>${err.message}</p><button class="btn btn-sm btn-secondary" onclick="prepareCheckoutModal()">Tentar Novamente</button></div>`;
     }
@@ -692,7 +694,7 @@ function resetCart() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ carrinho: {} }),
-    }).catch(err => console.error('Erro ao limpar carrinho no servidor:', err));
+    })
 }
 
 function printReceipt() {
@@ -726,7 +728,7 @@ function printReceipt() {
             <div>--------------------------------------------------</div>
             <div>CUPOM FISCAL ELETRÔNICO SAT</div>
             <div>--------------------------------------------------</div>
-            <table><thead><tr><th>Item</th><th>Qtd.</th><th class="text-end">Vl. Unit.</th><th class="text-end">Total</th></tr></thead>
+            <table><thead><tr><th>Item</th><th>Qtd.</th><th>Lote.</th><th class="text-end">Vl. Unit.</th><th class="text-end">Total</th></tr></thead>
             <tbody>
             ${currentInvoice.items.map(item => `
                 <tr>
@@ -735,6 +737,7 @@ function printReceipt() {
                 <tr>
                     <td></td>
                     <td>${item.quantity} UN x</td>
+                    <td>${item.lot}</td>
                     <td class="text-end">R$ ${item.unitPrice.toFixed(2)}</td>
                     <td class="text-end">R$ ${item.subtotal.toFixed(2)}</td>
                 </tr>`).join('')}

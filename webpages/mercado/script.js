@@ -15,7 +15,6 @@ function getBaseUrl() {
     const host = window.location.host;
     return protocolo + '//' + host;
   } catch (e) {
-    console.error(e);
     return "";
   }
 }
@@ -42,7 +41,6 @@ async function verificarUser() {
     const res = await fetch('/api/usuarios/users/' + userId);
     const data = await res.json();
 
-    console.log(data);
     document.getElementById('userName').textContent = data.data.name;
     document.getElementById('userRole').textContent = "Gerente";
 
@@ -50,7 +48,6 @@ async function verificarUser() {
       window.location.href = "/error403";
     }
   } catch (err) {
-    console.error("Erro ao verificar usuário:", err);
     window.location.href = "/error403";
   }
 }
@@ -199,8 +196,6 @@ async function renderizarFuncionarios(marketId) {
     user.data.profileImage = await getImageURL(user.data.profileImage);
 
     funcionarios.push(user.data);
-    console.log(user.data.profileImage)
-    console.log(user.data);
   }
 
   if (funcionarios.length === 0) {
@@ -209,7 +204,6 @@ async function renderizarFuncionarios(marketId) {
   }
 
   funcionarios.forEach(async (func, idx) => {
-    console.log(func)
     const permissoesHtml = func.permissoes && func.permissoes.length
       ? func.permissoes.map(p => `<span class="badge bg-primary me-1">${p}</span>`).join(' ')
       : '<span class="text-muted">Nenhuma</span>';
@@ -326,7 +320,6 @@ async function adicionarFuncionario() {
     renderizarFuncionarios(mercadoSelecionado);
   } catch (error) {
     showToast("Erro ao adicionar funcionário. Tente novamente.", "error");
-    console.error(error);
   }
 }
 
@@ -359,7 +352,6 @@ async function SalvarPermissoes() {
   permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
 
-  console.log(func);
 
   func.permissoes = permissionsBoolList;
 
@@ -402,7 +394,6 @@ async function RemoverFuncionario() {
       showToast(data.message || "Erro ao remover funcionário", "error");
     }
   } catch (error) {
-    console.error(error);
     showToast("Erro ao conectar com o servidor", "error");
   } finally {
     btnRemover.innerHTML = btnOriginalText;
@@ -426,7 +417,6 @@ function carregarSupermercados() {
       renderizarSupermercados(currentData);
     })
     .catch(err => {
-      console.error("Erro ao carregar mercados:", err);
       showToast("Falha ao buscar mercados", "error");
     });
 }
@@ -489,7 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .catch(err => {
-        console.error(err);
         showToast("Erro ao conectar com o servidor!", "error");
       });
   });
@@ -525,7 +514,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .catch(err => {
-        console.error(err);
         showToast("Erro na requisição de atualização", "error");
       });
   });
@@ -557,7 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`Erro ao excluir: ${result.erro || "desconhecido"}`, "error");
       }
     } catch (err) {
-      console.error(err);
       showToast(`Erro na requisição: ${err.message}`, "error");
     }
   });
