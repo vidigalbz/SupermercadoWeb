@@ -472,6 +472,7 @@ async function adicionarProduto() {
   const estoqueStr = document.getElementById("produto-estoque")?.value;
   const lote = document.getElementById("produto-lote")?.value.trim();
   const departamento = document.getElementById("add-departamento")?.value;
+  const fornecedor = document.getElementById("add-fornecedor").value;
   // marketId já temos em currentMarketId
   const fabricacao = document.getElementById("produto-fabricacao")?.value;
   const validade = document.getElementById("produto-validade")?.value;
@@ -521,7 +522,8 @@ async function adicionarProduto() {
   formData.append("userId", currentUserId);       // userId é obrigatório para o histórico no backend
   formData.append("marketId", currentMarketId);   // marketId é obrigatório
   formData.append("nome", nome);
-  formData.append("codigo", codigo);              // 'codigo' no backend é o barcode
+  formData.append("codigo", codigo);   
+  formData.append("fornecedor", fornecedor)           // 'codigo' no backend é o barcode
   formData.append("preco", preco.toString());
   formData.append("categoria", categoria);
   formData.append("estoque", estoque.toString());

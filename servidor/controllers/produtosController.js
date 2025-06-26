@@ -19,24 +19,24 @@ const adicionarProduto = async (req, res) => {
 
         const {
             nome, codigo, preco, categoria, estoque, lote,
-            departamento, marketId, fabricacao, validade, userId
+            departamento, marketId, fabricacao, validade, userId, fornecedor
         } = req.body; //
 
         if (
             !nome || !codigo || !preco || !categoria || !estoque ||
-            !lote || !departamento || !marketId || !fabricacao || !validade || !userId
+            !lote || !departamento || !marketId || !fabricacao || !validade || !userId || !fornecedor
         ) {
             return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." }); //
         }
 
         const produto = {
             marketId, nome, codigo, preco: parseFloat(preco), categoria, departamento, //
-            estoque: parseInt(estoque), lote, fabricacao, validade, imagem: imagemPathToStore, userId: parseInt(userId) //
+            estoque: parseInt(estoque), lote, fabricacao, validade, imagem: imagemPathToStore, userId: parseInt(userId), fornecedor//
         };
 
         const result = await insert("products",
-            ["marketId", "name", "price", "category", "departament", "stock", "lot", "expirationDate", "manufactureDate", "barcode", "image"],
-            [produto.marketId, produto.nome, produto.preco, produto.categoria, produto.departamento, produto.estoque, produto.lote, produto.validade, produto.fabricacao, produto.codigo, produto.imagem]
+            ["marketId", "name", "price", "category", "departament", "stock", "lot", "expirationDate", "manufactureDate", "barcode", "image", "fornecedor"],
+            [produto.marketId, produto.nome, produto.preco, produto.categoria, produto.departamento, produto.estoque, produto.lote, produto.validade, produto.fabricacao, produto.codigo, produto.imagem, produto.fornecedor]
         ); //
 
         const newProductId = result.id; //
