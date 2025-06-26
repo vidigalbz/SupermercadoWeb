@@ -10,7 +10,6 @@ function getCookie(name) {
   return null;
 }
 
-
 let debounceTimer;
 function debounce(func, delay) {
   return function() {
@@ -22,105 +21,21 @@ function debounce(func, delay) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
-    alert("Você precisa estar logado para acessar o histórico.");
-    window.location.href = "/login";
-    return;
-  }
-  carregarSupermercados();
+  carregarHistorico(); 
 });
 
-async function carregarSupermercados() {
-  const selectEl = document.getElementById("select-market");
-  const userId = localStorage.getItem("userId"); // Mantemos o userId no localStorage por enquanto
-
-  if (!userId) {
-      console.error("HISTORICO: Usuário não logado.");
-      if (selectEl) selectEl.innerHTML = `<option value="">Usuário não identificado</option>`;
-      clearAllHistoryAccordions("Faça login para ver o histórico.");
-      return;
-  }
-
-  if (selectEl) selectEl.innerHTML = `<option value="">Carregando supermercados...</option>`;
-
-  try {
-    const response = await fetch("/api/historico/listarSupermercados", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: userId })
-    });
-
-    const responseBodyText = await response.text();
-
-    if (!response.ok) {
-      let errorMsg = `Erro ${response.status} ao buscar supermercados.`;
-      try {
-        const errorJson = JSON.parse(responseBodyText);
-        errorMsg += ` Detalhe: ${errorJson.error || errorJson.message || responseBodyText}`;
-      } catch (e) {
-        errorMsg += ` Resposta do servidor: ${responseBodyText.substring(0, 200)}`;
-      }
-      throw new Error(errorMsg);
-    }
-
-    const result = JSON.parse(responseBodyText);
-    if (!result.success) {
-      throw new Error(result.error || "Falha ao listar supermercados (backend retornou success: false).");
-    }
-
-      if (!result.data || result.data.length === 0) {
-          if (selectEl) selectEl.innerHTML = `<option value="">Nenhum supermercado encontrado</option>`;
-          // ALTERADO: Remove o cookie em vez do localStorage
-          document.cookie = 'marketId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          clearAllHistoryAccordions("Nenhum supermercado encontrado para este usuário.");
-          return;
-      }
-
-      if (selectEl) {
-          // ALTERADO: Lê o cookie em vez do localStorage
-          const marketIdFromCookie = getCookie("marketId");
-
-          selectEl.innerHTML = result.data.map(m =>
-              `<option value="${m.marketId}" ${m.marketId === marketIdFromCookie ? "selected" : ""}>
-                  ${m.name} (${m.marketId})
-              </option>`
-          ).join("");
-
-          const isValidMarketIdStored = result.data.some(m => m.marketId == marketIdFromCookie);
-
-          if (!marketIdFromCookie || !isValidMarketIdStored) {
-              const firstMarketId = result.data[0].marketId;
-              // ALTERADO: Salva no cookie em vez do localStorage
-              document.cookie = `marketId=${firstMarketId}; path=/`;
-              selectEl.value = firstMarketId;
-          } else {
-              selectEl.value = marketIdFromCookie;
-          }
-      }
-      
-      carregarHistorico();
-
-  } catch (err) {
-      console.error("HISTORICO: Erro em carregarSupermercados:", err.message);
-      if (selectEl) selectEl.innerHTML = `<option value="">Erro ao carregar</option>`;
-      clearAllHistoryAccordions(`Falha ao carregar supermercados: ${err.message}`);
-  }
-}
   
 function clearAllHistoryAccordions(message = "Nenhum dado para exibir.") {
-    const accordions = ['entradasAccordion', 'saidasAccordion', 'alteracoesAccordion', 'remocoesAccordion'];
-    const emptyMsgHTML = `<div class="alert alert-info mt-3"><i class="bi bi-info-circle"></i> ${message}</div>`;
-    accordions.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = emptyMsgHTML;
-    });
+  const accordions = ['entradasAccordion', 'saidasAccordion', 'alteracoesAccordion', 'remocoesAccordion'];
+  const emptyMsgHTML = `<div class="alert alert-info mt-3"><i class="bi bi-info-circle"></i> ${message}</div>`;
+  accordions.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = emptyMsgHTML;
+  });
 }
-
 
 async function carregarHistorico() {
   const marketId = getCookie("marketId");
-  const userId = localStorage.getItem("userId");
   const busca = document.getElementById("pesquisa")?.value || "";
 
   const accordions = {
@@ -137,8 +52,9 @@ async function carregarHistorico() {
       </div>`;
   Object.values(accordions).forEach(el => { if (el) el.innerHTML = loadingHTML; });
 
-  if (!userId || !marketId) {
-      const errorMsg = !userId ? "Usuário não autenticado." : "Nenhum supermercado selecionado.";
+  // A verificação de userId foi REMOVIDA daqui também.
+  if (!marketId) {
+      const errorMsg = "Nenhum supermercado selecionado. Selecione um e volte para o histórico.";
       Object.values(accordions).forEach(el => {
           if (el) el.innerHTML = `<div class="alert alert-warning mt-3">${errorMsg}</div>`;
       });
@@ -149,11 +65,10 @@ async function carregarHistorico() {
       const response = await fetch("/api/historico/historicoData", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          // O corpo da requisição agora envia APENAS o marketId e a busca.
           body: JSON.stringify({ 
               marketId, 
-              userId: parseInt(userId),
               busca: busca.trim()
-              // O parâmetro 'categoria' foi removido do corpo da requisição
           })
       });
 
@@ -161,12 +76,14 @@ async function carregarHistorico() {
           const errorData = await response.json().catch(() => ({ error: "Erro de rede ou resposta não JSON" }));
           throw new Error(errorData.error || `Erro ${response.status} ao carregar histórico.`);
       }
+      
       const result = await response.json();
 
       if (!result.success || !result.data) {
           throw new Error(result.error || "Resposta inválida do servidor ao carregar histórico.");
       }
       
+      // O resto da função continua igual...
       Object.values(accordions).forEach(el => { if (el) el.innerHTML = ''; });
 
       if (result.data.length === 0) {
@@ -294,15 +211,4 @@ function getTypeDetails(typeKey, before, after) {
     }
   }
   return details;
-}
-
-function trocarSupermercado() {
-  const novoMarketId = document.getElementById("select-market").value;
-  if (novoMarketId) {
-    localStorage.setItem("marketId", novoMarketId);
-    carregarHistorico();
-  } else {
-    localStorage.removeItem("marketId");
-    clearAllHistoryAccordions("Nenhum supermercado selecionado.");
-  }
 }

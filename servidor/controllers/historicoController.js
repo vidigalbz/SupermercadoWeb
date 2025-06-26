@@ -1,27 +1,31 @@
-const { select, selectFromRaw } = require('../database.js');
+// controllers/historicoController.js
+
+const { selectFromRaw } = require('../database.js'); // Verifique se o caminho para o seu database.js está correto
 
 const getHistoricoData = async (req, res) => {
-    const { userId, marketId, busca, categoria } = req.body;
-    if (!userId || !marketId) {
-        return res.status(400).json({ success: false, error: "Parâmetros 'userId' e 'marketId' são obrigatórios" });
+    // O 'userId' NÃO é mais pego do corpo da requisição.
+    const { marketId, busca } = req.body;
+
+    // A verificação de 'userId' foi REMOVIDA.
+    if (!marketId) {
+        return res.status(400).json({ success: false, error: "Parâmetro 'marketId' é obrigatório" });
     }
+
     try {
-        const mercados = await select("supermarkets", "WHERE marketId = ? AND ownerId = ?", [marketId, parseInt(userId)]);
-        if (!mercados || mercados.length === 0) {
-            return res.status(403).json({ success: false, error: "Acesso não autorizado a este supermercado ou supermercado não existe." });
-        }
+        // =====================================================================
+        // O BLOCO INTEIRO DE VERIFICAÇÃO DE PERMISSÃO FOI REMOVIDO DAQUI.
+        // O código agora confia que o marketId recebido é o correto.
+        // =====================================================================
+
         let conditions = ["h.marketId = ?"];
         const params = [marketId];
+
         if (busca && busca.trim() !== '') {
             conditions.push("(p.name LIKE ? OR p.barcode = ? OR h.productId LIKE ?)");
             const searchTerm = `%${busca.trim()}%`;
             params.push(searchTerm, busca.trim(), searchTerm);
         }
-        const typeMap = { entrada: "entrada", saida: "saida", alteracao: "edicao", remocao: "remocao" };
-        if (categoria && typeMap[categoria]) {
-            conditions.push("h.type = ?");
-            params.push(typeMap[categoria]);
-        }
+        
         const sql = `
             SELECT
                 h.historyId, h.productId, h.marketId, h.type,
@@ -36,33 +40,31 @@ const getHistoricoData = async (req, res) => {
                         ELSE 'Produto Detalhes Desconhecidos'
                     END
                 )) as name,
-                COALESCE(p.barcode, (
-                    CASE
-                        WHEN h.type = 'remocao' THEN JSON_EXTRACT(h.beforeData, '$.barcode')
-                        ELSE NULL
-                    END
-                )) as barcode
+                p.barcode
             FROM history h
-            LEFT JOIN products p ON h.productId = p.productId AND h.marketId = p.marketId
+            LEFT JOIN products p ON h.productId = p.productId
             WHERE ${conditions.join(" AND ")}
             ORDER BY h.createdAt DESC
             LIMIT 500
         `;
+
         const historico = await selectFromRaw(sql, params);
+
         const processed = historico.map(item => {
             try {
                 return {
                     ...item,
-                    beforeData: typeof item.beforeData === 'string' ? JSON.parse(item.beforeData || '{}') : (item.beforeData || {}),
-                    afterData: typeof item.afterData === 'string' ? JSON.parse(item.afterData || '{}') : (item.afterData || {}),
-                    date: item.date || new Date().toISOString()
+                    beforeData: JSON.parse(item.beforeData || '{}'),
+                    afterData: JSON.parse(item.afterData || '{}'),
                 };
             } catch (e) {
                 console.error("Erro ao parsear JSON no histórico:", e, "Item:", item);
-                return { ...item, beforeData: { error: "parse_failed" }, afterData: { error: "parse_failed" } };
+                return null;
             }
-        }).filter(Boolean);
+        }).filter(Boolean); // Remove itens que falharam no parse
+
         return res.json({ success: true, data: processed });
+
     } catch (err) {
         console.error("Erro no /historicoData:", err);
         return res.status(500).json({ success: false, error: "Erro interno ao processar histórico", detalhes: err.message });
