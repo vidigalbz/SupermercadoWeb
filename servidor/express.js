@@ -37,8 +37,11 @@ loadPages(app, webpages_dir);
 // Página de erro 404
 app.get("/Error404", require('./routes/util').error404Page);
 
-// Middleware para páginas não encontradas
 app.use((req, res) => {
+  if (req.path === '/') {
+    return res.redirect('/main');
+  }
+
   return res.redirect('/Error404');
 });
 
