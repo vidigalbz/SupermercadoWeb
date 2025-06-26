@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,21 +9,21 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link href="style.css" rel="stylesheet">
 </head>
+
 <body>
-<!-- Navbar -->
-    <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-dark" onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
-                <h1 class="ms-3">🏪</h1>
-                <span class="navbar-brand mb-0 h1">Mercado Didático</span>
-            </div>
-            <button class="btn btn-danger fs-3" type="button" data-bs-toggle="offcanvas"
-                data-bs-target="#perfilOffcanvas">
-                <i class="bi bi-person-circle"></i>
-            </button>
-        </div>
-    </nav>
+  <!-- Navbar -->
+  <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-dark" onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
+        <h1 class="ms-3">🏪</h1>
+        <span class="navbar-brand mb-0 h1">Mercado Didático</span>
+      </div>
+      <button class="btn btn-danger fs-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#perfilOffcanvas">
+        <i class="bi bi-person-circle"></i>
+      </button>
+    </div>
+  </nav>
 
   <!-- Offcanvas do caixa -->
   <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-alertas">
@@ -44,12 +45,14 @@
           <h3 class="ms-2 fw-bold" id="supermarket-name">Super Mercado: </h3>
           <!-- Código + Botão Adicionar + Avançado -->
           <div class="col-12 col-md-6 d-flex gap-2">
+            <input type="number" class="form-control form-control-sm p-1" style="width: 60px;" id="quantidadeInput"
+              placeholder="1">
             <div class="input-group input-group-sm flex-grow-1">
               <input type="text" class="form-control" id="codigoProdutoInput" placeholder="Código do produto">
               <button class="btn btn-success" onclick="AdicionarProdutoNovo()">Adicionar</button>
             </div>
           </div>
-          
+
           <!-- Informações de preço -->
           <div class="col-6 col-md-3">
             <div class="bg-light rounded p-2 small fw-semibold d-flex justify-content-between">
@@ -64,7 +67,7 @@
             </div>
           </div>
 
-          
+
           <!-- Botões -->
           <div class="col-6 col-md-2">
             <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#modalCancelarCompra">
@@ -76,11 +79,12 @@
               <i class="bi bi-cart-check-fill"></i> Finalizar
             </button>
           </div>
-          
+
           <!-- Pesquisa -->
           <div class="col-auto ms-auto">
             <div class="search-container position-relative">
-              <input type="text" class="form-control search-input" id="pesquisaInput" placeholder="Pesquisar produto adicionado pelo código de barras" oninput="filtrarProdutos(this.value)">
+              <input type="text" class="form-control search-input" id="pesquisaInput"
+                placeholder="Pesquisar produto adicionado pelo código de barras" oninput="filtrarProdutos(this.value)">
               <button class="btn btn-outline-secondary search-btn" onclick="toggleSearch()">
                 <i class="bi bi-search"></i>
               </button>
@@ -89,7 +93,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Produtos -->
     <div class="grid-produtos" id="produtos-container">
       <!-- Produtos serão adicionados dinamicamente aqui -->
@@ -97,7 +101,8 @@
   </div>
 
   <!-- Modal: Adição Avançada -->
-  <div class="modal fade" id="modalAdicaoAvancada" tabindex="-1" aria-labelledby="modalAdicaoAvancadaLabel" aria-hidden="true">
+  <div class="modal fade" id="modalAdicaoAvancada" tabindex="-1" aria-labelledby="modalAdicaoAvancadaLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -157,9 +162,10 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Modal: Confirmar Compra -->
-  <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-labelledby="modalConfirmarCompraLabel" aria-hidden="true">
+  <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-labelledby="modalConfirmarCompraLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-success text-white">
@@ -174,7 +180,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-arrow-left"></i></button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i
+              class="bi bi-arrow-left"></i></button>
           <button type="button" class="btn btn-success" id="confirmCheckoutBtn">
             <i class="bi bi-cart-check-fill"></i> Confirmar
           </button>
@@ -182,9 +189,10 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Modal: Cancelar Compra -->
-  <div class="modal fade" id="modalCancelarCompra" tabindex="-1" aria-labelledby="modalCancelarCompraLabel" aria-hidden="true">
+  <div class="modal fade" id="modalCancelarCompra" tabindex="-1" aria-labelledby="modalCancelarCompraLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
@@ -197,13 +205,14 @@
           <div class="text-danger d-none" id="erroSenha">Senha incorreta. Tente novamente.</div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-arrow-left"></i></button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i
+              class="bi bi-arrow-left"></i></button>
           <button type="button" class="btn btn-danger" onclick="confirmarCancelamento()">Confirmar Cancelamento</button>
         </div>
       </div>
     </div>
   </div>
-  
+
   <!-- Modal: Aviso Global -->
   <div class="modal fade" id="globalAlertModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -269,4 +278,5 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>
