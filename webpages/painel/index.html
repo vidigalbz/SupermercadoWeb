@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel do Funcionário</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div class="main-container">
     <div class="card shadow custom-card">
-      <div class="card-header text-center text-dark w-100" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
+      <div class="card-header text-center text-dark w-100"
+        style="background: linear-gradient(to left, #ff6f00, #ffa040);">
         <h2>Painel do Funcionário</h2>
       </div>
       <div class="card-body">
@@ -24,36 +27,20 @@
               </div>
               <div class="card-body text-center">
                 <!-- Imagem de perfil ou placeholder -->
-                <img
-                  id="profileImage"
+                <img id="profileImage"
                   src="https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1"
-                  alt="Foto do usuário"
-                  class="rounded-circle border"
-                  style="width: 9.5rem; height: 9.5rem; object-fit: cover;"
-                />
+                  alt="Foto do usuário" class="rounded-circle border"
+                  style="width: 9.5rem; height: 9.5rem; object-fit: cover;" />
                 <hr>
                 <p class="text-start"><strong>Nome:</strong> <span id="userName">[Nome]</span></p>
                 <p class="text-start"><strong>Codigo:</strong> <span id="userCode">[Codigo]</span></p>
 
                 <!-- Input de arquivo oculto e botões -->
-                <input
-                  type="file"
-                  id="fileInput"
-                  accept="image/*"
-                  style="display: none;"
-                />
-                <button
-                  id="btnChangeImage"
-                  class="btn btn-primary w-100 mb-2"
-                  type="button"
-                >
+                <input type="file" id="fileInput" accept="image/*" style="display: none;" />
+                <button id="btnChangeImage" class="btn btn-primary w-100 mb-2" type="button">
                   Alterar Imagem
                 </button>
-                <button
-                  id="btnRemoveImage"
-                  class="btn btn-outline-danger w-100"
-                  type="button"
-                >
+                <button id="btnRemoveImage" class="btn btn-outline-danger w-100" type="button">
                   Remover Imagem
                 </button>
               </div>
@@ -75,8 +62,8 @@
                 <!-- Telas de Acesso em Cards -->
                 <div id="acessosPanel" class="d-none flex-grow-1 d-flex flex-column">
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="card-title mb-0">Acessos - <span id="nomeLojaSelecionada"></span></h5>
-                  <button class="btn btn-sm btn-outline-secondary" onclick="voltarParaSupermercados()">
+                    <h5 class="card-title mb-0">Acessos - <span id="nomeLojaSelecionada"></span></h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="voltarParaSupermercados()">
                       <i class="bi bi-arrow-left"></i>
                     </button>
                   </div>
@@ -84,42 +71,45 @@
                   <div class="row row-cols-2 g-3">
                     <div class="col">
                       <a href="#" class="card text-center access-card" id="cardEstoque" onclick="irParaTela('estoque')">
-                      <div class="card-body">
-                        <i class="bi bi-boxes access-icon"></i>
-                        <h6 class="mt-2">Estoque</h6>
-                      </div>
+                        <div class="card-body">
+                          <i class="bi bi-boxes access-icon"></i>
+                          <h6 class="mt-2">Estoque</h6>
+                        </div>
                       </a>
                     </div>
                     <div class="col">
                       <a href="#" class="card text-center access-card" id="cardCaixa" onclick="irParaTela('pdv')">
-                      <div class="card-body">
-                        <i class="bi bi-cash access-icon"></i>
-                        <h6 class="mt-2">Caixa</h6>
-                      </div>
+                        <div class="card-body">
+                          <i class="bi bi-cash access-icon"></i>
+                          <h6 class="mt-2">Caixa</h6>
+                        </div>
                       </a>
                     </div>
                     <div class="col">
-                      <a href="#" class="card text-center access-card" id="cardRelatorios" onclick="irParaTela('relatorio')">
-                      <div class="card-body">
-                        <i class="bi bi-bar-chart-line access-icon"></i>
-                        <h6 class="mt-2">Relatórios</h6>
-                      </div>
+                      <a href="#" class="card text-center access-card" id="cardRelatorios"
+                        onclick="irParaTela('relatorio')">
+                        <div class="card-body">
+                          <i class="bi bi-bar-chart-line access-icon"></i>
+                          <h6 class="mt-2">Relatórios</h6>
+                        </div>
                       </a>
                     </div>
                     <div class="col">
-                      <a href="#" class="card text-center access-card disabled-card" id="cardRastreio" onclick="irParaTela('historico')">
-                      <div class="card-body">
-                        <i class="bi bi-truck access-icon"></i>
-                        <h6 class="mt-2">Historico</h6>
-                      </div>
+                      <a href="#" class="card text-center access-card disabled-card" id="cardRastreio"
+                        onclick="irParaTela('historico')">
+                        <div class="card-body">
+                          <i class="bi bi-truck access-icon"></i>
+                          <h6 class="mt-2">Historico</h6>
+                        </div>
                       </a>
                     </div>
                     <div class="col">
-                      <a href="#" class="card text-center access-card disabled-card" id="cardFornecedores" onclick="irParaTela('fornecedor')">
-                      <div class="card-body">
-                        <i class="bi bi-people-fill access-icon"></i>
-                        <h6 class="mt-2">Fornecedores</h6>
-                      </div>
+                      <a href="#" class="card text-center access-card disabled-card" id="cardFornecedores"
+                        onclick="irParaTela('fornecedor')">
+                        <div class="card-body">
+                          <i class="bi bi-people-fill access-icon"></i>
+                          <h6 class="mt-2">Fornecedores</h6>
+                        </div>
                       </a>
                     </div>
                   </div>
@@ -131,33 +121,35 @@
       </div>
       <div class="card-footer text-muted text-end">
         <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmarSaidaModal">
-            Sair do Sistema
+          Sair do Sistema
         </button>
       </div>
     </div>
   </div>
 
   <!-- Modal de Confirmação de Saída -->
-    <div class="modal fade" id="confirmarSaidaModal" tabindex="-1" aria-labelledby="confirmarSaidaModalLabel" aria-hidden="true">
+  <div class="modal fade" id="confirmarSaidaModal" tabindex="-1" aria-labelledby="confirmarSaidaModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+      <div class="modal-content">
         <div class="modal-header bg-danger">
-            <h5 class="modal-title" id="confirmarSaidaModalLabel">Confirmar Saída</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          <h5 class="modal-title" id="confirmarSaidaModalLabel">Confirmar Saída</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-            Tem certeza de que deseja sair do sistema?
+          Tem certeza de que deseja sair do sistema?
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-danger" onclick="confirmarSaida()">Sair</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" onclick="confirmarSaida()">Sair</button>
         </div>
-        </div>
+      </div>
     </div>
-    </div>
+  </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>
