@@ -2,17 +2,22 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const fs = require("fs");
+
 const { getRealWirelessIP } = require("./utils/getRealIP");
 const { errorHandler } = require("./middlewares/errorHandler");
+const { loadPages, error404Page } = require('./routes/util');
 
 const app = express();
 const port = process.env.PORT || 4000;
 
 const webpages_dir = path.join(__dirname, "../webpages");
 
+// Middlewares globais
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Servir arquivos estáticos
 app.use(express.static(webpages_dir));
 app.use('/servidor/uploads', express.static(path.join(__dirname, 'servidor/uploads')));
 app.use('/uploads/profiles', express.static(path.join(__dirname, 'uploads/profiles')));
@@ -30,27 +35,28 @@ app.use('/api/carrinho', require('./routes/carrinho'));
 app.use('/api/relatorio', require('./routes/relatorio'));
 app.get('/api/ip', (req, res) => res.json({ ip: getRealWirelessIP() }));
 
-// Páginas dinâmicas
-const { loadPages } = require('./routes/util');
+// Carrega páginas HTML automaticamente
 loadPages(app, webpages_dir);
 
-// Página de erro 404
-app.get("/Error404", require('./routes/util').error404Page);
+// Página de erro 404 explícita
+app.get("/Error404", error404Page);
 
+// Redirecionamentos para rotas inválidas
 app.use((req, res) => {
   if (req.path === '/') {
-    return res.redirect('/main');
+    return res.redirect('/main'); // Redireciona para a home personalizada
   }
-
   return res.redirect('/Error404');
 });
 
 // Middleware de tratamento global de erros
 app.use(errorHandler);
 
-// Inicializa servidor
+// Inicializa o servidor
 app.listen(port, '0.0.0.0', () => {
   const serverIp = getRealWirelessIP();
-  console.log(`Servidor iniciado em http://localhost:${port}`);
-  if (serverIp !== 'localhost') console.log(`Rede: http://${serverIp}:${port}`);
+  console.log(`Servidor iniciado em: http://localhost:${port}`);
+  if (serverIp !== 'localhost') {
+    console.log(`Acessível na rede: http://${serverIp}:${port}`);
+  }
 });
