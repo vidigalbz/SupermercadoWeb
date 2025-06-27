@@ -624,27 +624,14 @@ async function confirmarEdicao() {
   const loteProduto = document.getElementById('editar-lote')?.value.trim();
   const fabricacaoProduto = document.getElementById('editar-fabricacao')?.value;
   const validadeProduto = document.getElementById('editar-validade')?.value;
+  const imagemProduto = document.getElementById('editar-imagem')
   calcularValorTotalEdicao();
 
-  const produtoAtualizado = {
-    userId: parseInt(userId),
-    productId: parseInt(productIdDoForm),
-    name: nomeProduto,
-    price: parseFloat(precoProdutoStr),
-    priceUnit: parseFloat(precoProdutoUnit),
-    category: categoriaProduto,
-    stock: parseInt(estoqueProdutoStr),
-    departament: departamentoProduto,
-    marketId: marketIdDoFormulario,
-    barcode: barcodeProduto,
-    lot: loteProduto,
-    manufactureDate: fabricacaoProduto,
-    expirationDate: validadeProduto
-  };
+  const formData = new FormData()
 
-  if (!produtoAtualizado.name || isNaN(produtoAtualizado.price) || !produtoAtualizado.category ||
-    isNaN(produtoAtualizado.stock) || !produtoAtualizado.departament || !produtoAtualizado.barcode ||
-    !produtoAtualizado.lot || !produtoAtualizado.manufactureDate || !produtoAtualizado.expirationDate) {
+  if (!nomeProduto || isNaN(precoProdutoStr) || isNaN(precoProdutoUnit) || !categoriaProduto ||
+    isNaN(estoqueProdutoStr) || !departamentoProduto || !barcodeProduto ||
+    !loteProduto || !fabricacaoProduto || !validadeProduto) {
     let camposFaltantes = [];
     if (!produtoAtualizado.name) camposFaltantes.push("Nome");
     if (isNaN(produtoAtualizado.price)) camposFaltantes.push("Preço");
@@ -654,17 +641,37 @@ async function confirmarEdicao() {
     else alert(mensagemErro);
     return false;
   }
-  if (isNaN(produtoAtualizado.productId)) {
+  if (isNaN(productIdDoForm)) {
     if (typeof showAlert === 'function') showAlert('Erro', 'ID do Produto inválido para edição.', 'error');
     else alert('ID do Produto inválido para edição.');
     return false;
   }
 
+  formData.append('userId', parseInt(userId))
+  formData.append('productId', parseInt(productIdDoForm))
+  formData.append('productId', parseInt(productIdDoForm))
+  formData.append('name', nomeProduto)
+  formData.append('price', parseFloat(precoProdutoStr))
+  formData.append('priceUnit', parseFloat(precoProdutoUnit))
+  formData.append('category', categoriaProduto);
+  formData.append('stock', parseInt(estoqueProdutoStr));
+  formData.append('departament', departamentoProduto);
+  formData.append('marketId', marketIdDoFormulario);
+  formData.append('barcode', barcodeProduto);
+  formData.append('lot', loteProduto);
+  formData.append('manufactureDate', fabricacaoProduto);
+  formData.append('expirationDate', validadeProduto);
+
+  if (imagemProduto && imagemProduto.files.length > 0) {
+    formData.append("imagem", imagemProduto.files[0]);
+  } else {
+    formData.append("imagem", ""); // Envia string vazia se não houver imagem (backend deve tratar)
+  }
+
   try {
     const response = await fetch("/api/produtos/editarProduto", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(produtoAtualizado)
+      body: formData
     });
     const resultado = await response.json();
 

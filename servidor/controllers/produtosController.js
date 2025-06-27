@@ -85,6 +85,17 @@ const deletarProduto = async (req, res) => {
 // Função para EDITAR produto
 const editarProduto = async (req, res) => {
     try {
+        let imagemPathToStore = null;
+        if (req.file) {
+            // Caminho relativo para salvar no banco de dados
+            imagemPathToStore = `servidor/uploads/${req.file.filename}`.replace(/\\/g, "/"); //
+        } else {
+            const { imagem: imagemUrl } = req.body; //
+            if (imagemUrl && typeof imagemUrl === 'string' && imagemUrl.trim() !== '') {
+                imagemPathToStore = imagemUrl; //
+            }
+        }
+
         const {
             productId, name, price, priceUnit, category, departament, stock,
             lot, expirationDate, manufactureDate, barcode, marketId, userId
@@ -93,16 +104,17 @@ const editarProduto = async (req, res) => {
             return res.status(400).json({ success: false, message: "Todos os campos são obrigatórios." }); //
         }
 
-        const oldDataResult = await select("products", "WHERE productId = ? AND marketId = ?", [productId, marketId]); //
+        const oldDataResult = await select("products", "WHERE productId = ? AND marketId = ?", [parseInt(productId), marketId]); //
         if (!oldDataResult || oldDataResult.length === 0) { //
             return res.status(404).json({ success: false, message: "Produto não encontrado neste mercado." }); //
         }
+        console.log(oldDataResult)
         const beforeData = oldDataResult[0]; //
 
-        const columnsToUpdate = ["name", "price", "priceUnit", "category", "departament", "stock", "lot", "expirationDate", "manufactureDate", "barcode"]; //
-        const valuesToUpdate = [name, parseFloat(price), priceUnit, category, departament, parseInt(stock), lot, expirationDate, manufactureDate, barcode]; //
+        const columnsToUpdate = ["name", "price", "priceUnit", "category", "departament", "stock", "lot", "expirationDate", "manufactureDate", "barcode", "image"]; //
+        const valuesToUpdate = [name, parseFloat(price), priceUnit, category, departament, parseInt(stock), lot, expirationDate, manufactureDate, barcode, imagemPathToStore.toString()]; //
 
-        await update("products", columnsToUpdate, valuesToUpdate, "productId = ? AND marketId = ?", [productId, marketId]); //
+        await update("products", columnsToUpdate, valuesToUpdate, "productId = ? AND marketId = ?", [parseInt(productId), marketId]); //
 
         const afterData = { name, price: parseFloat(price), category, departament, stock: parseInt(stock), lot, expirationDate, manufactureDate, barcode, marketId }; //
 
