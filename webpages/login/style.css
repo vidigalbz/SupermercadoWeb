@@ -218,57 +218,66 @@ body {
   }
 }
 
-.role-switch {
-  position: relative;
-  width: 250px;
-  height: 30px;
-  background: #f1f1f1;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: background 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-}
 
-.role-switch .label {
-  font-weight: 500;
-  font-size: 0.9rem;
-  z-index: 1;
-}
+.switch-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Segoe UI', sans-serif;
+  }
 
-.role-switch .icon {
-  font-size: 1.2rem;
-  margin-left: 4px;
-}
+  .custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 34px;
+  }
 
-.switch-slider {
-  position: absolute;
-  width: 50%;
-  height: 100%;
-  background: #0d6efd;
-  border-radius: 30px;
-  top: 0;
-  left: 0;
-  transition: left 0.3s;
-  z-index: 0;
-}
+  .custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
 
-#funcaoToggle:checked + .role-switch .switch-slider {
-  left: 50%;
-}
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: .4s;
+  }
 
-.role-toggle-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
+  .slider::before {
+    position: absolute;
+    content: "👤";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .4s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
 
-.invisible-checkbox {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
+  input:checked + .slider {
+    background-color: #4CAF50;
+  }
+
+  input:checked + .slider::before {
+    transform: translateX(46px);
+    content: "🧑‍💼";
+  }
+
+  .role-label {
+    font-weight: 500;
+    font-size: 16px;
+  }

@@ -1,750 +1,570 @@
-let graficoAtualFinanceiro = null;
+// Variáveis globais
 let graficoAtualABC = null;
+let graficoFinanceiro = null;
+let relatorioData = null;
+let dataExibida = new Date(); // ✅ ESTADO: Controla o mês/ano que estamos vendo
 
-let dadosFinanceirosPorMes = [
-    { mes: 'Janeiro 2024', receita: 30000, despesa: 10000, lucro: 20000 },
-    { mes: 'Fevereiro 2024', receita: 20000, despesa: 15000, lucro: 5000 },
-    { mes: 'Março 2024', receita: 38000, despesa: 16000, lucro: 22000 },
-    { mes: 'Abril 2024', receita: 50000, despesa: 32000, lucro: 18000 },
-    { mes: 'Maio 2024', receita: 52000, despesa: 33000, lucro: 19000 },
-    { mes: 'Junho 2024', receita: 50000, despesa: 33000, lucro: 17000 },
-    { mes: 'Julho 2024', receita: 50000, despesa: 32000, lucro: 18000 },
-    { mes: 'Agosto 2024', receita: 40000, despesa: 12000, lucro: 28000 },
-    { mes: 'Setembro 2024', receita: 35000, despesa: 40000, lucro: 1000 },
-    { mes: 'Outubro 2024', receita: 32000, despesa: 45000, lucro: 1000 },
-    { mes: 'Novembro 2024', receita: 25000, despesa: 10000, lucro: 15000 },
-    { mes: 'Dezembro 2024', receita: 46000, despesa: 40000, lucro: 6000 },
-    { mes: 'Janeiro 2025', receita: 48000, despesa: 35000, lucro: 13000 },
-    { mes: 'Fevereiro 2025', receita: 50000, despesa: 30000, lucro: 20000 },
-    { mes: 'Março 2025', receita: 60000, despesa: 40000, lucro: 20000 },
-    { mes: 'Abril 2025', receita: 70000, despesa: 50000, lucro: 20000 },
-    { mes: 'Maio 2025', receita: 80000, despesa: 60000, lucro: 20000 }
-];
+/**
+ * Função para buscar um cookie específico pelo seu nome.
+ * @param {string} name - O nome do cookie a ser procurado.
+ * @returns {string|null} - O valor do cookie ou null se não for encontrado.
+ */
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
 
-let vendasPorClasse = [
-    { mes: "Janeiro 2024", labels: ["Classe A (40%)", "Classe B (35%)", "Classe C (25%)"], dados: [40, 35, 25], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Fevereiro 2024", labels: ["Classe A (45%)", "Classe B (30%)", "Classe C (25%)"], dados: [45, 30, 25], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Março 2024", labels: ["Classe A (50%)", "Classe B (25%)", "Classe C (25%)"], dados: [50, 25, 25], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Abril 2024", labels: ["Classe A (55%)", "Classe B (20%)", "Classe C (25%)"], dados: [55, 20, 25], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Maio 2024", labels: ["Classe A (60%)", "Classe B (25%)", "Classe C (15%)"], dados: [60, 25, 15], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Junho 2024", labels: ["Classe A (42%)", "Classe B (33%)", "Classe C (25%)"], dados: [42, 33, 25], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Julho 2024", labels: ["Classe A (48%)", "Classe B (32%)", "Classe C (20%)"], dados: [48, 32, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Agosto 2024", labels: ["Classe A (52%)", "Classe B (28%)", "Classe C (20%)"], dados: [52, 28, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Setembro 2024", labels: ["Classe A (50%)", "Classe B (30%)", "Classe C (20%)"], dados: [50, 30, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Outubro 2024", labels: ["Classe A (46%)", "Classe B (34%)", "Classe C (20%)"], dados: [46, 34, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Novembro 2024", labels: ["Classe A (49%)", "Classe B (31%)", "Classe C (20%)"], dados: [49, 31, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Dezembro 2024", labels: ["Classe A (53%)", "Classe B (27%)", "Classe C (20%)"], dados: [53, 27, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Janeiro 2025", labels: ["Classe A (50%)", "Classe B (30%)", "Classe C (20%)"], dados: [50, 30, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Fevereiro 2025", labels: ["Classe A (47%)", "Classe B (33%)", "Classe C (20%)"], dados: [47, 33, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Março 2025", labels: ["Classe A (44%)", "Classe B (36%)", "Classe C (20%)"], dados: [44, 36, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Abril 2025", labels: ["Classe A (51%)", "Classe B (29%)", "Classe C (20%)"], dados: [51, 29, 20], cores: ["#198754", "#ffc107", "#dc3545"] },
-    { mes: "Maio 2025", labels: ["Classe A (50%)", "Classe B (25%)", "Classe C (25%)"], dados: [50, 25, 25], cores: ["#198754", "#ffc107", "#dc3545"] }
-];
+// --- FUNÇÃO PRINCIPAL DE BUSCA E RENDERIZAÇÃO (VERSÃO FINAL) ---
+async function buscarERenderizarRelatorio() {
+    // 1. Pega o ID do mercado que está salvo no cookie.
+    const marketId = getCookie('marketId');
 
-let produtosEncalhados = [
-    {
-        mes: "Janeiro 2024", produtos: [
-            { nome: 'Detergente', validade: '30 dias', estoque: 45, codigo: '2', lote: 'EEEE', ultimaVenda: '05/01/2024' },
-            { nome: 'Sabão em Pó', validade: '15 dias', estoque: 20, codigo: '5', lote: 'A1B2', ultimaVenda: '03/01/2024' },
-            { nome: 'Água Sanitária', validade: '60 dias', estoque: 35, codigo: '9', lote: 'XYZ9', ultimaVenda: '01/01/2024' },
-            { nome: 'Esponja de Aço', validade: '90 dias', estoque: 10, codigo: '12', lote: 'SDF4', ultimaVenda: '02/01/2024' },
-            { nome: 'Amaciante', validade: '25 dias', estoque: 50, codigo: '18', lote: 'AMCT', ultimaVenda: '08/01/2024' }
-        ]
-    },
-    {
-        mes: "Fevereiro 2024", produtos: [
-            { nome: 'Detergente1', validade: '25 dias', estoque: 42, codigo: '2', lote: 'EEEE', ultimaVenda: '10/01/2024' },
-            { nome: 'Sabão em Pó', validade: '10 dias', estoque: 18, codigo: '5', lote: 'A1B2', ultimaVenda: '08/01/2024' },
-            { nome: 'Água Sanitária', validade: '55 dias', estoque: 32, codigo: '9', lote: 'XYZ9', ultimaVenda: '02/01/2024' },
-            { nome: 'Esponja de Aço', validade: '80 dias', estoque: 8, codigo: '12', lote: 'SDF4', ultimaVenda: '05/01/2024' },
-            { nome: 'Amaciante', validade: '20 dias', estoque: 45, codigo: '18', lote: 'AMCT', ultimaVenda: '12/01/2024' }
-        ]
-    },
-    {
-        mes: "Março 2024", produtos: [
-            { nome: 'Detergente2', validade: '20 dias', estoque: 40, codigo: '2', lote: 'EEEE', ultimaVenda: '15/02/2024' },
-            { nome: 'Sabão em Pó', validade: '5 dias', estoque: 16, codigo: '5', lote: 'A1B2', ultimaVenda: '10/02/2024' },
-            { nome: 'Água Sanitária', validade: '50 dias', estoque: 28, codigo: '9', lote: 'XYZ9', ultimaVenda: '01/02/2024' },
-            { nome: 'Esponja de Aço', validade: '70 dias', estoque: 7, codigo: '12', lote: 'SDF4', ultimaVenda: '03/02/2024' },
-            { nome: 'Amaciante', validade: '18 dias', estoque: 43, codigo: '18', lote: 'AMCT', ultimaVenda: '14/02/2024' }
-        ]
-    },
-    {
-        mes: "Abril 2024", produtos: [
-            { nome: 'Detergente3', validade: '15 dias', estoque: 38, codigo: '2', lote: 'EEEE', ultimaVenda: '20/03/2024' },
-            { nome: 'Sabão em Pó', validade: '2 dias', estoque: 14, codigo: '5', lote: 'A1B2', ultimaVenda: '15/03/2024' },
-            { nome: 'Água Sanitária', validade: '45 dias', estoque: 25, codigo: '9', lote: 'XYZ9', ultimaVenda: '05/03/2024' },
-            { nome: 'Esponja de Aço', validade: '60 dias', estoque: 6, codigo: '12', lote: 'SDF4', ultimaVenda: '10/03/2024' },
-            { nome: 'Amaciante', validade: '15 dias', estoque: 40, codigo: '18', lote: 'AMCT', ultimaVenda: '18/03/2024' }
-        ]
-    },
-    {
-        mes: "Maio 2024", produtos: [
-            { nome: 'Detergente4', validade: '10 dias', estoque: 35, codigo: '2', lote: 'EEEE', ultimaVenda: '25/04/2024' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 12, codigo: '5', lote: 'A1B2', ultimaVenda: '20/04/2024' },
-            { nome: 'Água Sanitária', validade: '40 dias', estoque: 22, codigo: '9', lote: 'XYZ9', ultimaVenda: '10/04/2024' },
-            { nome: 'Esponja de Aço', validade: '50 dias', estoque: 5, codigo: '12', lote: 'SDF4', ultimaVenda: '15/04/2024' },
-            { nome: 'Amaciante', validade: '12 dias', estoque: 38, codigo: '18', lote: 'AMCT', ultimaVenda: '22/04/2024' }
-        ]
-    },
-    {
-        mes: "Junho 2024", produtos: [
-            { nome: 'Detergente5', validade: '5 dias', estoque: 32, codigo: '2', lote: 'EEEE', ultimaVenda: '30/05/2024' },
-            { nome: 'Sabão em Pó', validade: '0 dias', estoque: 10, codigo: '5', lote: 'A1B2', ultimaVenda: '25/05/2024' },
-            { nome: 'Água Sanitária', validade: '35 dias', estoque: 20, codigo: '9', lote: 'XYZ9', ultimaVenda: '15/05/2024' },
-            { nome: 'Esponja de Aço', validade: '40 dias', estoque: 4, codigo: '12', lote: 'SDF4', ultimaVenda: '20/05/2024' },
-            { nome: 'Amaciante', validade: '8 dias', estoque: 35, codigo: '18', lote: 'AMCT', ultimaVenda: '28/05/2024' }
-        ]
-    },
-    {
-        mes: "Julho 2024", produtos: [
-            { nome: 'Detergente6', validade: '2 dias', estoque: 30, codigo: '2', lote: 'EEEE', ultimaVenda: '05/07/2024' },
-            { nome: 'Sabão em Pó', validade: '0 dias', estoque: 8, codigo: '5', lote: 'A1B2', ultimaVenda: '30/06/2024' },
-            { nome: 'Água Sanitária', validade: '30 dias', estoque: 18, codigo: '9', lote: 'XYZ9', ultimaVenda: '20/06/2024' },
-            { nome: 'Esponja de Aço', validade: '30 dias', estoque: 3, codigo: '12', lote: 'SDF4', ultimaVenda: '25/06/2024' },
-            { nome: 'Amaciante', validade: '5 dias', estoque: 32, codigo: '18', lote: 'AMCT', ultimaVenda: '03/07/2024' }
-        ]
-    },
-    {
-        mes: "Agosto 2024", produtos: [
-            { nome: 'Detergente7', validade: '0 dias', estoque: 28, codigo: '2', lote: 'EEEE', ultimaVenda: '10/08/2024' },
-            { nome: 'Sabão em Pó', validade: '0 dias', estoque: 6, codigo: '5', lote: 'A1B2', ultimaVenda: '05/08/2024' },
-            { nome: 'Água Sanitária', validade: '25 dias', estoque: 16, codigo: '9', lote: 'XYZ9', ultimaVenda: '25/07/2024' },
-            { nome: 'Esponja de Aço', validade: '20 dias', estoque: 2, codigo: '12', lote: 'SDF4', ultimaVenda: '30/07/2024' },
-            { nome: 'Amaciante', validade: '2 dias', estoque: 30, codigo: '18', lote: 'AMCT', ultimaVenda: '08/08/2024' }
-        ]
-    },
-    {
-        mes: "Setembro 2024", produtos: [
-            { nome: 'Detergente8', validade: '0 dias', estoque: 25, codigo: '2', lote: 'EEEE', ultimaVenda: '15/09/2024' },
-            { nome: 'Sabão em Pó', validade: '0 dias', estoque: 4, codigo: '5', lote: 'A1B2', ultimaVenda: '10/09/2024' },
-            { nome: 'Água Sanitária', validade: '20 dias', estoque: 14, codigo: '9', lote: 'XYZ9', ultimaVenda: '30/08/2024' },
-            { nome: 'Esponja de Aço', validade: '15 dias', estoque: 1, codigo: '12', lote: 'SDF4', ultimaVenda: '05/09/2024' },
-            { nome: 'Amaciante', validade: '0 dias', estoque: 28, codigo: '18', lote: 'AMCT', ultimaVenda: '13/09/2024' }
-        ]
-    },
-    {
-        mes: "Outubro 2024", produtos: [
-            { nome: 'Detergente9', validade: '0 dias ', estoque: 22, codigo: '2', lote: 'EEEE', ultimaVenda: '20/10/2024' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 2, codigo: '5', lote: 'A1B2', ultimaVenda: '15/10/2024' },
-            { nome: 'Água Sanitária', validade: '15 dias', estoque: 12, codigo: '9', lote: 'XYZ9', ultimaVenda: '05/10/2024' },
-            { nome: 'Esponja de Aço', validade: '10 dias', estoque: 0, codigo: '12', lote: 'SDF4', ultimaVenda: '10/10/2024' },
-            { nome: 'Amaciante', validade: '0 dias ', estoque: 25, codigo: '18', lote: 'AMCT', ultimaVenda: '18/10/2024' }
-        ]
-    },
-    {
-        mes: "Novembro 2024", produtos: [
-            { nome: 'Detergente10', validade: '0 dias ', estoque: 20, codigo: '2', lote: 'EEEE', ultimaVenda: '25/11/2024' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 0, codigo: '5', lote: 'A1B2', ultimaVenda: '20/11/2024' },
-            { nome: 'Água Sanitária', validade: '10 dias', estoque: 10, codigo: '9', lote: 'XYZ9', ultimaVenda: '10/11/2024' },
-            { nome: 'Esponja de Aço', validade: '5 dias', estoque: 0, codigo: '12', lote: 'SDF4', ultimaVenda: '15/11/2024' },
-            { nome: 'Amaciante', validade: '0 dias ', estoque: 22, codigo: '18', lote: 'AMCT', ultimaVenda: '23/11/2024' }
-        ]
-    },
-    {
-        mes: "Dezembro 2024", produtos: [
-            { nome: 'Detergente11', validade: '0 dias ', estoque: 18, codigo: '2', lote: 'EEEE', ultimaVenda: '30/12/2024' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 0, codigo: '5', lote: 'A1B2', ultimaVenda: '25/12/2024' },
-            { nome: 'Água Sanitária', validade: '5 dias', estoque: 8, codigo: '9', lote: 'XYZ9', ultimaVenda: '15/12/2024' },
-            { nome: 'Esponja de Aço', validade: '0 dias ', estoque: 0, codigo: '12', lote: 'SDF4', ultimaVenda: '20/12/2024' },
-            { nome: 'Amaciante', validade: '0 dias ', estoque: 20, codigo: '18', lote: 'AMCT', ultimaVenda: '28/12/2024' }
-        ]
-    },
-    {
-        mes: "Janeiro 2025", produtos: [
-            { nome: 'Detergente12', validade: '0 dias ', estoque: 15, codigo: '2', lote: 'EEEE', ultimaVenda: '05/01/2025' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 0, codigo: '5', lote: 'A1B2', ultimaVenda: '30/12/2024' },
-            { nome: 'Água Sanitária', validade: '2 dias', estoque: 6, codigo: '9', lote: 'XYZ9', ultimaVenda: '20/01/2025' },
-            { nome: 'Esponja de Aço', validade: '0 dias ', estoque: 0, codigo: '12', lote: 'SDF4', ultimaVenda: '25/01/2025' },
-            { nome: 'Amaciante', validade: '0 dias ', estoque: 18, codigo: '18', lote: 'AMCT', ultimaVenda: '03/01/2025' }
-        ]
-    },
-    {
-        mes: "Fevereiro 2025", produtos: [
-            { nome: 'Detergente13', validade: '0 dias ', estoque: 12, codigo: '2', lote: 'EEEE', ultimaVenda: '10/02/2025' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 0, codigo: '5', lote: 'A1B2', ultimaVenda: '05/02/2025' },
-            { nome: 'Água Sanitária', validade: '0 dias ', estoque: 4, codigo: '9', lote: 'XYZ9', ultimaVenda: '25/01/2025' },
-            { nome: 'Esponja de Aço', validade: '0 dias ', estoque: 0, codigo: '12', lote: 'SDF4', ultimaVenda: '30/01/2025' },
-            { nome: 'Amaciante', validade: '0 dias ', estoque: 15, codigo: '18', lote: 'AMCT', ultimaVenda: '08/02/2025' }
-        ]
-    },
-    {
-        mes: "Março 2025", produtos: [
-            { nome: 'Detergente14', validade: '0 dias ', estoque: 10, codigo: '2', lote: 'EEEE', ultimaVenda: '15/03/2025' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 0, codigo: '5', lote: 'A1B2', ultimaVenda: '10/03/2025' },
-            { nome: 'Água Sanitária', validade: '0 dias ', estoque: 2, codigo: '9', lote: 'XYZ9', ultimaVenda: '05/03/2025' },
-            { nome: 'Esponja de Aço', validade: '0 dias ', estoque: 0, codigo: '12', lote: 'SDF4', ultimaVenda: '10/03/2025' },
-            { nome: 'Amaciante', validade: '0 dias ', estoque: 12, codigo: '18', lote: 'AMCT', ultimaVenda: '13/03/2025' }
-        ]
-    },
-    {
-        mes: "Abril 2025", produtos: [
-            { nome: 'Detergente15', validade: '0 dias ', estoque: 8, codigo: '2', lote: 'EEEE', ultimaVenda: '20/04/2025' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 0, codigo: '5', lote: 'A1B2', ultimaVenda: '15/04/2025' },
-            { nome: 'Água Sanitária', validade: '0 dias ', estoque: 0, codigo: '9', lote: 'XYZ9', ultimaVenda: '10/04/2025' },
-            { nome: 'Esponja de Aço', validade: '0 dias ', estoque: 0, codigo: '12', lote: 'SDF4', ultimaVenda: '15/04/2025' },
-            { nome: 'Amaciante', validade: '0 dias ', estoque: 10, codigo: '18', lote: 'AMCT', ultimaVenda: '18/04/2025' }
-        ]
-    },
-    {
-        mes: "Maio 2025", produtos: [
-            { nome: 'Detergente16', validade: '0 dias ', estoque: 5, codigo: '2', lote: 'EEEE', ultimaVenda: '25/05/2025' },
-            { nome: 'Sabão em Pó', validade: '0 dias ', estoque: 0, codigo: '5', lote: 'A1B2', ultimaVenda: '20/05/2025' },
-            { nome: 'Água Sanitária', validade: '0 dias ', estoque: 0, codigo: '9', lote: 'XYZ9', ultimaVenda: '15/05/2025' },
-            { nome: 'Esponja de Aço', validade: '0 dias ', estoque: 0, codigo: '12', lote: 'SDF4', ultimaVenda: '20/05/2025' },
-            { nome: 'Amaciante', validade: '0 dias ', estoque: 8, codigo: '18', lote: 'AMCT', ultimaVenda: '23/05/2025' }
-        ]
-    }
-];
-
-let mesAtualIndex = dadosFinanceirosPorMes.length - 2;
-
-let vendasPorMes = [
-    {
-        mes: "Abril 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 310, precoTotal: 930.0 },
-            { nome: "Feijão", qtd: 270, precoTotal: 810.0 },
-            { nome: "Macarrão", qtd: 205, precoTotal: 615.0 },
-            { nome: "Sabão", qtd: 185, precoTotal: 555.0 },
-            { nome: "Óleo", qtd: 155, precoTotal: 465.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 5, precoTotal: 15.0 },
-            { nome: "Curry", qtd: 7, precoTotal: 21.0 },
-            { nome: "Açafrão", qtd: 8, precoTotal: 24.0 },
-            { nome: "Picles", qtd: 10, precoTotal: 30.0 },
-            { nome: "Alcaparra", qtd: 12, precoTotal: 36.0 }
-        ]
-    },
-    {
-        mes: "Maio 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 325, precoTotal: 975.0 },
-            { nome: "Feijão", qtd: 290, precoTotal: 870.0 },
-            { nome: "Macarrão", qtd: 220, precoTotal: 660.0 },
-            { nome: "Sabão", qtd: 190, precoTotal: 570.0 },
-            { nome: "Óleo", qtd: 180, precoTotal: 540.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 3, precoTotal: 9.0 },
-            { nome: "Curry", qtd: 5, precoTotal: 15.0 },
-            { nome: "Açafrão", qtd: 7, precoTotal: 21.0 },
-            { nome: "Picles", qtd: 9, precoTotal: 27.0 },
-            { nome: "Alcaparra", qtd: 11, precoTotal: 33.0 }
-        ]
-    },
-    {
-        mes: "Abril 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 310, precoTotal: 930.0 },
-            { nome: "Feijão", qtd: 265, precoTotal: 795.0 },
-            { nome: "Macarrão", qtd: 195, precoTotal: 585.0 },
-            { nome: "Sabão", qtd: 160, precoTotal: 480.0 },
-            { nome: "Óleo", qtd: 150, precoTotal: 450.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 6, precoTotal: 18.0 },
-            { nome: "Curry", qtd: 8, precoTotal: 24.0 },
-            { nome: "Açafrão", qtd: 9, precoTotal: 27.0 },
-            { nome: "Picles", qtd: 11, precoTotal: 33.0 },
-            { nome: "Alcaparra", qtd: 13, precoTotal: 39.0 }
-        ]
-    },
-    {
-        mes: "Maio 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 315, precoTotal: 945.0 },
-            { nome: "Feijão", qtd: 270, precoTotal: 810.0 },
-            { nome: "Macarrão", qtd: 205, precoTotal: 615.0 },
-            { nome: "Sabão", qtd: 170, precoTotal: 510.0 },
-            { nome: "Óleo", qtd: 155, precoTotal: 465.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 5, precoTotal: 15.0 },
-            { nome: "Curry", qtd: 7, precoTotal: 21.0 },
-            { nome: "Açafrão", qtd: 8, precoTotal: 24.0 },
-            { nome: "Picles", qtd: 10, precoTotal: 30.0 },
-            { nome: "Alcaparra", qtd: 12, precoTotal: 36.0 }
-        ]
-    },
-    {
-        mes: "Junho 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 305, precoTotal: 915.0 },
-            { nome: "Feijão", qtd: 255, precoTotal: 765.0 },
-            { nome: "Macarrão", qtd: 190, precoTotal: 570.0 },
-            { nome: "Sabão", qtd: 165, precoTotal: 495.0 },
-            { nome: "Óleo", qtd: 145, precoTotal: 435.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 4, precoTotal: 12.0 },
-            { nome: "Curry", qtd: 6, precoTotal: 18.0 },
-            { nome: "Açafrão", qtd: 7, precoTotal: 21.0 },
-            { nome: "Picles", qtd: 9, precoTotal: 27.0 },
-            { nome: "Alcaparra", qtd: 11, precoTotal: 33.0 }
-        ]
-    },
-    {
-        mes: "Julho 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 320, precoTotal: 960.0 },
-            { nome: "Feijão", qtd: 260, precoTotal: 780.0 },
-            { nome: "Macarrão", qtd: 200, precoTotal: 600.0 },
-            { nome: "Sabão", qtd: 175, precoTotal: 525.0 },
-            { nome: "Óleo", qtd: 160, precoTotal: 480.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 5, precoTotal: 15.0 },
-            { nome: "Curry", qtd: 7, precoTotal: 21.0 },
-            { nome: "Açafrão", qtd: 8, precoTotal: 24.0 },
-            { nome: "Picles", qtd: 10, precoTotal: 30.0 },
-            { nome: "Alcaparra", qtd: 12, precoTotal: 36.0 }
-        ]
-    },
-    {
-        mes: "Agosto 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 330, precoTotal: 990.0 },
-            { nome: "Feijão", qtd: 275, precoTotal: 825.0 },
-            { nome: "Macarrão", qtd: 210, precoTotal: 630.0 },
-            { nome: "Sabão", qtd: 180, precoTotal: 540.0 },
-            { nome: "Óleo", qtd: 170, precoTotal: 510.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 6, precoTotal: 18.0 },
-            { nome: "Curry", qtd: 8, precoTotal: 24.0 },
-            { nome: "Açafrão", qtd: 9, precoTotal: 27.0 },
-            { nome: "Picles", qtd: 11, precoTotal: 33.0 },
-            { nome: "Alcaparra", qtd: 13, precoTotal: 39.0 }
-        ]
-    },
-    {
-        mes: "Setembro 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 325, precoTotal: 975.0 },
-            { nome: "Feijão", qtd: 280, precoTotal: 840.0 },
-            { nome: "Macarrão", qtd: 215, precoTotal: 645.0 },
-            { nome: "Sabão", qtd: 185, precoTotal: 555.0 },
-            { nome: "Óleo", qtd: 175, precoTotal: 525.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 5, precoTotal: 15.0 },
-            { nome: "Curry", qtd: 7, precoTotal: 21.0 },
-            { nome: "Açafrão", qtd: 8, precoTotal: 24.0 },
-            { nome: "Picles", qtd: 10, precoTotal: 30.0 },
-            { nome: "Alcaparra", qtd: 12, precoTotal: 36.0 }
-        ]
-    },
-    {
-        mes: "Outubro 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 340, precoTotal: 1020.0 },
-            { nome: "Feijão", qtd: 290, precoTotal: 870.0 },
-            { nome: "Macarrão", qtd: 220, precoTotal: 660.0 },
-            { nome: "Sabão", qtd: 190, precoTotal: 570.0 },
-            { nome: "Óleo", qtd: 180, precoTotal: 540.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 6, precoTotal: 18.0 },
-            { nome: "Curry", qtd: 8, precoTotal: 24.0 },
-            { nome: "Açafrão", qtd: 9, precoTotal: 27.0 },
-            { nome: "Picles", qtd: 11, precoTotal: 33.0 },
-            { nome: "Alcaparra", qtd: 13, precoTotal: 39.0 }
-        ]
-    },
-    {
-        mes: "Novembro 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 350, precoTotal: 1050.0 },
-            { nome: "Feijão", qtd: 300, precoTotal: 900.0 },
-            { nome: "Macarrão", qtd: 230, precoTotal: 690.0 },
-            { nome: "Sabão", qtd: 200, precoTotal: 600.0 },
-            { nome: "Óleo", qtd: 190, precoTotal: 570.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 5, precoTotal: 15.0 },
-            { nome: "Curry", qtd: 7, precoTotal: 21.0 },
-            { nome: "Açafrão", qtd: 8, precoTotal: 24.0 },
-            { nome: "Picles", qtd: 10, precoTotal: 30.0 },
-            { nome: "Alcaparra", qtd: 12, precoTotal: 36.0 }
-        ]
-    },
-    {
-        mes: "Dezembro 2024",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 380, precoTotal: 1140.0 }, // Aumento devido às festas
-            { nome: "Feijão", qtd: 320, precoTotal: 960.0 },
-            { nome: "Macarrão", qtd: 250, precoTotal: 750.0 },
-            { nome: "Sabão", qtd: 220, precoTotal: 660.0 },
-            { nome: "Óleo", qtd: 210, precoTotal: 630.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 8, precoTotal: 24.0 }, // Aumento por ser item de receitas festivas
-            { nome: "Curry", qtd: 6, precoTotal: 18.0 },
-            { nome: "Açafrão", qtd: 7, precoTotal: 21.0 },
-            { nome: "Picles", qtd: 9, precoTotal: 27.0 },
-            { nome: "Alcaparra", qtd: 10, precoTotal: 30.0 }
-        ]
-    },
-    // ... continuar adicionando meses até Maio 2025 ...
-    {
-        mes: "Janeiro 2025",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 360, precoTotal: 1080.0 },
-            { nome: "Feijão", qtd: 310, precoTotal: 930.0 },
-            { nome: "Macarrão", qtd: 240, precoTotal: 720.0 },
-            { nome: "Sabão", qtd: 210, precoTotal: 630.0 },
-            { nome: "Óleo", qtd: 200, precoTotal: 600.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 4, precoTotal: 12.0 },
-            { nome: "Curry", qtd: 6, precoTotal: 18.0 },
-            { nome: "Açafrão", qtd: 7, precoTotal: 21.0 },
-            { nome: "Picles", qtd: 9, precoTotal: 27.0 },
-            { nome: "Alcaparra", qtd: 11, precoTotal: 33.0 }
-        ]
-    },
-    {
-        mes: "Fevereiro 2025",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 340, precoTotal: 1020.0 },
-            { nome: "Feijão", qtd: 295, precoTotal: 885.0 },
-            { nome: "Macarrão", qtd: 225, precoTotal: 675.0 },
-            { nome: "Sabão", qtd: 195, precoTotal: 585.0 },
-            { nome: "Óleo", qtd: 185, precoTotal: 555.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 5, precoTotal: 15.0 },
-            { nome: "Curry", qtd: 7, precoTotal: 21.0 },
-            { nome: "Açafrão", qtd: 8, precoTotal: 24.0 },
-            { nome: "Picles", qtd: 10, precoTotal: 30.0 },
-            { nome: "Alcaparra", qtd: 12, precoTotal: 36.0 }
-        ]
-    },
-    {
-        mes: "Março 2025",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 350, precoTotal: 1050.0 },
-            { nome: "Feijão", qtd: 285, precoTotal: 855.0 },
-            { nome: "Macarrão", qtd: 235, precoTotal: 705.0 },
-            { nome: "Sabão", qtd: 205, precoTotal: 615.0 },
-            { nome: "Óleo", qtd: 195, precoTotal: 585.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 6, precoTotal: 18.0 },
-            { nome: "Curry", qtd: 8, precoTotal: 24.0 },
-            { nome: "Açafrão", qtd: 9, precoTotal: 27.0 },
-            { nome: "Picles", qtd: 11, precoTotal: 33.0 },
-            { nome: "Alcaparra", qtd: 13, precoTotal: 39.0 }
-        ]
-    },
-    {
-        mes: "Abril 2025",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 345, precoTotal: 1035.0 },
-            { nome: "Feijão", qtd: 275, precoTotal: 825.0 },
-            { nome: "Macarrão", qtd: 225, precoTotal: 675.0 },
-            { nome: "Sabão", qtd: 190, precoTotal: 570.0 },
-            { nome: "Óleo", qtd: 180, precoTotal: 540.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 5, precoTotal: 15.0 },
-            { nome: "Curry", qtd: 7, precoTotal: 21.0 },
-            { nome: "Açafrão", qtd: 8, precoTotal: 24.0 },
-            { nome: "Picles", qtd: 10, precoTotal: 30.0 },
-            { nome: "Alcaparra", qtd: 12, precoTotal: 36.0 }
-        ]
-    },
-    {
-        mes: "Maio 2025",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 360, precoTotal: 1080.0 },
-            { nome: "Feijão", qtd: 290, precoTotal: 870.0 },
-            { nome: "Macarrão", qtd: 240, precoTotal: 720.0 },
-            { nome: "Sabão", qtd: 210, precoTotal: 630.0 },
-            { nome: "Óleo", qtd: 200, precoTotal: 600.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 4, precoTotal: 12.0 },
-            { nome: "Curry", qtd: 6, precoTotal: 18.0 },
-            { nome: "Açafrão", qtd: 7, precoTotal: 21.0 },
-            { nome: "Picles", qtd: 9, precoTotal: 27.0 },
-            { nome: "Alcaparra", qtd: 11, precoTotal: 33.0 }
-        ]
-    },
-    {
-        mes: "Maio 2025",
-        maisVendidos: [
-            { nome: "Arroz", qtd: 340, precoTotal: 1020.0 },
-            { nome: "Feijão", qtd: 300, precoTotal: 900.0 },
-            { nome: "Macarrão", qtd: 230, precoTotal: 690.0 },
-            { nome: "Sabão", qtd: 200, precoTotal: 600.0 },
-            { nome: "Óleo", qtd: 190, precoTotal: 570.0 }
-        ],
-        menosVendidos: [
-            { nome: "Molho Inglês", qtd: 2, precoTotal: 6.0 },
-            { nome: "Curry", qtd: 4, precoTotal: 12.0 },
-            { nome: "Açafrão", qtd: 5, precoTotal: 15.0 },
-            { nome: "Picles", qtd: 7, precoTotal: 21.0 },
-            { nome: "Alcaparra", qtd: 8, precoTotal: 24.0 }
-        ]
-    }
-];
-
-let resumo = { hoje: ["2.500,00", "+12"], semana: ["32.000,00", "+5"], mes: ["29.500,00", "+8"] }
-
-function renderizarResumoVendas(Info) {
-    if (!Info.hoje) {
-        console.error("Dados de vendas do dia não disponíveis.");
-        return
-    } else if (Info.hoje.length < 2) {
-        console.error("Dados insuficientes para renderizar resumo de vendas.");
-        return
-    } else if (Info.hoje[0] === "0,00") {
-        document.getElementById("qnt-hoje").textContent = "R$0,00";
-        document.getElementById("prcn-hoje").textContent = "Sem vendas hoje";
-    } else {
-        document.getElementById("qnt-hoje").textContent = "R$" + Info.hoje[0];
-        document.getElementById("prcn-hoje").textContent = Info.hoje[1] + "%" + " em relação ao dia anterior";
+    // 2. Validação: Se não houver um mercado selecionado, exibe uma mensagem clara e interrompe a função.
+    if (!marketId) {
+        document.body.innerHTML = `<div class="container mt-5">
+                                      <div class="alert alert-warning">
+                                          <strong>Atenção:</strong> Você precisa selecionar um mercado para ver os relatórios.
+                                          <br><br>
+                                          <a href="/" class="btn btn-primary">Voltar para a seleção de mercados</a>
+                                      </div>
+                                   </div>`;
+        return; // Para a execução aqui.
     }
 
-    if (!Info.semana) {
-        console.error("Dados de vendas da semana não disponíveis.");
-        return
-    } else if (Info.semana.length < 2) {
-        console.error("Dados insuficientes para renderizar resumo de vendas.");
-        return
-    } else if (Info.semana[0] === "0,00") {
-        document.getElementById("qnt-semana").textContent = "R$0,00";
-        document.getElementById("prcn-semana").textContent = "Sem vendas semana";
-    } else {
-        document.getElementById("qnt-semana").textContent = "R$" + Info.semana[0];
-        document.getElementById("prcn-semana").textContent = Info.semana[1] + "%" + " em relação ao semana anterior";
-    }
+    // 3. Bloco try...catch para lidar com possíveis erros de rede ou do servidor.
+    try {
+        const mes = dataExibida.getMonth();
+        const ano = dataExibida.getFullYear();
+        
+        // 4. ✨ CORREÇÃO PRINCIPAL: A URL foi ajustada para a rota correta e mais organizada do backend.
+        const response = await fetch('/api/relatorio/data', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ marketId, mes, ano })
+        });
 
-    if (!Info.mes) {
-        console.error("Dados de vendas do mês não disponíveis.");
-        return
-    } else if (Info.mes.length < 2) {
-        console.error("Dados insuficientes para renderizar resumo de vendas.");
-        return
-    } else if (Info.hoje[0] === "0,00") {
-        document.getElementById("qnt-mes").textContent = "R$0,00";
-        document.getElementById("prcn-mes").textContent = "Sem vendas mes";
-    } else {
-        document.getElementById("qnt-mes").textContent = "R$" + Info.mes[0];
-        document.getElementById("prcn-mes").textContent = Info.mes[1] + "%" + " em relação ao mes anterior";
+        // 5. Validação da resposta: Se a resposta não for bem-sucedida (ex: erro 400, 500), lança um erro.
+        if (!response.ok) {
+            // Tenta extrair uma mensagem de erro do corpo da resposta JSON.
+            const err = await response.json();
+            throw new Error(err.error || `Falha ao buscar dados do relatório (Status: ${response.status})`);
+        }
+
+        // 6. Processa a resposta bem-sucedida.
+        relatorioData = await response.json();
+
+        // 7. Chama todas as funções que atualizam a interface com os novos dados.
+        atualizarControlesUI();
+        renderizarResumoVendas(relatorioData.vendas);
+        renderizarGraficoFinanceiro(relatorioData.desempenhoFinanceiro);
+        renderizarGraficoABC(relatorioData.curvaABC);
+        renderizarListaVendidos(relatorioData.maisVendidos, "mais");
+        renderizarProdutosEncalhados(relatorioData.produtosEncalhados);
+        
+    } catch (error) {
+        // 8. Se qualquer erro for lançado no bloco 'try', ele será capturado e exibido aqui.
+        document.body.innerHTML = `<div class="container mt-5"><div class="alert alert-danger"><strong>Erro:</strong> ${error.message}</div></div>`;
     }
 }
 
-function renderizarGraficoABC(Info) {
-    if (graficoAtualABC) {
-        graficoAtualABC.destroy();
+// --- FUNÇÕES DE CONTROLE DA UI ---
+function atualizarControlesUI() {
+    const hoje = new Date();
+    const tituloEl = document.getElementById("titulo-mes-atual");
+    
+    const nomeMes = dataExibida.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    tituloEl.textContent = `${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)}`;
+
+    const btnProximo = document.getElementById('btn-proximo-mes');
+    btnProximo.disabled = (dataExibida.getFullYear() >= hoje.getFullYear() && dataExibida.getMonth() >= hoje.getMonth());
+}
+
+// --- CONFIGURAÇÃO DOS EVENTOS ---
+document.addEventListener('DOMContentLoaded', () => {
+    buscarERenderizarRelatorio();
+
+    document.getElementById('btn-mes-anterior').onclick = () => {
+        dataExibida.setMonth(dataExibida.getMonth() - 1);
+        buscarERenderizarRelatorio();
+    };
+
+    document.getElementById('btn-proximo-mes').onclick = () => {
+        dataExibida.setMonth(dataExibida.getMonth() + 1);
+        buscarERenderizarRelatorio();
+    };
+    
+    document.getElementById('mais-vendidos-tab').onclick = () => {
+        if (relatorioData) renderizarListaVendidos(relatorioData.maisVendidos, "mais");
+    };
+});
+
+// --- FUNÇÕES DE RENDERIZAÇÃO ---
+
+// ✅ FUNÇÃO ATUALIZADA PARA MOSTRAR OS 3 CARDS
+function renderizarResumoVendas(info) {
+    if (!info) return;
+    
+    const formatCurrency = (value) => parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    // Mostra os cards de hoje e semana novamente
+    document.querySelectorAll('.col-md-4').forEach(card => card.style.display = 'block');
+
+    // Preenche os dados de Hoje
+    document.getElementById("qnt-hoje").textContent = formatCurrency(info.hoje[0]);
+    document.getElementById("prcn-hoje").textContent = `${info.hoje[1]}% em relação ao dia anterior`;
+
+    // Preenche os dados da Semana
+    document.getElementById("qnt-semana").textContent = formatCurrency(info.semana[0]);
+    document.getElementById("prcn-semana").textContent = `${info.semana[1]}% em relação à semana anterior`;
+
+    // Preenche os dados do Mês
+    document.getElementById("qnt-mes").textContent = formatCurrency(info.mes[0]);
+    document.getElementById("prcn-mes").textContent = "Total do Mês";
+}
+
+function irParaTela(tela) {
+    window.location.href = `${window.location.origin}/${tela}`;
+}
+
+function renderizarGraficoFinanceiro(dados) {
+    const tituloEl = document.getElementById("titulo-financeiro");
+    const canvas = document.getElementById("graficoFinanceiro");
+    const ctx = canvas.getContext('2d');
+    
+    const nomeMes = dataExibida.toLocaleString('pt-BR', { month: 'long' });
+    tituloEl.textContent = `Desempenho de ${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)}`;
+    
+    if (graficoFinanceiro) graficoFinanceiro.destroy();
+
+    if (!dados || dados.length === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "16px Arial"; ctx.fillStyle = "#6c757d"; ctx.textAlign = "center";
+        ctx.fillText("Sem dados de vendas para este mês.", canvas.width / 2, canvas.height / 2);
+        return;
     }
 
-    const ctx = document.getElementById("curvaABCChart").getContext('2d');
-    const labels = Info.labels;
-    const dados = Info.dados;
-    const cores = Info.cores;
-
-    graficoAtualABC = new Chart(ctx, {
-        type: 'pie',
+    graficoFinanceiro = new Chart(ctx, {
+        type: 'bar',
         data: {
-            labels: labels,
+            labels: dados.map(item => new Date(item.dia + 'T00:00:00').toLocaleDateString('pt-BR', {day: '2-digit'})),
             datasets: [{
-                data: dados,
-                backgroundColor: cores,
-                borderColor: cores,
+                label: 'Vendas Diárias (R$)',
+                data: dados.map(item => item.totalDiario),
+                backgroundColor: 'rgba(255, 160, 64, 0.7)',
+                borderColor: 'rgba(255, 111, 0, 1)',
                 borderWidth: 1
             }]
         },
-        options: {
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+}
+
+function renderizarGraficoABC(info) {
+    if (graficoAtualABC) graficoAtualABC.destroy();
+    const canvas = document.getElementById("curvaABCChart");
+    const ctx = canvas.getContext('2d');
+    document.getElementById('titulo-mes-abc').textContent = `Mês: ${dataExibida.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`;
+
+    if (!info || !info.labels || info.labels.length === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "16px Arial"; ctx.fillStyle = "#6c757d"; ctx.textAlign = "center";
+        ctx.fillText("Sem dados para a curva ABC.", canvas.width / 2, canvas.height / 2);
+        return;
+    }
+    
+    graficoAtualABC = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: info.labels,
+            datasets: [{ data: info.dados, backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
 function renderizarListaVendidos(lista, tipo) {
-    let ul;
-    if (tipo === "mais") {
-        ul = document.getElementById("lista-mais-vendidos");
-    } else if (tipo === "menos") {
-        ul = document.getElementById('lista-menos-vendidos');
-    } else {
-        console.error("Tipo inválido para renderizar lista de vendidos.");
-        return
+    const containerId = tipo === "mais" ? "lista-mais-vendidos" : "lista-menos-vendidos";
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    document.getElementById('titulo-mes-mmv').textContent = `Mês: ${dataExibida.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`;
+    
+    container.innerHTML = "";
+    if (!lista || lista.length === 0) {
+        container.innerHTML = `<li class="list-group-item">Nenhum produto encontrado.</li>`;
+        return;
     }
 
-    ul.innerHTML = "";
-
     lista.forEach(item => {
-        ul.innerHTML +=
-            `<li class="list-group-item d-flex justify-content-between align-items-start">
-            <div class="ms-2 me-auto">
-                <div class="fw-bold">${item.nome}</div>
-                ${item.qtd} unidades
-            </div>
-            <span class="badge bg-primary rounded-pill">R$ ${item.precoTotal}</span>
-        </li>`;
-
+        container.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">${item.nome}</div>${item.qtd} unidades</div><span class="badge bg-primary rounded-pill">${parseFloat(item.precoTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></li>`;
     });
 }
 
-// função dos botões de mais e menos vendidos
-document.getElementById('mais-vendidos-tab').onclick = () => renderizarListaVendidos(vendasPorMes[mesAtualIndex].maisVendidos, "mais");
-document.getElementById('menos-vendidos-tab').onclick = () => renderizarListaVendidos(vendasPorMes[mesAtualIndex].menosVendidos, "menos");
-
-// função do botao de ver o mes anterior
-document.getElementById('btn-mes-anterior').onclick = () => {
-    if (mesAtualIndex > 0) {
-        mesAtualIndex--;
-        renderizarGraficoFinanceiro([dadosFinanceirosPorMes[mesAtualIndex]]);
-        renderizarGraficoABC(vendasPorClasse[mesAtualIndex]);
-        renderizarListaVendidos(vendasPorMes[mesAtualIndex].maisVendidos, "mais");
-        renderizarListaVendidos(vendasPorMes[mesAtualIndex].menosVendidos, "menos");
-        renderizarProdutosEncalhados(produtosEncalhados[mesAtualIndex].produtos);
-        atualizarLabelMes();
+function renderizarProdutosEncalhados(lista) {
+    const container = document.getElementById("lista-encalhados");
+    if (!container) return;
+    
+    document.getElementById('titulo-mes-encalhado').textContent = `Mês: ${dataExibida.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`;
+    container.innerHTML = "";
+    
+    if (!lista || lista.length === 0) {
+        container.innerHTML = `<div class="list-group-item text-muted">🎉 Nenhum produto encalhado encontrado!</div>`;
+        return;
     }
-};
-
-// função do botao de ver o proximo mes
-document.getElementById('btn-proximo-mes').onclick = () => {
-    if (mesAtualIndex < dadosFinanceirosPorMes.length - 1) {
-        mesAtualIndex++;
-        renderizarGraficoFinanceiro([dadosFinanceirosPorMes[mesAtualIndex]]);
-        renderizarGraficoABC(vendasPorClasse[mesAtualIndex]);
-        renderizarListaVendidos(vendasPorMes[mesAtualIndex].maisVendidos, "mais");
-        renderizarListaVendidos(vendasPorMes[mesAtualIndex].menosVendidos, "menos");
-        renderizarProdutosEncalhados(produtosEncalhados[mesAtualIndex].produtos);
-        atualizarLabelMes();
-    }
-};
-
-function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const mes = dadosFinanceirosPorMes[mesAtualIndex];
-    doc.text(`Relatório Financeiro - ${mes.mes}`, 10, 10);
-    doc.text(`Receita: R$ ${mes.receita}`, 10, 20);
-    doc.text(`Despesa: R$ ${mes.despesa}`, 10, 30);
-    doc.text(`Lucro: R$ ${mes.lucro}`, 10, 40);
-    doc.save(`relatorio-financeiro-${mes.mes}.pdf`);
+    
+    const listGroup = document.createElement('div');
+    listGroup.className = 'list-group';
+    lista.forEach(item => {
+        const ultimaVenda = item.ultimaVenda ? new Date(item.ultimaVenda).toLocaleDateString('pt-BR') : 'Nunca';
+        listGroup.innerHTML += `<div class="list-group-item list-group-item-action"><div class="d-flex w-100 justify-content-between"><h6 class="mb-1">${item.nome}</h6><small class="text-danger">Validade: ${new Date(item.validade + 'T00:00:00').toLocaleDateString('pt-BR')}</small></div><p class="mb-1 small">Estoque: ${item.estoque} | Código: ${item.codigo}</p><small class="text-muted">Última venda: ${ultimaVenda}</small></div>`;
+    });
+    container.appendChild(listGroup);
 }
 
+// Função para formatar valores em moeda brasileira
+function formatCurrency(value) {
+    return parseFloat(value).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
+
+// Função auxiliar para converter canvas em imagem
+function getCanvasImage(canvas, scale = 1) {
+    return new Promise((resolve) => {
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+
+        tempCanvas.width = canvas.width * scale;
+        tempCanvas.height = canvas.height * scale;
+
+        tempCtx.fillStyle = "#FFFFFF";
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        tempCtx.scale(scale, scale);
+        tempCtx.drawImage(canvas, 0, 0);
+
+        tempCanvas.toBlob(blob => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = new Image();
+                img.src = reader.result;
+                img.onload = () => resolve(img);
+            };
+            reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.9);
+    });
+}
+
+
+// Função para exportar para PDF
+async function exportarPDF() {
+    if (!relatorioData) {
+        alert("Por favor, gere os relatórios primeiro!");
+        return;
+    }
+
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    loadingModal.show();
+    document.getElementById('spinnerSection').classList.remove('d-none');
+    document.getElementById('okSection').classList.add('d-none');
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        let yPos = 20;
+        const lineHeight = 7;
+
+        // Cabeçalho
+        doc.setFontSize(18).setTextColor(40, 40, 40);
+        doc.text("Relatório de Vendas - Mercado Didático", pageWidth / 2, yPos, { align: "center" });
+
+        yPos += 10;
+        doc.setFontSize(12).setTextColor(100, 100, 100);
+        const dataRelatorio = dataExibida.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        doc.text(`Período: ${dataRelatorio.charAt(0).toUpperCase() + dataRelatorio.slice(1)}`, pageWidth / 2, yPos, { align: "center" });
+
+        yPos += 10;
+        doc.setDrawColor(200, 200, 200).line(margin, yPos, pageWidth - margin, yPos);
+
+        // Resumo de Vendas
+        yPos += 15;
+        doc.setFontSize(14).setTextColor(40, 40, 40).text("Resumo de Vendas", margin, yPos);
+        yPos += 10;
+
+        const resumoData = [
+            ["Vendas Hoje", relatorioData.vendas.hoje[0], `${relatorioData.vendas.hoje[1]}%`],
+            ["Vendas 7 Dias", relatorioData.vendas.semana[0], `${relatorioData.vendas.semana[1]}%`],
+            ["Vendas 30 Dias", relatorioData.vendas.mes[0], "Total do Mês"]
+        ];
+
+        doc.setFontSize(10).setTextColor(80, 80, 80).setFillColor(240, 240, 240);
+        doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+        doc.text("Período", margin + 5, yPos + 5);
+        doc.text("Valor", margin + 70, yPos + 5);
+        doc.text("Variação", margin + 120, yPos + 5);
+        yPos += 8;
+
+        resumoData.forEach(row => {
+            if (yPos > 250) { doc.addPage(); yPos = 20; }
+            doc.text(row[0], margin + 5, yPos + 5);
+            doc.text(formatCurrency(row[1]), margin + 70, yPos + 5);
+            doc.text(row[2], margin + 120, yPos + 5);
+            doc.line(margin, yPos + 8, pageWidth - margin, yPos + 8);
+            yPos += 8;
+        });
+
+        // Gráfico Financeiro
+        yPos += 15;
+        if (yPos > 220) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(14).text("Desempenho Financeiro", margin, yPos);
+        yPos += 10;
+
+        const canvasFinanceiro = document.getElementById('graficoFinanceiro');
+        if (canvasFinanceiro) {
+            const canvasImg = await getCanvasImage(canvasFinanceiro, 1);
+            if (canvasImg) {
+                const imgWidth = pageWidth - 2 * margin;
+                const imgHeight = (canvasImg.height * imgWidth) / canvasImg.width;
+                if (yPos + imgHeight > 270) { doc.addPage(); yPos = 20; }
+                doc.addImage(canvasImg, 'JPEG', margin, yPos, imgWidth, imgHeight);
+                yPos += imgHeight + 10;
+            }
+        }
+
+        // Gráfico Curva ABC
+        if (yPos > 220) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(14).text("Curva ABC de Produtos", margin, yPos);
+        yPos += 10;
+
+        const canvasABC = document.getElementById('curvaABCChart');
+        if (canvasABC) {
+            const canvasImg = await getCanvasImage(canvasABC, 0.8);
+            const imgWidth = (pageWidth - 2 * margin) * 0.8;
+            const imgHeight = (canvasImg.height * imgWidth) / canvasImg.width;
+            const imgX = margin + ((pageWidth - 2 * margin - imgWidth) / 2);
+            if (yPos + imgHeight > 270) { doc.addPage(); yPos = 20; }
+            doc.addImage(canvasImg, 'JPEG', imgX, yPos, imgWidth, imgHeight);
+            yPos += imgHeight + 10;
+        }
+
+        // Produtos Mais Vendidos
+        yPos += 15;
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(14).text("Produtos Mais Vendidos", margin, yPos);
+        yPos += 10;
+        doc.setFontSize(10).setFillColor(240, 240, 240);
+        doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+        doc.text("Posição", margin + 5, yPos + 5);
+        doc.text("Produto", margin + 25, yPos + 5);
+        doc.text("Quantidade", margin + 100, yPos + 5);
+        doc.text("Valor Total", margin + 140, yPos + 5);
+        yPos += 8;
+
+        relatorioData.maisVendidos.forEach((produto, index) => {
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+                doc.text("Posição", margin + 5, yPos + 5);
+                doc.text("Produto", margin + 25, yPos + 5);
+                doc.text("Quantidade", margin + 100, yPos + 5);
+                doc.text("Valor Total", margin + 140, yPos + 5);
+                yPos += 8;
+            }
+
+            doc.text((index + 1).toString(), margin + 5, yPos + 5);
+            const productLines = doc.splitTextToSize(produto.nome, 60);
+            doc.text(productLines, margin + 25, yPos + 5);
+            doc.text(produto.qtd.toString(), margin + 100, yPos + 5);
+            doc.text(formatCurrency(produto.precoTotal), margin + 140, yPos + 5);
+            doc.line(margin, yPos + 8, pageWidth - margin, yPos + 8);
+            yPos += Math.max(8, productLines.length * lineHeight);
+        });
+
+        // Produtos Encalhados
+        yPos += 15;
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(14).text("Produtos Encalhados", margin, yPos);
+        yPos += 15;
+        doc.setFontSize(10).setFillColor(240, 240, 240);
+        doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+        doc.text("Produto", margin + 5, yPos + 5);
+        doc.text("Estoque", margin + 70, yPos + 5);
+        doc.text("Validade", margin + 100, yPos + 5);
+        doc.text("Última Venda", margin + 140, yPos + 5);
+        yPos += 8;
+
+        relatorioData.produtosEncalhados.forEach(produto => {
+            if (yPos > 250) {
+                doc.addPage(); yPos = 20;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+                doc.text("Produto", margin + 5, yPos + 5);
+                doc.text("Estoque", margin + 70, yPos + 5);
+                doc.text("Validade", margin + 100, yPos + 5);
+                doc.text("Última Venda", margin + 140, yPos + 5);
+                yPos += 8;
+            }
+
+            const productLines = doc.splitTextToSize(produto.nome, 60);
+            doc.text(productLines, margin + 5, yPos + 5);
+            doc.text(produto.estoque.toString(), margin + 70, yPos + 5);
+            doc.text(new Date(produto.validade + 'T00:00:00').toLocaleDateString('pt-BR'), margin + 100, yPos + 5);
+            doc.text(produto.ultimaVenda ? new Date(produto.ultimaVenda).toLocaleDateString('pt-BR') : 'Nunca', margin + 140, yPos + 5);
+            doc.line(margin, yPos + 8, pageWidth - margin, yPos + 8);
+            yPos += Math.max(8, productLines.length * lineHeight);
+        });
+
+        // Rodapé com numeração de páginas
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8).setTextColor(150, 150, 150);
+            doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin - 20, 290, { align: "right" });
+            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, margin, 290);
+        }
+
+        doc.save(`Relatorio_MercadoDidatico_${dataExibida.getMonth() + 1}_${dataExibida.getFullYear()}.pdf`);
+    } catch (error) {
+        console.error("Erro ao gerar PDF:", error);
+        alert("Erro ao gerar PDF.");
+    } finally {
+        document.getElementById('spinnerSection').classList.add('d-none');
+        document.getElementById('okSection').classList.remove('d-none');
+    }
+}
+
+// Exportar para CSV
 function exportarCSV() {
-    const mes = dadosFinanceirosPorMes[mesAtualIndex];
-    const csv = Papa.unparse([
-        ["Mês", "Receita", "Despesa", "Lucro"],
-        [mes.mes, mes.receita, mes.despesa, mes.lucro]
-    ]);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    if (!relatorioData) {
+        alert("Por favor, gere os relatórios primeiro!");
+        return;
+    }
+
+    const csvData = [];
+    const dataRelatorio = dataExibida.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+    // Cabeçalho
+    csvData.push(`"Relatório de Vendas - Mercado Didático"`);
+    csvData.push(`"Período: ${dataRelatorio}"`);
+    csvData.push("");
+
+    // Resumo de Vendas
+    csvData.push('"Resumo de Vendas"');
+    csvData.push('"Período","Valor","Variação"');
+    csvData.push(`"Vendas Hoje","${formatCurrency(relatorioData.vendas.hoje[0])}","${relatorioData.vendas.hoje[1]}%"`);
+    csvData.push(`"Vendas 7 Dias","${formatCurrency(relatorioData.vendas.semana[0])}","${relatorioData.vendas.semana[1]}%"`);
+    csvData.push(`"Vendas 30 Dias","${formatCurrency(relatorioData.vendas.mes[0])}","Total do Mês"`);
+    csvData.push("");
+
+    // Produtos Mais Vendidos
+    csvData.push('"Produtos Mais Vendidos"');
+    csvData.push('"Posição","Produto","Quantidade","Valor Total"');
+    relatorioData.maisVendidos.forEach((produto, index) => {
+        csvData.push(`"${index + 1}","${produto.nome}","${produto.qtd}","${formatCurrency(produto.precoTotal)}"`);
+    });
+    csvData.push("");
+
+    // Produtos Encalhados
+    csvData.push('"Produtos Encalhados"');
+    csvData.push('"Produto","Estoque","Validade","Última Venda"');
+    relatorioData.produtosEncalhados.forEach(produto => {
+        const validade = new Date(produto.validade + 'T00:00:00').toLocaleDateString('pt-BR');
+        const ultimaVenda = produto.ultimaVenda ? new Date(produto.ultimaVenda).toLocaleDateString('pt-BR') : 'Nunca';
+        csvData.push(`"${produto.nome}","${produto.estoque}","${validade}","${ultimaVenda}"`);
+    });
+
+    // Junta tudo e adiciona BOM UTF-8
+    const csvContent = csvData.join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `relatorio-financeiro-${mes.mes}.csv`);
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", `Relatorio_MercadoDidatico_${dataExibida.getMonth() + 1}_${dataExibida.getFullYear()}.csv`);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
 
-function renderizarGraficoFinanceiro(dados) {
-    if (graficoAtualFinanceiro) {
-        graficoAtualFinanceiro.destroy();
+// Imprimir Relatório
+function imprimirRelatorio() {
+    if (!relatorioData) {
+        alert("Por favor, gere os relatórios primeiro!");
+        return;
     }
 
-    const titulo = document.getElementById("titulo-financeiro");
-    titulo.textContent = `Relatório Financeiro - ${dados[0].mes}`;
+    const printWindow = window.open('', '_blank');
+    const dataRelatorio = dataExibida.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
-    const ctx = document.getElementById("graficoFinanceiro").getContext('2d');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <title>Relatório de Vendas - Mercado Didático</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1 { text-align: center; margin-bottom: 5px; }
+                .subtitle { text-align: center; color: #666; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                th { background: #f2f2f2; padding: 8px; text-align: left; }
+                td { padding: 8px; border-bottom: 1px solid #ddd; }
+                .summary-card { display: inline-block; width: 30%; margin: 0 1.5%; text-align: center; }
+                .summary-value { font-size: 20px; font-weight: bold; }
+                .summary-label { font-size: 14px; color: #555; }
+            </style>
+        </head>
+        <body>
+            <h1>Relatório de Vendas</h1>
+            <div class="subtitle">Mercado Didático - ${dataRelatorio}</div>
 
-    const labels = dados.map(item => item.mes);
-    const receita = dados.map(item => item.receita);
-    const despesa = dados.map(item => item.despesa);
-    const lucro = dados.map(item => item.lucro);
-
-    graficoAtualFinanceiro = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Receita Bruta (R$)',
-                    data: receita,
-                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
-                    borderColor: 'rgba(40, 167, 69, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Despesa (R$)',
-                    data: despesa,
-                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
-                    borderColor: 'rgba(220, 53, 69, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Lucro Líquido (R$)',
-                    data: lucro,
-                    backgroundColor: 'rgba(255, 193, 7, 0.7)',
-                    borderColor: 'rgba(255, 193, 7, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-}
-
-function atualizarLabelMes() {
-    let mes = `Mês: ${dadosFinanceirosPorMes[mesAtualIndex].mes}`;
-    document.getElementById("titulo-mes-atual").textContent = mes;
-    document.getElementById("titulo-mes-abc").textContent = mes;
-    document.getElementById("titulo-mes-encalhado").textContent = mes;
-    document.getElementById("titulo-mes-mmv").textContent = mes;
-}
-
-function renderizarProdutosEncalhados(produtos) {
-    const ul = document.getElementById("lista-encalhados");
-    ul.innerHTML = ""; // Limpa a lista antes de renderizar
-    produtos.forEach(item => {
-        ul.innerHTML +=
-            `<div class="list-group">
-            <div class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <h6 class="mb-1">${item.nome}</h6>
-                    <small class="text-danger">${item.validade}</small>
+            <div class="summary-section">
+                <div class="summary-card">
+                    <div class="summary-label">Vendas Hoje</div>
+                    <div class="summary-value">${formatCurrency(relatorioData.vendas.hoje[0])}</div>
+                    <div class="summary-label">${relatorioData.vendas.hoje[1]}%</div>
                 </div>
-                <p class="mb-1 small">Estoque: ${item.estoque} unidades</p>
-                <p class="mb-1 small">Codigo: ${item.codigo} | Lote: ${item.lote}</p>
-                <small class="text-muted">Última venda: ${item.ultimaVenda}</small>
+                <div class="summary-card">
+                    <div class="summary-label">Vendas 7 Dias</div>
+                    <div class="summary-value">${formatCurrency(relatorioData.vendas.semana[0])}</div>
+                    <div class="summary-label">${relatorioData.vendas.semana[1]}%</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Vendas 30 Dias</div>
+                    <div class="summary-value">${formatCurrency(relatorioData.vendas.mes[0])}</div>
+                    <div class="summary-label">Total do Mês</div>
+                </div>
             </div>
-        </div>`
-    });
-}
 
-function gerarRelatorios() {
-    //fazer calculos e gerar os dados necessários para os relatórios
-}
+            <h2>Produtos Mais Vendidos</h2>
+            <table>
+                <thead><tr><th>Posição</th><th>Produto</th><th>Quantidade</th><th>Valor Total</th></tr></thead>
+                <tbody>
+                    ${relatorioData.maisVendidos.map((p, i) => `
+                        <tr><td>${i + 1}</td><td>${p.nome}</td><td>${p.qtd}</td><td>${formatCurrency(p.precoTotal)}</td></tr>
+                    `).join('')}
+                </tbody>
+            </table>
 
-atualizarLabelMes()
-renderizarResumoVendas(resumo);
-renderizarGraficoFinanceiro([dadosFinanceirosPorMes[mesAtualIndex]]);
-renderizarGraficoABC(vendasPorClasse[mesAtualIndex]);
-renderizarListaVendidos(vendasPorMes[mesAtualIndex].maisVendidos, "mais");
-renderizarListaVendidos(vendasPorMes[mesAtualIndex].menosVendidos, "menos");
-renderizarProdutosEncalhados(produtosEncalhados[mesAtualIndex].produtos);
+            <h2>Produtos Encalhados</h2>
+            <table>
+                <thead><tr><th>Produto</th><th>Estoque</th><th>Validade</th><th>Última Venda</th></tr></thead>
+                <tbody>
+                    ${relatorioData.produtosEncalhados.map(p => `
+                        <tr><td>${p.nome}</td><td>${p.estoque}</td><td>${new Date(p.validade + 'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${p.ultimaVenda ? new Date(p.ultimaVenda).toLocaleDateString('pt-BR') : 'Nunca'}</td></tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}

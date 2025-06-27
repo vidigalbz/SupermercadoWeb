@@ -1,7 +1,45 @@
 
 const container = document.getElementById('fornecedores-container')
 let dataFornecedores = []
+let marketId;
 
+function getQueryParam(paramName) {
+    const queryString = window.location.search.substring(1);
+    const params = queryString.split('&');
+    for (const param of params) {
+      const [key, value] = param.split('=');
+      if (key === paramName) {
+        return decodeURIComponent(value || '');
+      }
+    }
+    return null;
+}
+
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let c of ca) {
+      c = c.trim();
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length);
+      }
+    }
+    return "";
+}
+
+function verifyMarket(){
+    const response = fetch('/api/supermercado/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({marketId: marketIdGlobal})
+    })
+
+    const data = response.data.mensagem
+    if (!data || Object.key(data).length){
+        window.location.href = `${window.location.origin}/erro404`
+    }
+}
 async function adicionarFornecedor() {
     const cnpj = document.getElementById('cnpj').value;
     const razao_social = document.getElementById("razaoSocial").value;
@@ -11,8 +49,7 @@ async function adicionarFornecedor() {
     const tipo_de_produto = document.getElementById('tipoProduto').value;
 
     if (cnpj && razao_social && inscricao_estadual && endereco && contato && tipo_de_produto){
-    console.log("Entrou")
-    await fetch('/addFornecedor', {
+    await fetch('/api/fornecedores/addFornecedor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -21,7 +58,8 @@ async function adicionarFornecedor() {
             inscricao_estadual: inscricao_estadual,
             endereco: endereco,
             contato: contato,
-            tipo_de_produto: tipo_de_produto
+            tipo_de_produto: tipo_de_produto,
+            marketId: marketIdGlobal
         })
     }).then(res => res.json()).then(data => {
         
@@ -70,17 +108,14 @@ function criarCardFornecedor(fornecedor) {
 
 async function carregarFornecedor() {
     
-    fetch("/fornecedorData", {
+    fetch("/api/fornecedores/fornecedorData", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({marketId: getCookie('marketId')})
     }).then(res => res.json()).then(data => {
         if(data.result){
             dataFornecedores = data.result
             renderizar(dataFornecedores)
-        }
-        else {
-            console.log("Erro no fetch")
         }
     })
 }
@@ -122,7 +157,7 @@ function updateFornecedor(){
         contato: contato = document.getElementById("contatoEditar").value,
     }
 
-    fetch("/editarFornecedor", {
+    fetch("/api/fornecedores/editarFornecedor", {
         method: 'POST',
         headers: {'Content-Type': 'application/json' },
         body: JSON.stringify(fornecedor)
@@ -133,7 +168,7 @@ function updateFornecedor(){
 function excluirFornecedor() {
     const cnpjExcluir = document.getElementById("codigo-excluir").value;
     if(cnpjExcluir == null) return;
-    fetch('/excluirFornecedor',{
+    fetch('/api/fornecedores/excluirFornecedor',{
         method: 'POST',
         headers: {'Content-Type': 'application/json' },
         body: JSON.stringify({cnpj : cnpjExcluir})
@@ -158,7 +193,7 @@ async function comprardofornecedor() {
     const valor_final = document.getElementById('valor_final').value;
 
 
-    await fetch('/comprardofornecedor', {
+    await fetch('/api/fornecedores/comprardofornecedor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -174,3 +209,11 @@ async function comprardofornecedor() {
         
     }) 
 }
+
+document.addEventListener('DOMContentLoaded', async function () {
+
+    marketIdGlobal = getCookie('marketId')
+    userIdGlobal = getCookie("user")
+
+
+})

@@ -1,9 +1,3 @@
-let funcionarios = [
-  { nome: "Ana Silva", online: true, tela: "PDV", foto: "https://randomuser.me/api/portraits/women/1.jpg", permissoes: ["Estoque", "PDV"] },
-  { nome: "João Pedro", online: false, tela: null, foto: "https://randomuser.me/api/portraits/men/2.jpg", permissoes: ["Relatórios"] },
-  { nome: "Maria Oliveira", online: true, tela: "Estoque", foto: "https://randomuser.me/api/portraits/women/3.jpg", permissoes: ["Estoque", "Alertas"] },
-];
-
 const container = document.querySelector('.mercados-lista .overflow-auto');
 let currentData = [];
 const urlLocal = getBaseUrl();
@@ -21,7 +15,6 @@ function getBaseUrl() {
     const host = window.location.host;
     return protocolo + '//' + host;
   } catch (e) {
-    console.error(e);
     return "";
   }
 }
@@ -45,10 +38,9 @@ async function verificarUser() {
           window.location.href = "/error403";
           return;
     }
-    const res = await fetch('/users/' + userId);
+    const res = await fetch('/api/usuarios/users/' + userId);
     const data = await res.json();
 
-    console.log(data);
     document.getElementById('userName').textContent = data.data.name;
     document.getElementById('userRole').textContent = "Gerente";
 
@@ -56,7 +48,6 @@ async function verificarUser() {
       window.location.href = "/error403";
     }
   } catch (err) {
-    console.error("Erro ao verificar usuário:", err);
     window.location.href = "/error403";
   }
 }
@@ -146,6 +137,7 @@ function atualizarContador() {
 function selecionarMercado({ id, nome, local, icone }) {
   idMarket = id;
   mercadoSelecionado = id;
+  document.cookie = `marketId=${idMarket}; path=/`; //Salvando o MarketId Após a pessoa selecionar o Mercado
 
   document.getElementById('nome-mercado-info').textContent = nome;
   document.getElementById('endereco-mercado-info').textContent = local;
@@ -176,7 +168,7 @@ async function renderizarFuncionarios(marketId) {
   const lista = document.getElementById('lista-funcionarios');
   lista.innerHTML = '';
 
-  const res = await fetch('/funcionarios', {
+  const res = await fetch('/api/funcionarios/funcionarios', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ marketId })
@@ -188,7 +180,7 @@ async function renderizarFuncionarios(marketId) {
   funcionarios = [];
 
   for (i = 0; i < funcionariosData.length; i++){
-    userData = await fetch(`/users/${funcionariosData[i].userId}`);
+    userData = await fetch(`/api/usuarios/users/${funcionariosData[i].userId}`);
     user = await userData.json();
 
     let auxList = [];
@@ -204,8 +196,6 @@ async function renderizarFuncionarios(marketId) {
     user.data.profileImage = await getImageURL(user.data.profileImage);
 
     funcionarios.push(user.data);
-    console.log(user.data.profileImage)
-    console.log(user.data);
   }
 
   if (funcionarios.length === 0) {
@@ -214,7 +204,6 @@ async function renderizarFuncionarios(marketId) {
   }
 
   funcionarios.forEach(async (func, idx) => {
-    console.log(func)
     const permissoesHtml = func.permissoes && func.permissoes.length
       ? func.permissoes.map(p => `<span class="badge bg-primary me-1">${p}</span>`).join(' ')
       : '<span class="text-muted">Nenhuma</span>';
@@ -282,9 +271,23 @@ function abrirModalEditarFuncionario(idx) {
   new bootstrap.Modal(document.getElementById('modalEditarFuncionario')).show();
 }
 
-async function adicionarFuncionario() {
+function fecharModalAdicionarFuncionario() {
+  const modal = document.getElementById("modalAdicionarFuncionario");
 
+  modal.style.display = "none";
+  const overlay = document.querySelector('.modal-backdrop');
+  if (overlay) overlay.remove();
+  document.body.classList.remove("modal-open");
+}
+
+async function adicionarFuncionario() {
   let funcionarioInput = document.getElementById("cargoFuncionario");
+  let funcionarioId = funcionarioInput.value.trim();
+
+  if (!funcionarioId || !funcionarioInput) {
+    showToast("Por favor, selecione ou preencha o funcionário antes de adicionar.", "error");
+    return;
+  }
 
   const permissoesSelecionadas = Array.from(
     document.querySelectorAll('#modalAdicionarFuncionario .card-acesso')
@@ -301,23 +304,34 @@ async function adicionarFuncionario() {
   permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
 
-  console.log(funcionarioInput.value);
-  console.log(permissionsBoolList);
+  let func = { userId: funcionarioId, permissoes: permissionsBoolList };
 
-  let func = {userId: funcionarioInput.value, permissoes: permissionsBoolList}
+  try {
+    let res = await fetch('/api/funcionarios/atualizarFuncionario', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "insert", userData: func, marketId: mercadoSelecionado })
+    });
 
-  let res = await fetch("/atualizarFuncionario", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({type: "insert", userData: func, marketId: mercadoSelecionado})
-      });
-  data = await res.json();
-  /*TODO:
-    Popup para Feedback de Adição de Usuário!
-    data.message contém a mensagem (ok, erro, usuário já cadastrado....)
-    Fechar modal de usuário
-  */
- renderizarFuncionarios(mercadoSelecionado);
+    let data = await res.json();
+
+    showToast(data.message, "success");
+    fecharModalAdicionarFuncionario();
+    renderizarFuncionarios(mercadoSelecionado);
+  } catch (error) {
+    showToast("Erro ao adicionar funcionário. Tente novamente.", "error");
+  }
+}
+
+function fecharModalEditarFuncionario() {
+  const modal = document.getElementById("modalEditarFuncionario");
+
+  modal.style.display = "none";
+  const overlay = document.querySelector('.modal-backdrop');
+  if (overlay) {
+    overlay.remove();
+  }
+  document.body.classList.remove("modal-open");
 }
 
 async function SalvarPermissoes() {
@@ -338,42 +352,61 @@ async function SalvarPermissoes() {
   permissionsBoolList.push(permissoesSelecionadas.includes("Alertas") ? 1 : 0);
   permissionsBoolList.push(permissoesSelecionadas.includes("Rastreamento") ? 1 : 0);
 
-  console.log(func);
 
   func.permissoes = permissionsBoolList;
 
-  fetch("/atualizarFuncionario", {
+  fetch("/api/funcionarios/atualizarFuncionario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({type: "update", userData: func, marketId: mercadoSelecionado})
       });
-  /*
-    TODO:
-    Popup para Feedback de Alteração nas permissões de usuário!
-  */
- renderizarFuncionarios(mercadoSelecionado);
-}
-
-async function RemoverFuncionario(){
-  let func = funcionarios[edicaoAtual];
-  fetch("/atualizarFuncionario", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({type: "delete", userData: func, marketId: mercadoSelecionado})
-  })
-  /*
-    TODO:
-    Popup para Feedback de remoção de Usuário!
-  */
+  fecharModalEditarFuncionario();
   renderizarFuncionarios(mercadoSelecionado);
 }
 
-function irParaTela(tela) {
-  alert("Indo para tela: " + tela);
+async function RemoverFuncionario() {
+  const btnRemover = document.getElementById('btnConfirmarRemoverFuncionario');
+  const btnOriginalText = btnRemover.innerHTML;
+  
+  try {
+    // Mostrar estado de carregamento
+    btnRemover.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Removendo...';
+    btnRemover.disabled = true;
+    
+    let func = funcionarios[edicaoAtual];
+    const response = await fetch("/api/funcionarios/atualizarFuncionario", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({type: "delete", userData: func, marketId: mercadoSelecionado})
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      showToast("Funcionário removido com sucesso!", "success");
+      
+      // Fechar modais
+      bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusaoFuncionario')).hide();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditarFuncionario')).hide();
+      
+      renderizarFuncionarios(mercadoSelecionado);
+    } else {
+      showToast(data.message || "Erro ao remover funcionário", "error");
+    }
+  } catch (error) {
+    showToast("Erro ao conectar com o servidor", "error");
+  } finally {
+    btnRemover.innerHTML = btnOriginalText;
+    btnRemover.disabled = false;
+  }
+}
+
+function irParaTela(tela) {    
+  window.location.href = `${window.location.origin}/${tela}`
 }
 
 function carregarSupermercados() {
-  fetch('/supermercadoData', {
+  fetch('/api/supermercados/supermercadoData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ busca: userId })
@@ -384,7 +417,6 @@ function carregarSupermercados() {
       renderizarSupermercados(currentData);
     })
     .catch(err => {
-      console.error("Erro ao carregar mercados:", err);
       showToast("Falha ao buscar mercados", "error");
     });
 }
@@ -430,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    fetch('/adicionarSupermercado', {
+    fetch('/api/supermercados/adicionarSupermercado', {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome, local, ownerId: userId, icon })
@@ -447,7 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .catch(err => {
-        console.error(err);
         showToast("Erro ao conectar com o servidor!", "error");
       });
   });
@@ -463,14 +494,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    await fetch('/updateSupermercado', {
+    await fetch('/api/supermercados/updateSupermercado', {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: idMarket,
         nome: inputSuper.value.trim(),
         local: inputLocal.value.trim(),
-        icon: inputIcon.value.trim()
+        icon: inputIcon.value.trim(),
+        ownerId: userId
       })
     })
       .then(res => res.json())
@@ -483,7 +515,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .catch(err => {
-        console.error(err);
         showToast("Erro na requisição de atualização", "error");
       });
   });
@@ -498,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch("/deletarSupermercado", {
+      const res = await fetch("/api/supermercados/deletarSupermercado", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: idMarket })
@@ -515,7 +546,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`Erro ao excluir: ${result.erro || "desconhecido"}`, "error");
       }
     } catch (err) {
-      console.error(err);
       showToast(`Erro na requisição: ${err.message}`, "error");
     }
   });
@@ -538,11 +568,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById("btn-recarrega-estoque")?.addEventListener("click", () => {
+    document.cookie = 'marketId=;'
     window.location.reload();
   });
 });
-
-function deslogar() {
-  document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+document.getElementById("encerrarSessao")?.addEventListener("click", () => {
+  deslogar(event);
+})
+function deslogar(event) {
+  event.preventDefault();
+  document.cookie = "user=; path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC";
   window.location.href = "/login";
 }

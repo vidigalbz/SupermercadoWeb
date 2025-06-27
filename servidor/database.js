@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS products (
     marketId TEXT NOT NULL,
     name TEXT NOT NULL,
     price REAL NOT NULL,
+    priceUnit REAL NOT NULL,
+    fornecedor TEXT NOT NULL,
     category TEXT,
     departament TEXT,
     stock INTEGER DEFAULT 0,
@@ -99,7 +101,7 @@ CREATE TABLE IF NOT EXISTS history (
     beforeData TEXT,
     afterData TEXT,
     createdAt TEXT NOT NULL,
-    FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE SET NULL,
+    -- A linha da chave estrangeira para productId foi removida
     FOREIGN KEY (marketId) REFERENCES supermarkets(marketId) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
 );
@@ -190,6 +192,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
 );
 
 CREATE TABLE IF NOT EXISTS fornecedores (
+    marketId TEXT NOT NULL,
     cnpj INTENGER NOT NULL UNIQUE,
     razao_social TEXT NOT NULL,
     inscricao_estadual TEXT NOT NULL,
@@ -235,7 +238,7 @@ function insert(table, columns, values) {
         const placeholders = columns.map(() => '?').join(', ');
         const query = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`;
 
-        db.run(query, values, function(err) {
+        db.run(query, values, function (err) {
             if (err) {
                 console.error(`Erro na inserção (${table}): ${err.message}`);
                 reject(err);
@@ -256,7 +259,7 @@ function update(table, columns, values, condition, conditionParams = []) {
         const query = `UPDATE ${table} SET ${setClause} ${condition ? "WHERE " + condition : ""}`;
         const allParams = [...values, ...conditionParams];
 
-        db.run(query, allParams, function(err) {
+        db.run(query, allParams, function (err) {
             if (err) {
                 console.error(`Erro na atualização (${table}): ${err.message}`);
                 reject(err);
@@ -274,7 +277,7 @@ function delet(table, condition, params = []) {
         }
         const query = `DELETE FROM ${table} WHERE ${condition}`;
 
-        db.run(query, params, function(err) {
+        db.run(query, params, function (err) {
             if (err) {
                 console.error(`Erro na exclusão (${table}): ${err.message}`);
                 reject(err);
@@ -287,7 +290,7 @@ function delet(table, condition, params = []) {
 
 function query(queryText, params = []) {
     return new Promise((resolve, reject) => {
-        db.run(queryText, params, function(err) {
+        db.run(queryText, params, function (err) {
             if (err) {
                 console.error(`Erro na query: ${err.message}`);
                 reject(err);

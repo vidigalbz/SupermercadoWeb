@@ -34,18 +34,17 @@ function limparFiltros() {
       if (currentMarketId) {
           carregarProdutos(currentMarketId);
       } else {
-          console.error("LINK.JS: marketId não encontrado para limpar filtros e recarregar produtos.");
+
       }
   } else {
-      console.error("LINK.JS: Função para recarregar produtos (searchEstoque ou carregarProdutos) não encontrada.");
+
   }
-  console.log("LINK.JS: Filtros limpos.");
 }
 
 function abrirModalEdicao() { // Chamada pelo botão "Editar" principal da página (ao lado do input #codigo-editar)
   const codigoInput = document.getElementById("codigo-editar");
   if (!codigoInput) {
-      console.error("LINK.JS: Input #codigo-editar não encontrado.");
+
       if (typeof showAlert === 'function') showAlert('Erro de Interface', 'Campo para código de edição não encontrado.', 'error');
       return;
   }
@@ -60,7 +59,6 @@ function abrirModalEdicao() { // Chamada pelo botão "Editar" principal da pági
   if (typeof abrirModalEditarProduto === 'function') { // abrirModalEditarProduto é de popups.js
       abrirModalEditarProduto();
   } else {
-      console.error("LINK.JS: Função abrirModalEditarProduto() (de popups.js) não encontrada.");
       if (typeof showAlert === 'function') showAlert('Erro de Script', 'Funcionalidade de edição indisponível.', 'error');
   }
 }
@@ -68,7 +66,6 @@ function abrirModalEdicao() { // Chamada pelo botão "Editar" principal da pági
 function abrirModalExclusao() { // Chamada pelo botão "Excluir" principal da página (ao lado do input #codigo-excluir)
   const codigoInput = document.getElementById("codigo-excluir");
   if (!codigoInput) {
-      console.error("LINK.JS: Input #codigo-excluir não encontrado.");
       if (typeof showAlert === 'function') showAlert('Erro de Interface', 'Campo para código de exclusão não encontrado.', 'error');
       return;
   }
@@ -83,7 +80,6 @@ function abrirModalExclusao() { // Chamada pelo botão "Excluir" principal da p�
   if (typeof abrirModalExclusaoProduto === 'function') { // abrirModalExclusaoProduto é de popups.js
       abrirModalExclusaoProduto();
   } else {
-      console.error("LINK.JS: Função abrirModalExclusaoProduto() (de popups.js) não encontrada.");
       if (typeof showAlert === 'function') showAlert('Erro de Script', 'Funcionalidade de exclusão indisponível.', 'error');
   }
 }
@@ -150,7 +146,6 @@ function abrirConfirmarEdicao() { // Chamado pelo botão "Salvar Alterações" d
       const modalConfirmar = bootstrap.Modal.getOrCreateInstance(modalConfirmarEl);
       modalConfirmar.show();
   } else {
-      console.error("LINK.JS: Modal de confirmação de edição #modalConfirmarEdicao não encontrado.");
       if (typeof showAlert === 'function') showAlert('Erro de Interface', 'Modal de confirmação não encontrado.', 'error');
   }
 }
@@ -164,7 +159,6 @@ function abrirConfirmarExclusao() { // Chamado pelo botão "Excluir" do modal #m
       const modalConfirmar = bootstrap.Modal.getOrCreateInstance(modalConfirmarEl);
       modalConfirmar.show();
   } else {
-      console.error("LINK.JS: Modal de confirmação de exclusão #modalConfirmarExclusao não encontrado.");
       if (typeof showAlert === 'function') showAlert('Erro de Interface', 'Modal de confirmação de exclusão não encontrado.', 'error');
   }
 }
@@ -180,13 +174,11 @@ async function confirmarEdicaoFinal() { // Chamado pelo "Sim, editar" do modal #
   if (typeof confirmarEdicao === 'function') { // confirmarEdicao é de estoque/script.js
       sucessoNaEdicao = await confirmarEdicao(); // Deve retornar true para sucesso, false para falha
   } else {
-      console.error("LINK.JS: Função confirmarEdicao() (do estoque/script.js) principal não encontrada.");
       if (typeof showAlert === 'function') showAlert("Erro Crítico", "Função de salvar edição não disponível.", "error");
       return;
   }
 
   if (sucessoNaEdicao) {
-      console.log('LINK.JS: Alterações salvas com sucesso pelo backend.');
       const modalEdicaoPrincipalEl = document.getElementById("modalEditarProduto");
       if (modalEdicaoPrincipalEl) {
           const modalEdicaoPrincipal = bootstrap.Modal.getInstance(modalEdicaoPrincipalEl);
@@ -194,7 +186,6 @@ async function confirmarEdicaoFinal() { // Chamado pelo "Sim, editar" do modal #
       }
 
   } else {
-      console.log('LINK.JS: Falha ao salvar alterações (confirmarEdicao retornou false ou erro). O modal de edição deve permanecer aberto ou ser reaberto se necessário.');
   }
 }
 
@@ -215,16 +206,51 @@ async function confirmarExclusaoFinal() {
   if (typeof excluirProduto === 'function') {
       sucessoNaExclusao = await excluirProduto();
   } else {
-      console.error("LINK.JS: Função excluirProduto() (do estoque/script.js) principal não encontrada.");
       if (typeof showAlert === 'function') showAlert("Erro Crítico", "Função de excluir produto não disponível.", "error");
       return;
   }
 
-  if (sucessoNaExclusao) {
-      console.log('LINK.JS: Produto excluído com sucesso. A lista deve ter sido atualizada por excluirProduto.');
-
-  } else {
-      console.log('LINK.JS: Falha ao excluir produto (excluirProduto retornou false ou erro).');
-
-  }
 }
+
+function impressao(codigo){
+    JsBarcode("#barcode", codigo, {
+      format: "CODE128",
+      displayValue: true,
+      fontSize: 18,
+      width: 2,
+      height: 100
+    })
+  
+    const janela = window.open("", "_blank");
+  
+    janela.document.write(
+      `<html>
+        <head>
+          <title>Imprimir Código de Barras</title>
+          <style>
+            body {
+              text-align: center;
+              margin: 0;
+              padding: 20px;
+              font-family: sans-serif;
+            }
+            svg {
+              width: 300px;
+              height: auto;
+            }
+          </style>
+        </head>
+        <body>
+          <h2>Código de Barras</h2>
+          ${barcode.outerHTML}
+          <script>
+            setTimeout(() => {
+                          window.print();
+                          setTimeout(() => window.close(), 500);
+                      }, 200);
+          </script>
+        </body>
+      </html>`
+    )
+    barcode.innerHTML = ""
+  }

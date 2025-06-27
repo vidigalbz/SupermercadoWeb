@@ -60,14 +60,14 @@ function getCookie(cname) {
 }
 
 function getMarketIdParaPopups() {
-    const id = getCookie("marketId");
+  const id = getCookie("marketId");
 
-    return id;
+  return id;
 }
 function getUserIdParaPopups() {
-    const uid = getCookie("user");
+  const uid = getCookie("user");
 
-    return uid;
+  return uid;
 }
 
 async function carregarSetoresGlobais(currentMarketId) {
@@ -81,19 +81,17 @@ async function carregarSetoresGlobais(currentMarketId) {
     return;
   }
   try {
-    const response = await fetch('/getSetor', {
+    const response = await fetch('/api/setores/getSetor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ marketId: currentMarketId })
     });
     const data = await response.json();
     if (!response.ok || !data.success) throw new Error(data.error || "Erro ao buscar setores");
-    
+
     categoriasGlobais = data.cat || [];
     departamentosGlobais = data.dept || [];
-    console.log("POPUP SCRIPT: Setores (categorias/departamentos) carregados para o market:", currentMarketId, {categoriasGlobais, departamentosGlobais});
   } catch (err) {
-    console.error("POPUP SCRIPT: Erro em carregarSetoresGlobais:", err);
     categoriasGlobais = []; departamentosGlobais = [];
     showAlert(`Erro ao carregar Categoria/Departamento: ${err.message}`, "Erro de Dados", "error");
   }
@@ -133,129 +131,126 @@ function preencherCombosEdicao() {
 }
 
 function abrirModalAdicionarItem() {
-    const currentMarketId = getMarketIdParaPopups();
-    if (!currentMarketId) {
-        showAlert("ID do Mercado não identificado.", "Erro", "error");
-        return;
-    }
+  const currentMarketId = getMarketIdParaPopups();
+  if (!currentMarketId) {
+    showAlert("ID do Mercado não identificado.", "Erro", "error");
+    return;
+  }
 
-    carregarSetoresGlobais(currentMarketId).then(() => {
-
-
-        const modalEl = document.getElementById('modalAdicionarItem');
-        if (!modalEl) { console.error("Modal #modalAdicionarItem não encontrado."); return; }
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
+  carregarSetoresGlobais(currentMarketId).then(() => {
 
 
-        const btnConfirmar = document.getElementById('btn-confirmar-adicionar');
-        if(btnConfirmar) {
-            const novoBtn = btnConfirmar.cloneNode(true);
-            btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
-            novoBtn.onclick = async () => {
-                if (typeof adicionarProduto === 'function') {
-                    const sucesso = await adicionarProduto();
-                    if (sucesso) modal.hide();
-                } else { console.error("Função global adicionarProduto() não encontrada."); }
-            };
+    const modalEl = document.getElementById('modalAdicionarItem');
+    if (!modalEl) { return; }
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+
+
+    const btnConfirmar = document.getElementById('btn-confirmar-adicionar');
+    if (btnConfirmar) {
+      const novoBtn = btnConfirmar.cloneNode(true);
+      btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
+      novoBtn.onclick = async () => {
+        if (typeof adicionarProduto === 'function') {
+          const sucesso = await adicionarProduto();
+          if (sucesso) modal.hide();
         }
-    });
+      };
+    }
+  });
 }
 
 function abrirModalEditarProduto() {
-    const currentMarketId = getMarketIdParaPopups();
-    const productIdParaEditar = document.getElementById("codigo-editar")?.value.trim();
+  const currentMarketId = getMarketIdParaPopups();
+  const productIdParaEditar = document.getElementById("codigo-editar")?.value.trim();
 
-    if (!currentMarketId || !productIdParaEditar) {
-        showAlert(!currentMarketId ? "ID do Mercado não identificado." : "Digite o código do produto para editar.", "Atenção", "warning");
-        return;
-    }
+  if (!currentMarketId || !productIdParaEditar) {
+    showAlert(!currentMarketId ? "ID do Mercado não identificado." : "Digite o código do produto para editar.", "Atenção", "warning");
+    return;
+  }
 
-    if (typeof window.currentData === 'undefined' || !Array.isArray(window.currentData)) {
-        showAlert("Lista de produtos não disponível. Recarregue a página.", "Erro de Dados", "error");
-        return;
-    }
-    const produto = window.currentData.find(p => String(p.productId) === String(productIdParaEditar));
+  if (typeof window.currentData === 'undefined' || !Array.isArray(window.currentData)) {
+    showAlert("Lista de produtos não disponível. Recarregue a página.", "Erro de Dados", "error");
+    return;
+  }
+  const produto = window.currentData.find(p => String(p.productId) === String(productIdParaEditar));
 
-    if (!produto) {
-      showAlert(`Produto com código "${productIdParaEditar}" não encontrado.`, "Não Encontrado", "error");
+  if (!produto) {
+    showAlert(`Produto com código "${productIdParaEditar}" não encontrado.`, "Não Encontrado", "error");
+    return;
+  }
+
+  carregarSetoresGlobais(currentMarketId).then(() => {
+
+    const elProductIdHidden = document.getElementById('codigo-editar');
+    if (elProductIdHidden) {
+      elProductIdHidden.value = produto.productId;
+    } else {
+      showAlert("Erro de interface: campo ID do produto ausente no formulário.", "Erro", "error");
       return;
     }
-    console.log("POPUP SCRIPT (Editar): Produto encontrado para abrir modal:", produto);
 
-    carregarSetoresGlobais(currentMarketId).then(() => {
-
-        const elProductIdHidden = document.getElementById('editar-productId');
-        if (elProductIdHidden) {
-            elProductIdHidden.value = produto.productId;
+    const camposParaPreencher = {
+      'editar-nome': produto.name || '',
+      'editar-barcode': produto.barcode || '',
+      'editar-preco': produto.price != null ? produto.price : '',
+      'editar-preço-unidade': produto.priceUnit != null ? produto.priceUnit : "",
+      'editar-categoria': produto.category || '',
+      'editar-estoque': produto.stock != null ? produto.stock : '',
+      'editar-lote': produto.lot || '',
+      'editar-departamento': produto.departament || '',
+      'editar-marketId': produto.marketId || currentMarketId,
+      'editar-fabricacao': produto.manufactureDate ? produto.manufactureDate.split('T')[0] : '',
+      'editar-validade': produto.expirationDate ? produto.expirationDate.split('T')[0] : ''
+    };
+    let todosCamposEncontrados = true;
+    for (const idCampo in camposParaPreencher) {
+      const elemento = document.getElementById(idCampo);
+      if (elemento) {
+        elemento.value = camposParaPreencher[idCampo];
+        if (['editar-barcode', 'editar-lote', 'editar-marketId', 'editar-fabricacao', 'editar-validade'].includes(idCampo)) {
+          elemento.disabled = true;
         } else {
-            console.error("POPUP SCRIPT: Campo oculto #editar-productId não encontrado no modal!");
-            showAlert("Erro de interface: campo ID do produto ausente no formulário.", "Erro", "error");
-            return;
+          elemento.disabled = false;
         }
+      } else {
+        todosCamposEncontrados = false;
+      }
+    }
+    if (!todosCamposEncontrados) {
+      showAlert("Erro ao preparar formulário de edição. Verifique o console.", "Erro", "error");
+      return;
+    }
+    const elImagem = document.getElementById('editar-imagem');
+    if (elImagem) elImagem.value = '';
 
-        const camposParaPreencher = {
-            'editar-nome': produto.name || '',
-            'editar-barcode': produto.barcode || '',
-            'editar-preco': produto.price != null ? produto.price : '',
-            'editar-categoria': produto.category || '',
-            'editar-estoque': produto.stock != null ? produto.stock : '',
-            'editar-lote': produto.lot || '',
-            'editar-departamento': produto.departament || '',
-            'editar-marketId': produto.marketId || currentMarketId,
-            'editar-fabricacao': produto.manufactureDate ? produto.manufactureDate.split('T')[0] : '',
-            'editar-validade': produto.expirationDate ? produto.expirationDate.split('T')[0] : ''
-        };
-        let todosCamposEncontrados = true;
-        for (const idCampo in camposParaPreencher) {
-            const elemento = document.getElementById(idCampo);
-            if (elemento) {
-                elemento.value = camposParaPreencher[idCampo];
-                if (['editar-barcode', 'editar-lote', 'editar-marketId', 'editar-fabricacao', 'editar-validade'].includes(idCampo)) {
-                    elemento.disabled = true;
-                } else {
-                    elemento.disabled = false;
-                }
-            } else {
-                console.error(`POPUP SCRIPT: Elemento do form de edição com ID '${idCampo}' não encontrado!`);
-                todosCamposEncontrados = false;
-            }
-        }
-        if (!todosCamposEncontrados) {
-            showAlert("Erro ao preparar formulário de edição. Verifique o console.", "Erro", "error");
-            return;
-        }
-        const elImagem = document.getElementById('editar-imagem');
-        if(elImagem) elImagem.value = '';
-
-        const modalEl = document.getElementById('modalEditarProduto');
-        if (!modalEl) { console.error("Modal #modalEditarProduto não encontrado!"); return;}
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        console.log("POPUP SCRIPT (Editar): Mostrando modal de edição.");
-        modal.show();
-    });
+    const modalEl = document.getElementById('modalEditarProduto');
+    if (!modalEl) { return; }
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  });
 }
 
 function abrirModalDepCat() {
-    const currentMarketId = getMarketIdParaPopups();
-    if (!currentMarketId) {
-        showAlert("Nenhum mercado selecionado para gerenciar setores.", "Atenção", "warning");
-        return;
-    }
-    carregarSetoresGlobais(currentMarketId).then(() => {
-        const toggleTipoEl = document.getElementById("toggleTipo");
-        if (toggleTipoEl) toggleTipoEl.checked = false;
-        tipoAtualSetor = "Departamento";
-        atualizarLabelTipoSetor();
-        preencherComboExcluirSetor();
+  const currentMarketId = getMarketIdParaPopups();
+  if (!currentMarketId) {
+    showAlert("Nenhum mercado selecionado para gerenciar setores.", "Atenção", "warning");
+    return;
+  }
+  carregarSetoresGlobais(currentMarketId).then(() => {
+    const toggleTipoEl = document.getElementById("toggleTipo");
+    if (toggleTipoEl) toggleTipoEl.checked = false;
+    tipoAtualSetor = "Departamento";
+    atualizarLabelTipoSetor();
+    preencherComboExcluirSetor();
 
-        const modalEl = document.getElementById("modal-dep-cat");
-        if (!modalEl) { console.error("Modal #modal-dep-cat não encontrado."); return; }
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-    });
+    const modalEl = document.getElementById("modal-dep-cat");
+    if (!modalEl) { return; }
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  });
 }
-  
+
 function alternarTipoSetor() {
   const toggleTipoEl = document.getElementById("toggleTipo");
   tipoAtualSetor = toggleTipoEl && toggleTipoEl.checked ? "Categoria" : "Departamento";
@@ -266,25 +261,25 @@ function alternarTipoSetor() {
 function atualizarLabelTipoSetor() {
   const labelAddEl = document.getElementById("label-add");
   const labelSelectEl = document.getElementById("label-select");
-  if(labelAddEl) labelAddEl.textContent = `Nova ${tipoAtualSetor}`;
-  if(labelSelectEl) labelSelectEl.textContent = tipoAtualSetor;
+  if (labelAddEl) labelAddEl.textContent = `Nova ${tipoAtualSetor}`;
+  if (labelSelectEl) labelSelectEl.textContent = tipoAtualSetor;
 }
 
 function preencherComboExcluirSetor() {
   const select = document.getElementById("select-del");
-  if(!select) return;
+  if (!select) return;
   select.innerHTML = '<option value="">Selecione para excluir</option>';
   const lista = tipoAtualSetor === "Departamento" ? (departamentosGlobais || []) : (categoriasGlobais || []);
   if (lista.length > 0) {
     lista.forEach(item => {
-        select.innerHTML += `<option value="${item}">${item}</option>`;
+      select.innerHTML += `<option value="${item}">${item}</option>`;
     });
   }
 }
 
 async function adicionarDepartamentoCategoria() {
   const valorInput = document.getElementById("input-novo");
-  if (!valorInput) { console.error("Input #input-novo não encontrado."); return; }
+  if (!valorInput) { return; }
   const valor = valorInput.value.trim();
 
   if (!valor) {
@@ -295,14 +290,13 @@ async function adicionarDepartamentoCategoria() {
   const currentMarketId = getMarketIdParaPopups();
   const currentUserId = getUserIdParaPopups();
 
-  console.log(`${currentMarketId} || ${currentUserId}`)
 
   if (!currentMarketId || !currentUserId) {
-      showAlert("ID do Mercado ou Usuário não identificado.", "Erro", "error");
-      return;
+    showAlert("ID do Mercado ou Usuário não identificado.", "Erro", "error");
+    return;
   }
   try {
-    const response = await fetch('/addSetor', {
+    const response = await fetch('/api/setores/addSetor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: valor, type: tipoParaApi, marketId: currentMarketId, userId: currentUserId })
@@ -315,17 +309,16 @@ async function adicionarDepartamentoCategoria() {
     await carregarSetoresGlobais(currentMarketId);
 
     if (typeof carregarSetoresEstoque === 'function') {
-        carregarSetoresEstoque(currentMarketId);
+      carregarSetoresEstoque(currentMarketId);
     }
-  } catch(err) {
-    console.error("Erro em adicionarDepartamentoCategoria:", err);
+  } catch (err) {
     showAlert(err.message || "Erro desconhecido.", "Erro", "error");
   }
 }
-  
+
 async function excluirDepartamentoCategoria() {
   const selectDelEl = document.getElementById("select-del");
-  if(!selectDelEl) { console.error("Select #select-del não encontrado."); return; }
+  if (!selectDelEl) { return; }
   const valor = selectDelEl.value;
 
   if (!valor) {
@@ -337,11 +330,11 @@ async function excluirDepartamentoCategoria() {
   const currentUserId = getUserIdParaPopups();
 
   if (!currentMarketId || !currentUserId) {
-      showAlert("ID do Mercado ou Usuário não identificado.", "Erro", "error");
-      return;
+    showAlert("ID do Mercado ou Usuário não identificado.", "Erro", "error");
+    return;
   }
   try {
-    const response = await fetch('/deleteSetor', {
+    const response = await fetch('/api/setores/deleteSetor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: valor, type: tipoParaApi, marketId: currentMarketId, userId: currentUserId })
@@ -352,10 +345,9 @@ async function excluirDepartamentoCategoria() {
     showAlert(data.mensagem || "Setor excluído!", "Sucesso", "success");
     await carregarSetoresGlobais(currentMarketId);
     if (typeof carregarSetoresEstoque === 'function') {
-        carregarSetoresEstoque(currentMarketId);
+      carregarSetoresEstoque(currentMarketId);
     }
-  } catch(err) {
-    console.error("Erro em excluirDepartamentoCategoria:", err);
+  } catch (err) {
     showAlert(err.message || "Erro desconhecido.", "Erro", "error");
   }
 }
@@ -368,8 +360,7 @@ async function atualizarAlertas(currentMarketId) {
   const qtdAlertasEl = document.getElementById('quantidade-alertas');
 
   if (!alertasUnidadesEl || !alertasValidadeEl || !qtdAlertasEl) {
-      console.error("POPUP SCRIPT: Elementos de UI para alertas não encontrados.");
-      return;
+    return;
   }
   if (!currentMarketId) {
     console.warn("POPUP SCRIPT: atualizarAlertas chamado sem marketId.");
@@ -380,18 +371,18 @@ async function atualizarAlertas(currentMarketId) {
   }
   try {
     if (reloadIcon) reloadIcon.classList.add('spinner-icon');
-    const response = await fetch('/estoqueData', {
+    const response = await fetch('/api/produtos/estoqueData', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ marketId: currentMarketId })
     });
     if (!response.ok) {
-      const errData = await response.json().catch(() => ({erro: "Erro de rede"}));
+      const errData = await response.json().catch(() => ({ erro: "Erro de rede" }));
       throw new Error(errData.erro || `Erro HTTP ${response.status} ao buscar dados para alertas.`);
     }
     const data = await response.json();
     const produtos = data.mensagem || [];
-    
+
     const alertasEstoque = {
       vermelho: produtos.filter(p => p.stock < LIMITES_ESTOQUE.critico),
       laranja: produtos.filter(p => p.stock >= LIMITES_ESTOQUE.critico && p.stock < LIMITES_ESTOQUE.medio),
@@ -405,10 +396,9 @@ async function atualizarAlertas(currentMarketId) {
     renderizarAlertasUI('alertas-unidades', alertasEstoque, criarAlertaEstoque);
     renderizarAlertasUI('alertas-validade', alertasValidade, criarAlertaValidade);
     const totalAlertas = Object.values(alertasEstoque).reduce((sum, arr) => sum + arr.length, 0) +
-                         Object.values(alertasValidade).reduce((sum, arr) => sum + arr.length, 0);
+      Object.values(alertasValidade).reduce((sum, arr) => sum + arr.length, 0);
     qtdAlertasEl.textContent = totalAlertas;
   } catch (err) {
-    console.error('POPUP SCRIPT: Erro ao atualizar alertas:', err.message);
     alertasUnidadesEl.innerHTML = `<p class="alert alert-danger p-2 mb-0">Erro ao carregar alertas: ${err.message}</p>`;
     alertasValidadeEl.innerHTML = `<p class="alert alert-danger p-2 mb-0">Erro ao carregar alertas: ${err.message}</p>`;
     qtdAlertasEl.textContent = 'X';
@@ -433,27 +423,27 @@ function diasParaVencer(dataValidade) {
 }
 
 function renderizarAlertasUI(containerId, alertasPorTipo, funcaoCriarCard) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
-    let algumAlertaRenderizado = false;
-    const tiposAlerta = [
-        { tipo: 'vermelho', data: alertasPorTipo.vermelho, titulo: (prod, dias) => containerId === 'alertas-unidades' ? `Crítico: menos de ${LIMITES_ESTOQUE.critico} unidades` : 'Vencido!' },
-        { tipo: 'laranja', data: alertasPorTipo.laranja, titulo: (prod, dias) => containerId === 'alertas-unidades' ? `Atenção: ${LIMITES_ESTOQUE.critico}-${LIMITES_ESTOQUE.medio-1} unidades` : 'Vence em breve' },
-        { tipo: 'amarelo', data: alertasPorTipo.amarelo, titulo: (prod, dias) => containerId === 'alertas-unidades' ? `Observação: ${LIMITES_ESTOQUE.medio}-${LIMITES_ESTOQUE.semnecessidade-1} unidades` : 'Validade próxima' }
-    ];
-    tiposAlerta.forEach(alertaInfo => {
-        if (alertaInfo.data && alertaInfo.data.length > 0) {
-            alertaInfo.data.forEach(produto => {
-                const dias = containerId === 'alertas-validade' ? diasParaVencer(produto.expirationDate) : null;
-                container.appendChild(funcaoCriarCard(produto, dias, alertaInfo.tipo, alertaInfo.titulo(produto, dias)));
-                algumAlertaRenderizado = true;
-            });
-        }
-    });
-    if (!algumAlertaRenderizado) {
-        container.innerHTML = `<p class="text-muted p-2">Nenhum alerta ${containerId === 'alertas-unidades' ? 'de nível de estoque' : 'de validade'} no momento.</p>`;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  let algumAlertaRenderizado = false;
+  const tiposAlerta = [
+    { tipo: 'vermelho', data: alertasPorTipo.vermelho, titulo: (prod, dias) => containerId === 'alertas-unidades' ? `Crítico: menos de ${LIMITES_ESTOQUE.critico} unidades` : 'Vencido!' },
+    { tipo: 'laranja', data: alertasPorTipo.laranja, titulo: (prod, dias) => containerId === 'alertas-unidades' ? `Atenção: ${LIMITES_ESTOQUE.critico}-${LIMITES_ESTOQUE.medio - 1} unidades` : 'Vence em breve' },
+    { tipo: 'amarelo', data: alertasPorTipo.amarelo, titulo: (prod, dias) => containerId === 'alertas-unidades' ? `Observação: ${LIMITES_ESTOQUE.medio}-${LIMITES_ESTOQUE.semnecessidade - 1} unidades` : 'Validade próxima' }
+  ];
+  tiposAlerta.forEach(alertaInfo => {
+    if (alertaInfo.data && alertaInfo.data.length > 0) {
+      alertaInfo.data.forEach(produto => {
+        const dias = containerId === 'alertas-validade' ? diasParaVencer(produto.expirationDate) : null;
+        container.appendChild(funcaoCriarCard(produto, dias, alertaInfo.tipo, alertaInfo.titulo(produto, dias)));
+        algumAlertaRenderizado = true;
+      });
     }
+  });
+  if (!algumAlertaRenderizado) {
+    container.innerHTML = `<p class="text-muted p-2">Nenhum alerta ${containerId === 'alertas-unidades' ? 'de nível de estoque' : 'de validade'} no momento.</p>`;
+  }
 }
 function criarAlertaEstoque(produto, diasIgnorado, tipoClasse, titulo) {
   const alerta = document.createElement('div');
@@ -486,33 +476,30 @@ function abrirModalExclusaoProduto() {
   // Pega o productId do input principal da página (que deve ter sido preenchido pelo clique no botão do card)
   const productIdParaExcluirInput = document.getElementById("codigo-excluir");
   if (!productIdParaExcluirInput) {
-      console.error("POPUP SCRIPT: Input #codigo-excluir não encontrado na página.");
-      showAlert("Erro de Interface", "Campo para código de exclusão não encontrado.", "error");
-      return;
+    showAlert("Erro de Interface", "Campo para código de exclusão não encontrado.", "error");
+    return;
   }
   const productIdParaExcluir = productIdParaExcluirInput.value.trim();
 
   if (!productIdParaExcluir) {
-      showAlert("Por favor, insira ou selecione o código do produto que deseja excluir.", "Código Necessário", "warning");
-      productIdParaExcluirInput.focus(); // Foca no input para o usuário preencher
-      return;
+    showAlert("Por favor, insira ou selecione o código do produto que deseja excluir.", "Código Necessário", "warning");
+    productIdParaExcluirInput.focus(); // Foca no input para o usuário preencher
+    return;
   }
 
   // Assume que 'window.currentData' é a lista de produtos carregada pelo script principal (estoque/script.js)
   if (typeof window.currentData === 'undefined' || !Array.isArray(window.currentData)) {
-      showAlert("Lista de produtos não carregada. Não é possível obter detalhes para exclusão.", "Erro de Dados", "error");
-      console.error("POPUP SCRIPT (Excluir): window.currentData não está disponível ou não é um array.");
-      return;
+    showAlert("Lista de produtos não carregada. Não é possível obter detalhes para exclusão.", "Erro de Dados", "error");
+    return;
   }
 
   const produto = window.currentData.find(p => String(p.productId) === String(productIdParaExcluir));
 
   if (!produto) {
-      showAlert(`Produto com código "${productIdParaExcluir}" não encontrado na lista de estoque atual.`, "Produto Não Encontrado", "error");
-      return;
+    showAlert(`Produto com código "${productIdParaExcluir}" não encontrado na lista de estoque atual.`, "Produto Não Encontrado", "error");
+    return;
   }
 
-  console.log("POPUP SCRIPT (Excluir): Produto encontrado para preencher modal de exclusão:", produto);
 
   // Preenche os spans de informação no modal #modalExcluirProduto
   // Certifique-se que os IDs no HTML do modal de exclusão correspondem a estes:
@@ -526,7 +513,7 @@ function abrirModalExclusaoProduto() {
 
   if (elCodigoExcluirDisplay) elCodigoExcluirDisplay.textContent = produto.productId || '—';
   else console.warn("POPUP SCRIPT: Elemento #excluir-codigo (display) não encontrado no modal de exclusão.");
-  
+
   if (elCategoriaExcluir) elCategoriaExcluir.textContent = produto.category || '—';
   else console.warn("POPUP SCRIPT: Elemento #excluir-categoria não encontrado no modal de exclusão.");
 
@@ -536,13 +523,12 @@ function abrirModalExclusaoProduto() {
   // Mostra o modal de "detalhes do produto a ser excluído"
   const modalExcluirEl = document.getElementById("modalExcluirProduto");
   if (!modalExcluirEl) {
-      console.error("POPUP SCRIPT (Excluir): Modal #modalExcluirProduto não encontrado no HTML!");
-      showAlert("Erro Crítico de Interface", "O modal de detalhes da exclusão não pode ser encontrado.", "error");
-      return;
+    showAlert("Erro Crítico de Interface", "O modal de detalhes da exclusão não pode ser encontrado.", "error");
+    return;
   }
   const modalExcluirInstancia = bootstrap.Modal.getOrCreateInstance(modalExcluirEl);
   modalExcluirInstancia.show();
-  
+
   // O botão "Excluir" dentro do modal #modalExcluirProduto no HTML já tem:
   // onclick="abrirConfirmarExclusao()"
   // Essa função abrirConfirmarExclusao() está no seu link.js e abre o SEGUNDO modal de confirmação.
@@ -559,33 +545,33 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn("POPUP SCRIPT: MarketID não disponível no DOMContentLoaded.");
     // Lógica para quando não há marketId (ex: limpar campos de alerta)
     const alertasUnidadesEl = document.getElementById('alertas-unidades');
-    if(alertasUnidadesEl) alertasUnidadesEl.innerHTML = '<p class="text-muted p-2">ID do mercado não fornecido.</p>';
+    if (alertasUnidadesEl) alertasUnidadesEl.innerHTML = '<p class="text-muted p-2">ID do mercado não fornecido.</p>';
     const alertasValidadeEl = document.getElementById('alertas-validade');
-    if(alertasValidadeEl) alertasValidadeEl.innerHTML = '<p class="text-muted p-2">ID do mercado não fornecido.</p>';
+    if (alertasValidadeEl) alertasValidadeEl.innerHTML = '<p class="text-muted p-2">ID do mercado não fornecido.</p>';
     const qtdAlertasEl = document.getElementById('quantidade-alertas');
-    if(qtdAlertasEl) qtdAlertasEl.textContent = '0';
+    if (qtdAlertasEl) qtdAlertasEl.textContent = '0';
   }
-  
+
   const reloadBtn = document.getElementById('btn-reload-alerts');
   if (reloadBtn) {
     reloadBtn.addEventListener('click', () => {
-        const marketIdForReload = getMarketIdParaPopups();
-        if (marketIdForReload) { atualizarAlertas(marketIdForReload); }
-        else { showAlert("ID do Mercado não encontrado.", "Erro", "error"); }
+      const marketIdForReload = getMarketIdParaPopups();
+      if (marketIdForReload) { atualizarAlertas(marketIdForReload); }
+      else { showAlert("ID do Mercado não encontrado.", "Erro", "error"); }
     });
   }
-  
+
   const offcanvasAlertasEl = document.getElementById('offcanvas-alertas');
   if (offcanvasAlertasEl) {
     offcanvasAlertasEl.addEventListener('show.bs.offcanvas', () => {
-        const marketIdForOffcanvas = getMarketIdParaPopups();
-        if (marketIdForOffcanvas) { atualizarAlertas(marketIdForOffcanvas); }
+      const marketIdForOffcanvas = getMarketIdParaPopups();
+      if (marketIdForOffcanvas) { atualizarAlertas(marketIdForOffcanvas); }
     });
   }
 
   const toggleTipoEl = document.getElementById("toggleTipo");
   if (toggleTipoEl) {
-      toggleTipoEl.addEventListener('change', alternarTipoSetor);
-      alternarTipoSetor(); // Estado inicial
+    toggleTipoEl.addEventListener('change', alternarTipoSetor);
+    alternarTipoSetor(); // Estado inicial
   }
 });

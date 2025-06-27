@@ -1,39 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Painel do Funcionário</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <nav class="navbar navbar-light fixed-top" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
-    <div class="container d-flex justify-content-between align-items-center">
-      <div class="d-flex align-items-center">
-        <button class="btn btn-dark" onclick="history.back()">voltar</button>
-        <h1 class="ms-3">🏪</h1>
-        <span class="navbar-brand mb-0 h1">Mercado Didático</span>
-      </div>
-      <button class="btn btn-danger fs-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#perfilOffcanvas">
-        <i class="bi bi-person-circle"></i>
-      </button>
-    </div>
-  </nav>
-
   <div class="main-container">
-    <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-success text-white"
-      style="width: 1200px;">
-      <h4 class="mb-0"><i class="bi bi-person-badge-fill"></i> Painel do Funcionário</h4>
-      <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque" onclick="reloadPage()">
-        <i class="bi bi-arrow-clockwise"></i>
-      </button>
-    </div>
-
     <div class="card shadow custom-card">
+      <div class="card-header text-center text-dark w-100" style="background: linear-gradient(to left, #ff6f00, #ffa040);">
+        <h2>Painel do Funcionário</h2>
+      </div>
       <div class="card-body">
         <div class="row h-100">
           <!-- Card Informações do Usuário -->
@@ -44,27 +24,39 @@
               </div>
               <div class="card-body text-center">
                 <!-- Imagem de perfil ou placeholder -->
-                <img id="profileImage"
+                <img
+                  id="profileImage"
                   src="https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1"
-                  alt="Foto do usuário" class="rounded-circle border"
-                  style="width: 9.5rem; height: 9.5rem; object-fit: cover;" />
+                  alt="Foto do usuário"
+                  class="rounded-circle border"
+                  style="width: 9.5rem; height: 9.5rem; object-fit: cover;"
+                />
                 <hr>
                 <p class="text-start"><strong>Nome:</strong> <span id="userName">[Nome]</span></p>
-                <p class="text-start"><strong>Codigo:</strong> <span id="userEnrollment">[Matrícula]</span></p>
+                <p class="text-start"><strong>Codigo:</strong> <span id="userCode">[Codigo]</span></p>
 
                 <!-- Input de arquivo oculto e botões -->
-                <input type="file" id="fileInput" accept="image/*" style="display: none;" />
-                <button id="btnChangeImage" class="btn btn-primary w-100 mb-2" type="button">
+                <input
+                  type="file"
+                  id="fileInput"
+                  accept="image/*"
+                  style="display: none;"
+                />
+                <button
+                  id="btnChangeImage"
+                  class="btn btn-primary w-100 mb-2"
+                  type="button"
+                >
                   Alterar Imagem
                 </button>
-                <button id="btnRemoveImage" class="btn btn-outline-danger w-100" type="button">
+                <button
+                  id="btnRemoveImage"
+                  class="btn btn-outline-danger w-100"
+                  type="button"
+                >
                   Remover Imagem
                 </button>
               </div>
-              <button class="btn btn-secondary m-2 mt-0" type="button"
-                onclick="navigator.clipboard.writeText(document.getElementById('userEnrollment').textContent)">
-                Copiar código
-              </button>
             </div>
           </div>
 
@@ -74,131 +66,98 @@
               <div class="card-body d-flex flex-column">
                 <!-- Seleção de Supermercados -->
                 <div id="supermercadoSelect" class="flex-grow-1">
-
                   <h5 class="card-title text-start">Selecione um Supermercado</h5>
                   <hr>
-                  <div class="row row-cols-2 g-3 overflow-auto" style="max-height: 57vh;" id="supermercadosRow" >
-                    <div class="col">
-                      <a class="card text-center access-card" onclick="selecionarSupermercado('Loja Centro')">
-                        <div class="card-body">
-                          <div style="font-size: 2.5rem;">🏬</div>
-                          <h6 class="mt-2">Loja Centro</h6>
-                        </div>
-                      </a>
-                    </div>
-                    <div class="col">
-                      <a  class="card text-center access-card" onclick="selecionarSupermercado('Loja Norte')">
-                        <div class="card-body">
-                          <div style="font-size: 2.5rem;">🏪</div>
-                          <h6 class="mt-2">Loja Norte</h6>
-                        </div>
-                      </a>
-                    </div>
+                  <div class="row row-cols-2 g-3" id="supermercadosList">
                   </div>
                 </div>
 
                 <!-- Telas de Acesso em Cards -->
                 <div id="acessosPanel" class="d-none flex-grow-1 d-flex flex-column">
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="card-title mb-0">Acessos - <span id="nomeLojaSelecionada"></span></h5>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="voltarParaSupermercados()">
-                      <i class="bi bi-arrow-left"></i> Voltar
+                  <h5 class="card-title mb-0">Acessos - <span id="nomeLojaSelecionada"></span></h5>
+                  <button class="btn btn-sm btn-outline-secondary" onclick="voltarParaSupermercados()">
+                      <i class="bi bi-arrow-left"></i>
                     </button>
                   </div>
                   <hr>
-                  <div class="row row-cols-1 row-cols-md-2 g-3 pt-3">
-
+                  <div class="row row-cols-2 g-3">
                     <div class="col">
-                      <div class="card text-center shadow-sm p-3 card-button disabled-card" id="cardPdv" onclick="irParaTela('pdv')">
-                        <i class="bi bi-cash-coin fs-3 text-primary"></i>
-                        <div class="fw-semibold mt-2">PDV</div>
+                      <a href="#" class="card text-center access-card" id="cardEstoque" onclick="irParaTela('estoque')">
+                      <div class="card-body">
+                        <i class="bi bi-boxes access-icon"></i>
+                        <h6 class="mt-2">Estoque</h6>
                       </div>
+                      </a>
                     </div>
-
                     <div class="col">
-                      <div class="card text-center shadow-sm p-3 card-button" id="cardEstoque" onclick="irParaTela('estoque')">
-                        <i class="bi bi-box-seam fs-3 text-success"></i>
-                        <div class="fw-semibold mt-2">Estoque</div>
+                      <a href="#" class="card text-center access-card" id="cardCaixa" onclick="irParaTela('pdv')">
+                      <div class="card-body">
+                        <i class="bi bi-cash access-icon"></i>
+                        <h6 class="mt-2">Caixa</h6>
                       </div>
+                      </a>
                     </div>
-
                     <div class="col">
-                      <div class="card text-center shadow-sm p-3 card-button" id="cardHistorico" onclick="irParaTela('alertas')">
-                        <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
-                        <div class="fw-semibold mt-2">Historico</div>
+                      <a href="#" class="card text-center access-card" id="cardRelatorios" onclick="irParaTela('relatorio')">
+                      <div class="card-body">
+                        <i class="bi bi-bar-chart-line access-icon"></i>
+                        <h6 class="mt-2">Relatórios</h6>
                       </div>
+                      </a>
                     </div>
-
                     <div class="col">
-                      <div class="card text-center shadow-sm p-3 card-button" id="cardRelatorios" onclick="irParaTela('relatorio')">
-                        <i class="bi bi-clipboard-data fs-3 text-info"></i>
-                        <div class="fw-semibold mt-2">Relatório</div>
+                      <a href="#" class="card text-center access-card disabled-card" id="cardRastreio" onclick="irParaTela('historico')">
+                      <div class="card-body">
+                        <i class="bi bi-truck access-icon"></i>
+                        <h6 class="mt-2">Historico</h6>
                       </div>
+                      </a>
                     </div>
-
                     <div class="col">
-                      <div class="card text-center shadow-sm p-3 px-2 card-button" id="cardRastreio" onclick="irParaTela('rastreamento')">
-                        <i class="bi bi-geo-alt fs-3 text-warning"></i>
-                        <div class="fw-semibold mt-2">Rastreamento</div>
+                      <a href="#" class="card text-center access-card disabled-card" id="cardFornecedores" onclick="irParaTela('fornecedor')">
+                      <div class="card-body">
+                        <i class="bi bi-people-fill access-icon"></i>
+                        <h6 class="mt-2">Fornecedores</h6>
                       </div>
+                      </a>
                     </div>
-
-                    <div class="col">
-                      <div class="card text-center shadow-sm p-3 px-2 card-button" id="cardFornecedor" onclick="irParaTela('fornecedores')">
-                        <i class="bi bi-truck fs-3 text-secondary"></i>
-                        <div class="fw-semibold mt-2">Fornecedores</div>
-                      </div>
-                    </div>
-                  </div> <!-- fim acessosPanel -->
-                </div>
+                  </div>
+                </div> <!-- fim acessosPanel -->
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Modal de Confirmação de Saída -->
-      <div class="modal fade" id="confirmarSaidaModal" tabindex="-1" aria-labelledby="confirmarSaidaModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header bg-danger">
-              <h5 class="modal-title" id="confirmarSaidaModalLabel">Confirmar Saída</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body">
-              Tem certeza de que deseja sair do sistema?
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" class="btn btn-danger" onclick="confirmarSaida()">Sair</button>
-            </div>
-          </div>
-        </div>
+      <div class="card-footer text-muted text-end">
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmarSaidaModal">
+            Sair do Sistema
+        </button>
       </div>
+    </div>
+  </div>
 
-      <div class="offcanvas offcanvas-end bg-warning" tabindex="-1" id="perfilOffcanvas">
-        <div class="offcanvas-header">
-          <h5 class="fw-bold">Perfil</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  <!-- Modal de Confirmação de Saída -->
+    <div class="modal fade" id="confirmarSaidaModal" tabindex="-1" aria-labelledby="confirmarSaidaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header bg-danger">
+            <h5 class="modal-title" id="confirmarSaidaModalLabel">Confirmar Saída</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
-        <div class="offcanvas-body">
-          <div class="perfil-box mb-3 bg-light rounded p-2">
-            <i class="bi bi-person-circle"></i>
-            <div class="d-flex flex-column">
-              <p class="mb-0 fw-bold" id="userName"></p>
-              <small class="text-muted" id="userRole"></small>
-            </div>
-          </div>
-          <div>
-            <a href=""><button class="btn btn-danger w-100">Encerrar Sessão</button></a>
-          </div>
+        <div class="modal-body">
+            Tem certeza de que deseja sair do sistema?
         </div>
-      </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" onclick="confirmarSaida()">Sair</button>
+        </div>
+        </div>
+    </div>
+    </div>
 
-      <!-- Scripts -->
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-      <script src="script.js"></script>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
 </body>
-
 </html>

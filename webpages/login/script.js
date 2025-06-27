@@ -25,7 +25,7 @@ loginWithCookie();
 async function loginWithCookie() {
   let cookieId = getCookie("user");
   if (cookieId != "") {
-    const response = await fetch(`/loginWithId`, {
+    const response = await fetch(`/api/usuarios/loginWithId`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: cookieId })
@@ -40,8 +40,6 @@ async function loginWithCookie() {
       else {
         window.location.href = "/painel"
       }
-    } else {
-      console.error("Login failed:", data.message);
     }
   }
 }
@@ -82,33 +80,41 @@ document.getElementById("registerButton").addEventListener("click", function (e)
     return;
   }
 
-  fetch("/cadastro", {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ name: nome, password: senha, gestor: funcao.checked })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === "success") {
-        showToast(data.message || "Cadastro realizado com sucesso!", "success");
-        container.classList.remove("right-panel-active");
+const dadosCadastro = {
+  name: nome,
+  password: senha,
+  gestor: funcao.checked ? 1 : 0
+};
 
-        if (data.userId != null) {
-          document.cookie = `user=${data.userId}; path=/`;
-          setTimeout(() => {
-            loginWithCookie();
-          }, 1000);
-        }
-      } else {
-        showToast(data.message || "Erro ao cadastrar", "danger");
-        container.classList.remove("right-panel-active");
+fetch("/api/usuarios/cadastro", {
+  method: "POST",
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(dadosCadastro)
+})
+  .then(res => {
+    return res.json();
+  })
+  .then(data => {
+    if (data.status === "success") {
+      showToast(data.message || "Cadastro realizado com sucesso!", "success");
+      container.classList.remove("right-panel-active");
+
+      if (data.userId != null) {
+        document.cookie = `user=${data.userId}; path=/`;
+        setTimeout(() => {
+          loginWithCookie(); // presumidamente definida
+        }, 1000);
       }
-    })
-    .catch(() => {
-      showToast("Erro ao conectar com o servidor!", "danger");
-    });
+    } else {
+      showToast(data.message || "Erro ao cadastrar", "danger");
+      container.classList.remove("right-panel-active");
+    }
+  })
+  .catch((error) => {
+    showToast("Erro ao conectar com o servidor!", "danger");
+  });
 });
 
 
@@ -125,7 +131,7 @@ document.getElementById("loginButton").addEventListener("click", async function 
   }
 
   try {
-    const response = await fetch(`/login`, {
+    const response = await fetch(`/api/usuarios/login`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, senha })
@@ -152,7 +158,6 @@ document.getElementById("loginButton").addEventListener("click", async function 
     }
 
   } catch (error) {
-    console.error("Erro ao fazer login:", error);
     showToast("Erro na conexão com o servidor.", "danger");
   }
 });

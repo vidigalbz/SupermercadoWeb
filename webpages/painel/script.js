@@ -1,6 +1,6 @@
 // Dados do usuário
 let username = document.getElementById('userName');
-let userIdLabel = document.getElementById('userEnrollment');
+let userCode = document.getElementById('userCode');
 const profileImageElem = document.getElementById('profileImage');
 const fileInput = document.getElementById('fileInput');
 const btnChangeImage = document.getElementById('btnChangeImage');
@@ -24,25 +24,6 @@ function getCookie(cname) {
 
 let userId;
 
-const permissoesPorLoja = {
-  "Loja Centro": {
-    pdv: true,
-    estoque: true,
-    fornecedor: false,
-    relatorios: false,
-    historico: false,
-    rastreio: false
-  },
-  "Loja Norte": {
-    pdv: false,
-    estoque: false,
-    fornecedor: true,
-    relatorios: true,
-    historico: true,
-    rastreio: true
-  }
-};
-
 main();
 
 function main() {
@@ -63,7 +44,7 @@ function main() {
     formData.append("userId", userId);
 
     try {
-      const response = await fetch("/uploadProfileImage", {
+      const response = await fetch("/api/profileImages/uploadProfileImage", {
         method: "POST",
         body: formData
       });
@@ -74,10 +55,10 @@ function main() {
         profileImageElem.src = novaUrl;
         fileInput.value = "";
       } else {
-        console.error("Falha no upload:", data.message);
+        //console.error("Falha no upload:", data.message);
       }
     } catch (err) {
-      console.error("Erro ao fazer upload:", err);
+      //console.error("Erro ao fazer upload:", err);
     }
   });
 
@@ -86,7 +67,7 @@ function main() {
     if (!confirm("Deseja realmente remover sua foto de perfil?")) return;
 
     try {
-      const response = await fetch("/removeProfileImage", {
+      const response = await fetch("/api/profileImages/removeProfileImage", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -96,10 +77,10 @@ function main() {
         profileImageElem.src =
           "https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1";
       } else {
-        console.error("Falha ao remover imagem:", data.message);
+        //console.error("Falha ao remover imagem:", data.message);
       }
     } catch (err) {
-      console.error("Erro ao chamar /removeProfileImage:", err);
+      //console.error("Erro ao chamar /removeProfileImage:", err);
     }
   });
 }
@@ -114,11 +95,11 @@ async function getImageURL(rawImagePath) {
     : 'https://i0.wp.com/espaferro.com.br/wp-content/uploads/2024/06/placeholder.png?ssl=1';
 }
 
-function selecionarSupermercado(nomeLoja) {
-  document.getElementById('nomeLojaSelecionada').textContent = nomeLoja;
+function selecionarSupermercado(perimissions, name) {
+  document.getElementById('nomeLojaSelecionada').textContent = "acessos para " + name;
   document.getElementById('supermercadoSelect').classList.add('d-none');
   document.getElementById('acessosPanel').classList.remove('d-none');
-  atualizarAcessos(permissoesPorLoja[nomeLoja]);
+  atualizarAcessos(perimissions);
 }
 
 function voltarParaSupermercados() {
@@ -126,34 +107,87 @@ function voltarParaSupermercados() {
   document.getElementById('acessosPanel').classList.add('d-none');
 }
 
-function atualizarAcessos(permissoes) {
-  toggleCard('cardPdv', permissoes.pdv);
+function atualizarAcessos(encodedPermissions) {
+  const decoded = decodeURIComponent(encodedPermissions);
+  const permissoes = JSON.parse(decoded);
   toggleCard('cardEstoque', permissoes.estoque);
-  toggleCard('cardFornecedor', permissoes.fornecedor);
+  toggleCard('cardCaixa', permissoes.pdv);
   toggleCard('cardRelatorios', permissoes.relatorios);
-  toggleCard('cardRastreio', permissoes.rastreio);
-  toggleCard('cardHistorico', permissoes.historico);
+  toggleCard('cardRastreio', permissoes.rastreamento);
+  toggleCard('cardFornecedores', permissoes.fornecedor);
 }
 
 function toggleCard(id, habilitado) {
   const card = document.getElementById(id);
-  card.classList.remove('disabled-card');
-  if (!habilitado) card.classList.add('disabled-card');
+  card.classList.toggle('disabled-card', Number(habilitado) !== 1);
+}
+
+function addMarketCard(marketIcon, marketName, permissions) {
+  const marketList = document.getElementById('supermercadosList');
+  const encodedPermissions = encodeURIComponent(JSON.stringify(permissions));
+  const innerHTML = `
+    <div class="col">
+      <a href="#" class="card text-center access-card" onclick="selecionarSupermercado('${encodedPermissions}','${marketName}')">
+        <div class="card-body">
+          <div style="font-size: 2.5rem;">${marketIcon}</div>
+          <h6 class="mt-2">${marketName}</h6>
+        </div>
+      </a>
+    </div>`;
+  marketList.innerHTML += innerHTML;
+}
+
+function irParaTela(tela) {
+  window.location.href = `${window.location.origin}/${tela}`
+}
+
+async function loadMarketData(userId) {
+  const response = await fetch(`/api/usuarios/user_permissions/${userId}`);
+  const json = await response.json();
+
+  for (const permission of json.data) {
+    // Agora que 'permission' está definido, podemos usar permission.marketId
+    const marketResponse = await fetch("/api/supermercados/pegarSupermercadoNome", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ busca: permission.marketId })
+    });
+    
+    const marketData = await marketResponse.json();
+    const marketName = marketData.mensagem[0].name;
+    const marketIcon = marketData.mensagem[0].icon;
+
+    const permissions = {
+      pdv: permission.pdv,
+      estoque: permission.estoque,
+      fornecedor: permission.fornecedor,
+      relatorios: permission.relatorios,
+      alertas: permission.alertas,
+      rastreamento: permission.rastreamento
+    };
+
+    addMarketCard(marketIcon, marketName, permissions);
+  }
 }
 
 async function loadUserData() {
   userId = getCookie("user");
   if (userId == "") {
-     window.location.href = "http://localhost:4000/error403";
+    const response = await fetch('/api/ip');
+    const data = await response.json();
+    const ip = data.ip;
+    window.location.href = `http://${ip}:4000/error403`;
     return;
   } else {
     try {
-      const response = await fetch('/users/' + userId);
+      const response = await fetch(`/api/usuarios/users/${userId}`);
       const data = await response.json();
 
       if (data.status === "success") {
         username.textContent = data.data.name;
-        userIdLabel.textContent = userId;
+        userCode.textContent = userId;
 
         // Carregar foto de perfil
         const rawImagePath = data.data.profileImage;
@@ -161,11 +195,13 @@ async function loadUserData() {
           const urlImg = await getImageURL(rawImagePath);
           profileImageElem.src = urlImg;
         }
+
+        await loadMarketData(userId);
       } else {
-        console.error("Error:", data.message);
+        return;
       }
     } catch (error) {
-      console.error("Fetch failed:", error);
+      return;
     }
   }
 }
@@ -174,26 +210,3 @@ function confirmarSaida() {
   document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
   window.location.href = "/login";
 }
-
-function adicionarSupermercado(nome, icone, codigo) {
-  const div = document.getElementById('supermercadosRow')
-
-  const n = `
-      <div class="col">
-        <a class="card text-center access-card" id="${codigo}" onclick="selecionarSupermercado('Loja Centro')">
-          <div class="card-body">
-            <div style="font-size: 2.5rem;">${icone}</div>
-            <h6 class="mt-2">${nome}</h6>
-          </div>
-        </a>
-      </div>`
-
-  div.innerHTML += n;
-}
-
-function irParaTela(tela){
-  console.log("Ir para tela de xx");
-}
-
-adicionarSupermercado("Loja Centro", "🏬", "lojaCentro");
-adicionarSupermercado("Loja Centro", "🏬", "lojaCentro");
