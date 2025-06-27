@@ -75,6 +75,7 @@ async function verificarUser() {
 document.addEventListener('DOMContentLoaded', async function () {
   // Recupera IDs
   marketIdGlobal = getCookie('marketId');
+  marketIdGlobal = getCookie('marketId');
   userIdGlobal = getCookie("user");
 
   verificarUser();
@@ -89,6 +90,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (container) container.innerHTML = "<p class='alert alert-danger'>Erro crítico: ID do mercado não fornecido na URL.</p>";
     if (pesquisaInput) pesquisaInput.disabled = true;
     window.location.href = '/error404'
+    window.location.href = '/error404'
     return;
   }
   if (!userIdGlobal) {
@@ -98,6 +100,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
   // Verifica supermercado e carrega dados
+  await verificSuper();
   await verificSuper();
   await carregarSetoresEstoque(marketIdGlobal);
   await carregarProdutos(marketIdGlobal);
@@ -174,11 +177,13 @@ function verificSuper() {
 
 async function carregarSetoresEstoque(currentMarketId) {
   carregarFornecedores();
+  carregarFornecedores();
   if (!currentMarketId) {
     console.error("ESTOQUE SCRIPT: marketId não fornecido para carregarSetoresEstoque");
     return;
   }
   try {
+    
     const response = await fetch('/api/setores/getSetor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -385,6 +390,7 @@ async function carregarProdutos(currentMarketId) {
   if (container) container.innerHTML = "<div class='col-12 text-center p-3'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Carregando...</span></div> <p>Carregando produtos...</p></div>";
 
   try {
+    
     const response = await fetch('/api/produtos/estoqueData', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -425,6 +431,7 @@ function searchEstoque() {
   };
   if (categoria && categoria !== "Todos") payload.category = categoria;
 
+  
   fetch('/api/produtos/estoqueData', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -494,6 +501,7 @@ async function adicionarProduto() {
   const estoqueStr = document.getElementById("produto-estoque")?.value;
   const lote = document.getElementById("produto-lote")?.value.trim();
   const departamento = document.getElementById("add-departamento")?.value;
+  
   const fornecedor = document.getElementById("add-fornecedor").value;
   // marketId já temos em currentMarketId
   const fabricacao = document.getElementById("produto-fabricacao")?.value;
@@ -593,6 +601,7 @@ async function adicionarProduto() {
 
 async function confirmarEdicao() {
   const userId = userIdGlobal;
+
   const productIdDoForm = document.getElementById("codigo-editar")?.value;
   const marketIdDoFormulario = document.getElementById('editar-marketId')?.value.trim();
 
@@ -708,6 +717,7 @@ async function excluirProduto() {
   }
 
   try {
+   
     const res = await fetch("/api/produtos/deletarProduto", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
