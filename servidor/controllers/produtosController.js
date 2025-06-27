@@ -18,25 +18,25 @@ const adicionarProduto = async (req, res) => {
         }
 
         const {
-            nome, codigo, preco, categoria, estoque, lote,
+            nome, codigo, preco, precoUnit, categoria, estoque, lote,
             departamento, marketId, fabricacao, validade, userId, fornecedor
         } = req.body; //
 
         if (
-            !nome || !codigo || !preco || !categoria || !estoque ||
+            !nome || !codigo || !preco || !precoUnit || !categoria || !estoque ||
             !lote || !departamento || !marketId || !fabricacao || !validade || !userId || !fornecedor
         ) {
             return res.status(400).json({ erro: "Campos obrigatórios estão ausentes." }); //
         }
 
         const produto = {
-            marketId, nome, codigo, preco: parseFloat(preco), categoria, departamento, //
+            marketId, nome, codigo, preco: parseFloat(preco), precoUnit: parseFloat(precoUnit), categoria, departamento, //
             estoque: parseInt(estoque), lote, fabricacao, validade, imagem: imagemPathToStore, userId: parseInt(userId), fornecedor//
         };
 
         const result = await insert("products",
-            ["marketId", "name", "price", "category", "departament", "stock", "lot", "expirationDate", "manufactureDate", "barcode", "image", "fornecedor"],
-            [produto.marketId, produto.nome, produto.preco, produto.categoria, produto.departamento, produto.estoque, produto.lote, produto.validade, produto.fabricacao, produto.codigo, produto.imagem, produto.fornecedor]
+            ["marketId", "name", "price", "priceUnit", "category", "departament", "stock", "lot", "expirationDate", "manufactureDate", "barcode", "image", "fornecedor"],
+            [produto.marketId, produto.nome, produto.preco, produto.precoUnit, produto.categoria, produto.departamento, produto.estoque, produto.lote, produto.validade, produto.fabricacao, produto.codigo, produto.imagem, produto.fornecedor]
         ); //
 
         const newProductId = result.id; //
@@ -68,12 +68,12 @@ const deletarProduto = async (req, res) => {
             return res.status(404).json({ erro: "Produto não encontrado neste mercado." }); //
         }
         const produtoDeletado = produtos[0]; //
-        
+
         await insert("history",
             ["productId", "marketId", "userId", "type", "beforeData", "afterData", "createdAt"],
             [produtoDeletado.productId, produtoDeletado.marketId, parseInt(userId), "remocao", JSON.stringify(produtoDeletado), null, new Date().toISOString()]
         ); //
-        
+
         await delet("products", "productId = ? AND marketId = ?", [productId, marketId]); //
         return res.status(200).json({ mensagem: "Produto deletado com sucesso!" }); //
     } catch (err) {
@@ -86,10 +86,10 @@ const deletarProduto = async (req, res) => {
 const editarProduto = async (req, res) => {
     try {
         const {
-            productId, name, price, category, departament, stock,
+            productId, name, price, priceUnit, category, departament, stock,
             lot, expirationDate, manufactureDate, barcode, marketId, userId
         } = req.body; //
-        if (!productId || !name || !price || !category || !departament || !stock || !lot || !expirationDate || !manufactureDate || !barcode || !marketId || !userId) { //
+        if (!productId || !name || !price || !priceUnit || !category || !departament || !stock || !lot || !expirationDate || !manufactureDate || !barcode || !marketId || !userId) { //
             return res.status(400).json({ success: false, message: "Todos os campos são obrigatórios." }); //
         }
 
@@ -99,18 +99,18 @@ const editarProduto = async (req, res) => {
         }
         const beforeData = oldDataResult[0]; //
 
-        const columnsToUpdate = ["name", "price", "category", "departament", "stock", "lot", "expirationDate", "manufactureDate", "barcode"]; //
-        const valuesToUpdate = [name, parseFloat(price), category, departament, parseInt(stock), lot, expirationDate, manufactureDate, barcode]; //
-        
+        const columnsToUpdate = ["name", "price", "priceUnit", "category", "departament", "stock", "lot", "expirationDate", "manufactureDate", "barcode"]; //
+        const valuesToUpdate = [name, parseFloat(price), priceUnit, category, departament, parseInt(stock), lot, expirationDate, manufactureDate, barcode]; //
+
         await update("products", columnsToUpdate, valuesToUpdate, "productId = ? AND marketId = ?", [productId, marketId]); //
-        
+
         const afterData = { name, price: parseFloat(price), category, departament, stock: parseInt(stock), lot, expirationDate, manufactureDate, barcode, marketId }; //
-        
+
         await insert("history",
             ["productId", "marketId", "userId", "type", "beforeData", "afterData", "createdAt"],
             [productId, marketId, parseInt(userId), "edicao", JSON.stringify(beforeData), JSON.stringify(afterData), new Date().toISOString()]
         ); //
-        
+
         return res.json({ success: true, message: "Produto atualizado com sucesso!" }); //
     } catch (err) {
         console.error("Erro ao editar produto:", err); //
@@ -138,13 +138,12 @@ const consultarEstoque = async (req, res) => {
         }
         const condicaoSQL = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''; //
         const results = await select("products", condicaoSQL, params);
-        if(req.body.quant)
-        {
+        if (req.body.quant) {
             var quantidadeEstoque = results[0]["stock"];
-            if(req.body.quant > quantidadeEstoque) {
-                return res.status(200).json({erro: "A quantidade solicitada excede o estoque disponível"})
+            if (req.body.quant > quantidadeEstoque) {
+                return res.status(200).json({ erro: "A quantidade solicitada excede o estoque disponível" })
             }
-            else{
+            else {
                 var quantidadeEstoque = quantidadeEstoque - (req.body.quant)
                 update("products", ["stock"], [quantidadeEstoque], `marketId = '${marketId}'`)
             }
