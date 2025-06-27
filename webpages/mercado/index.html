@@ -29,9 +29,8 @@
         <!-- card do titulo -->
         <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded bg-secondary text-white">
             <h4 class="mb-0"><i class="bi bi-people-fill"></i> Gerenciamento de Mercados</h4>
-            <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque"
-                ">
-                <i class="bi bi-arrow-clockwise"></i>
+            <button class="btn btn-light fs-4" id="btn-recarrega-estoque" title="Recarregar Estoque" ">
+                <i class=" bi bi-arrow-clockwise"></i>
             </button>
         </div>
 
@@ -143,10 +142,10 @@
 
                         <!-- Lista de funcionários com rolagem se passar de 3 itens -->
                         <div style=" max-height: 110px; overflow-y: auto;" class="mb-4">
-                            <ul class="list-group" id="lista-funcionarios">
+                                    <ul class="list-group" id="lista-funcionarios">
 
-                            </ul>
-                        </div>
+                                    </ul>
+                            </div>
 
                             <!-- Navegação para outras telas -->
                             <div class="mb-2 mt-4">
@@ -309,21 +308,24 @@
                         <div class="row row-cols-2 row-cols-md-3 g-3">
                             <!-- Linha de cima com 3 -->
                             <div class="col">
-                                <div class="card text-center shadow-sm p-3 card-button card-acesso" data-permissao="PDV">
+                                <div class="card text-center shadow-sm p-3 card-button card-acesso"
+                                    data-permissao="PDV">
                                     <i class="bi bi-cash-coin fs-3 text-primary"></i>
                                     <div class="fw-semibold mt-2">PDV</div>
                                     <input type="checkbox" class="d-none" />
                                 </div>
                             </div>
                             <div class="col">
-                                <div class="card text-center shadow-sm p-3 card-button card-acesso" data-permissao="Estoque">
+                                <div class="card text-center shadow-sm p-3 card-button card-acesso"
+                                    data-permissao="Estoque">
                                     <i class="bi bi-box-seam fs-3 text-success"></i>
                                     <div class="fw-semibold mt-2">Estoque</div>
                                     <input type="checkbox" class="d-none" />
                                 </div>
                             </div>
                             <div class="col">
-                                <div class="card text-center shadow-sm p-3 card-button card-acesso" data-permissao="Relatório">
+                                <div class="card text-center shadow-sm p-3 card-button card-acesso"
+                                    data-permissao="Relatório">
                                     <i class="bi bi-clipboard-data fs-3 text-info"></i>
                                     <div class="fw-semibold mt-2">Relatório</div>
                                     <input type="checkbox" class="d-none" />
@@ -334,14 +336,16 @@
                         <!-- Linha de baixo com 2 centralizados -->
                         <div class="row row-cols-1 row-cols-md-3 g-3 justify-content-center mt-1">
                             <div class="col">
-                                <div class="card text-center shadow-sm p-3 card-button card-acesso" data-permissao="Rastreamento">
+                                <div class="card text-center shadow-sm p-3 card-button card-acesso"
+                                    data-permissao="Rastreamento">
                                     <i class="bi bi-clock fs-3 text-warning"></i>
                                     <div class="fw-semibold mt-2">Histórico</div>
                                     <input type="checkbox" class="d-none" />
                                 </div>
                             </div>
                             <div class="col">
-                                <div class="card text-center shadow-sm p-3 card-button card-acesso" data-permissao="Fornecedores">
+                                <div class="card text-center shadow-sm p-3 card-button card-acesso"
+                                    data-permissao="Fornecedores">
                                     <i class="bi bi-truck fs-3 text-secondary"></i>
                                     <div class="fw-semibold mt-2">Fornecedores</div>
                                     <input type="checkbox" class="d-none" />
@@ -349,10 +353,11 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="modal-footer mt-4">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"  onclick="adicionarFuncionario()">Adicionar</button>
+                        <button type="submit" class="btn btn-primary"
+                            onclick="adicionarFuncionario()">Adicionar</button>
                     </div>
                 </div>
             </div>
@@ -442,7 +447,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-danger" id="btnConfirmarRemoverFuncionario" onclick="RemoverFuncionario()">
+                        <button type="button" class="btn btn-danger" id="btnConfirmarRemoverFuncionario"
+                            onclick="RemoverFuncionario()">
                             Remover
                         </button>
                     </div>
@@ -470,12 +476,14 @@
         </div>
 
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-            <div id="liveToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div id="liveToast" class="toast align-items-center text-white bg-danger border-0" role="alert"
+                aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body" id="toastMessage">
-                    <!-- A mensagem será inserida via JavaScript -->
+                        <!-- A mensagem será inserida via JavaScript -->
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Fechar"></button>
                 </div>
             </div>
         </div>
