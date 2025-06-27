@@ -9,7 +9,7 @@ router.post('/adicionarProduto', uploadProduto.single("imagem"), produtosControl
 
 router.post('/deletarProduto', produtosController.deletarProduto);
 
-router.post('/editarProduto', produtosController.editarProduto);
+router.post('/editarProduto', uploadProduto.single("imagem"), produtosController.editarProduto);
 
 router.post('/estoqueData', produtosController.consultarEstoque);
 
