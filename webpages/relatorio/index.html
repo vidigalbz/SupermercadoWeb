@@ -15,10 +15,10 @@
 
 <style>
     .chart-container {
-  position: relative;
-  height: 350px;
-  width: 100%;
-}
+        position: relative;
+        height: 350px;
+        width: 100%;
+    }
 </style>
 
 <body>
@@ -95,14 +95,14 @@
 
             <div class="row g-2">
                 <div class="col-6">
-                <button class="btn btn-outline-secondary w-100" id="btn-mes-anterior">
-                    <i class="bi bi-chevron-left"></i> Anterior
-                </button>
+                    <button class="btn btn-outline-secondary w-100" id="btn-mes-anterior">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </button>
                 </div>
                 <div class="col-6">
-                <button class="btn btn-outline-secondary w-100" id="btn-proximo-mes">
-                    Próximo <i class="bi bi-chevron-right"></i>
-                </button>
+                    <button class="btn btn-outline-secondary w-100" id="btn-proximo-mes">
+                        Próximo <i class="bi bi-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -120,7 +120,7 @@
                         </div>
                         <div class="chart-container">
                             <canvas id="graficoFinanceiro"></canvas>
-                        </div>                    
+                        </div>
                     </div>
                 </div>
             </div>
@@ -206,7 +206,7 @@
                                     <small class="text-muted">Última venda: 15/05/2023</small>
                                 </div>
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -234,16 +234,16 @@
     <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content text-center p-4">
-            <div id="spinnerSection">
-                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                <span class="visually-hidden">Carregando...</span>
+                <div id="spinnerSection">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p>Processando os Dados, por favor aguarde...</p>
                 </div>
-                <p>Processando os Dados, por favor aguarde...</p>
-            </div>
-            <div id="okSection" class="d-none">
-                <p>Processo concluído com sucesso!</p>
-                <button class="btn btn-success" data-bs-dismiss="modal">OK!</button>
-            </div>
+                <div id="okSection" class="d-none">
+                    <p>Processo concluído com sucesso!</p>
+                    <button class="btn btn-success" data-bs-dismiss="modal">OK!</button>
+                </div>
             </div>
         </div>
     </div>
