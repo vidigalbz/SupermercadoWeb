@@ -54,8 +54,6 @@ def iniciar_servidor():
     caminho_exe = os.path.join(
         os.getenv("APPDATA"),
         "mercadoDidaticoDigital",
-        "appdata",
-        "mercadoDidaticoDigital",
         "app.exe"
     )
     print(caminho_exe)
