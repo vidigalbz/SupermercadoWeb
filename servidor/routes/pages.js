@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const webpages_dir = path.join(__dirname, '.././', 'webpages');
+const webpages_dir = path.join(__dirname, "..", "..", "webpages");
 
 try {
   const arquivos = fs.readdirSync(webpages_dir);
