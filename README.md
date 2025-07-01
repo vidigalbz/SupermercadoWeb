@@ -1,3 +1,4 @@
+web-site: https://vidigalbz.github.io/SupermercadoWeb/
 # 🛒 Supermercado Web - ![Senac Logo](https://www.mg.senac.br/Style%20Library/portalsenac_images/favicon.ico) SENAC Divinópolis
 
 Sistema completo de gerenciamento de supermercado 100% Web e **open-source**, desenvolvido para uso educacional e institucional pela **Rede de Ensino do SENAC**.
